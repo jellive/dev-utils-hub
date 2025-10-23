@@ -5,7 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { AlertCircle, Upload, X, HelpCircle } from 'lucide-react';
+import { AlertCircle, Upload, X, HelpCircle, Check, X as XCircle } from 'lucide-react';
+import { toast } from 'sonner';
 
 type HashAlgorithm = 'md5' | 'sha256' | 'sha512';
 
@@ -25,6 +26,7 @@ export function HashGenerator() {
   const [isDragOver, setIsDragOver] = useState(false);
   const [isHmacMode, setIsHmacMode] = useState(false);
   const [hmacKey, setHmacKey] = useState('');
+  const [comparisonHash, setComparisonHash] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const algorithms: AlgorithmOption[] = [
@@ -36,6 +38,7 @@ export function HashGenerator() {
   const handleGenerate = async () => {
     setError('');
     setHashResult('');
+    setComparisonHash(''); // Clear comparison when generating new hash
 
     if (!input.trim()) {
       setError('Input is empty. Please enter text to hash.');
@@ -70,8 +73,9 @@ export function HashGenerator() {
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(hashResult);
+      toast.success('Hash copied to clipboard!');
     } catch (err) {
-      // Ignore clipboard errors silently
+      toast.error('Failed to copy hash');
     }
   };
 
@@ -393,6 +397,39 @@ export function HashGenerator() {
           </div>
         </div>
       )}
+
+      {/* Hash Comparison */}
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          Compare Hash
+        </label>
+        <Input
+          type="text"
+          value={comparisonHash}
+          onChange={(e) => setComparisonHash(e.target.value)}
+          placeholder="Enter hash to compare..."
+          className="font-mono"
+        />
+        {hashResult && comparisonHash && (
+          <div className="mt-2">
+            {hashResult.toLowerCase() === comparisonHash.toLowerCase() ? (
+              <Alert className="border-green-500 bg-green-50 dark:bg-green-900/20">
+                <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                <AlertDescription className="text-green-900 dark:text-green-300">
+                  Hashes match!
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <Alert variant="destructive">
+                <XCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Hashes do not match
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Info Section */}
       <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
