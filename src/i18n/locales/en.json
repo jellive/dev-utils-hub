@@ -108,7 +108,20 @@
       "capturesExample": "Capture groups",
       "dateExample": "Date (YYYY-MM-DD)",
       "hexExample": "Hex colors",
-      "ipExample": "IP addresses"
+      "ipExample": "IP addresses",
+      "commonPatterns": "Common Regex Patterns",
+      "clickExample": "Click on any example to load it into the tester",
+      "enterRegexPattern": "Enter your regular expression pattern",
+      "testPattern": "Test Pattern",
+      "clearAll": "Clear All",
+      "matchDetails": "Match Details",
+      "allMatchesPositions": "All matches with their positions",
+      "highlightedMatches": "Highlighted Matches",
+      "matchedHighlighted": "Matched text is highlighted in yellow",
+      "quickReference": "Quick Reference",
+      "matchesFound": "{{count}} matches found",
+      "captureGroupsCount": "{{count}} capture groups",
+      "noCaptures": "No Captures"
     },
     "diff": {
       "name": "Text Diff",
@@ -136,7 +149,14 @@
       "step2": "Toggle \"Ignore Whitespace\" to compare content without spacing differences",
       "step3": "Choose between Unified (line-by-line) or Side-by-Side comparison views",
       "step4": "Green highlights show additions, red shows deletions",
-      "step5": "Side-by-side view features synchronized scrolling"
+      "step5": "Side-by-side view features synchronized scrolling",
+      "originalVersion": "Enter the original version",
+      "modifiedVersion": "Enter the modified version",
+      "noDifferences": "No differences found",
+      "textsIdentical": "The texts are identical",
+      "compareVersions": "Compare both versions with synchronized scrolling",
+      "changesHighlighted": "Line-by-line comparison with changes highlighted",
+      "differencesFound": "Differences Found"
     },
     "hash": {
       "name": "Hash Generator",

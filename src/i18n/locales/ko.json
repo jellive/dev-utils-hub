@@ -108,7 +108,20 @@
       "capturesExample": "캡처 그룹",
       "dateExample": "날짜 (YYYY-MM-DD)",
       "hexExample": "16진수 색상",
-      "ipExample": "IP 주소"
+      "ipExample": "IP 주소",
+      "commonPatterns": "일반 정규식 패턴",
+      "clickExample": "예제를 클릭하면 테스터에 로드됩니다",
+      "enterRegexPattern": "정규 표현식 패턴을 입력하세요",
+      "testPattern": "패턴 테스트",
+      "clearAll": "모두 지우기",
+      "matchDetails": "일치 세부정보",
+      "allMatchesPositions": "모든 일치 항목 및 위치",
+      "highlightedMatches": "강조된 일치 항목",
+      "matchedHighlighted": "일치하는 텍스트가 노란색으로 강조됩니다",
+      "quickReference": "빠른 참조",
+      "matchesFound": "{{count}}개 일치 항목 발견",
+      "captureGroupsCount": "{{count}}개 캡처 그룹",
+      "noCaptures": "캡처 없음"
     },
     "diff": {
       "name": "텍스트 비교",
@@ -127,6 +140,7 @@
       "identical": "차이점이 없습니다",
       "identicalDesc": "텍스트가 동일합니다",
       "differences": "차이점 발견",
+      "differencesFound": "차이점 발견",
       "unifiedView": "통합 비교 보기",
       "unifiedDesc": "변경 사항이 강조 표시된 줄별 비교",
       "sideView": "나란히 비교",
@@ -136,7 +150,13 @@
       "step2": "\"공백 무시\"를 토글하여 간격 차이 없이 내용을 비교하세요",
       "step3": "통합(줄별) 또는 나란히 보기 중에서 선택하세요",
       "step4": "녹색 강조 표시는 추가, 빨간색은 삭제를 나타냅니다",
-      "step5": "나란히 보기에는 동기화된 스크롤 기능이 있습니다"
+      "step5": "나란히 보기에는 동기화된 스크롤 기능이 있습니다",
+      "originalVersion": "원본 버전을 입력하세요",
+      "modifiedVersion": "수정된 버전을 입력하세요",
+      "noDifferences": "차이점이 없습니다",
+      "textsIdentical": "텍스트가 동일합니다",
+      "compareVersions": "동기화된 스크롤로 두 버전 비교",
+      "changesHighlighted": "변경 사항이 강조 표시된 줄별 비교"
     },
     "hash": {
       "name": "해시 생성기",

@@ -240,9 +240,9 @@ export function RegexTester() {
           </DialogTrigger>
           <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Common Regex Patterns</DialogTitle>
+              <DialogTitle>{t('tools.regex.commonPatterns')}</DialogTitle>
               <DialogDescription>
-                Click on any example to load it into the tester
+                {t('tools.regex.clickExample')}
               </DialogDescription>
             </DialogHeader>
 
@@ -283,8 +283,8 @@ export function RegexTester() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Regex Pattern</CardTitle>
-              <CardDescription>Enter your regular expression pattern</CardDescription>
+              <CardTitle>{t('tools.regex.pattern')}</CardTitle>
+              <CardDescription>{t('tools.regex.enterRegexPattern')}</CardDescription>
             </div>
             <TooltipProvider>
               <Tooltip>
@@ -311,7 +311,7 @@ export function RegexTester() {
 
           {/* Flags */}
           <div className="space-y-2">
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Flags</p>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('tools.regex.flags')}</p>
             <div className="flex flex-wrap gap-4">
               <div className="flex items-center space-x-2">
                 <Checkbox
@@ -323,7 +323,7 @@ export function RegexTester() {
                   htmlFor="flag-g"
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
-                  Global (g)
+                  {t('tools.regex.global')}
                 </label>
               </div>
               <div className="flex items-center space-x-2">
@@ -336,7 +336,7 @@ export function RegexTester() {
                   htmlFor="flag-i"
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
-                  Case Insensitive (i)
+                  {t('tools.regex.caseInsensitive')}
                 </label>
               </div>
               <div className="flex items-center space-x-2">
@@ -349,7 +349,7 @@ export function RegexTester() {
                   htmlFor="flag-m"
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
-                  Multiline (m)
+                  {t('tools.regex.multiline')}
                 </label>
               </div>
             </div>
@@ -360,8 +360,8 @@ export function RegexTester() {
       {/* Test String */}
       <Card>
         <CardHeader>
-          <CardTitle>Test String</CardTitle>
-          <CardDescription>Enter the text you want to match against</CardDescription>
+          <CardTitle>{t('tools.regex.testString')}</CardTitle>
+          <CardDescription>{t('tools.regex.enterTest')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Textarea
@@ -374,10 +374,10 @@ export function RegexTester() {
           <div className="flex items-center gap-2">
             <Button onClick={handleTest} className="gap-2">
               <Search className="h-4 w-4" />
-              Test Pattern
+              {t('tools.regex.testPattern')}
             </Button>
             <Button onClick={handleClear} variant="outline">
-              Clear All
+              {t('tools.regex.clearAll')}
             </Button>
           </div>
         </CardContent>
@@ -395,11 +395,13 @@ export function RegexTester() {
       {!error && testString && (
         <div className="flex items-center gap-2">
           <Badge variant={matches.length > 0 ? 'default' : 'secondary'} className="text-base px-4 py-2">
-            {matches.length} {matches.length === 1 ? 'Match' : 'Matches'} Found
+            {t('tools.regex.matchesFound', { count: matches.length })}
           </Badge>
           {matches.length > 0 && (
             <Badge variant="outline">
-              {matches[0].captures.length > 0 ? `${matches[0].captures.length} Capture Groups` : 'No Captures'}
+              {matches[0].captures.length > 0
+                ? t('tools.regex.captureGroupsCount', { count: matches[0].captures.length })
+                : t('tools.regex.noCaptures')}
             </Badge>
           )}
         </div>
@@ -411,8 +413,8 @@ export function RegexTester() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-base">Highlighted Matches</CardTitle>
-                <CardDescription>Matched text is highlighted in yellow</CardDescription>
+                <CardTitle className="text-base">{t('tools.regex.highlightedMatches')}</CardTitle>
+                <CardDescription>{t('tools.regex.matchedHighlighted')}</CardDescription>
               </div>
               <Button
                 onClick={() => handleCopy(testString)}
@@ -455,8 +457,8 @@ export function RegexTester() {
       {matches.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Match Details</CardTitle>
-            <CardDescription>All matches with their positions</CardDescription>
+            <CardTitle className="text-base">{t('tools.regex.matchDetails')}</CardTitle>
+            <CardDescription>{t('tools.regex.allMatchesPositions')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             {matches.map((match, matchIndex) => (
@@ -492,8 +494,8 @@ export function RegexTester() {
       {matches.length > 0 && matches[0].captures.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Capture Groups</CardTitle>
-            <CardDescription>Extracted capture groups from the pattern</CardDescription>
+            <CardTitle className="text-base">{t('tools.regex.captureGroups')}</CardTitle>
+            <CardDescription>{t('tools.regex.explanation')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             {/* Numbered Groups */}
@@ -554,7 +556,7 @@ export function RegexTester() {
       {/* Info Section */}
       <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
         <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-2">
-          Quick Reference
+          {t('tools.regex.quickReference')}
         </h3>
         <ul className="text-sm text-blue-800 dark:text-blue-400 space-y-1">
           <li>• <code className="font-mono">\d</code> - Any digit (0-9)</li>

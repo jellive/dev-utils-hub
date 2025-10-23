@@ -43,7 +43,7 @@ export function TextDiff() {
 
       const stats = getDiffStats(results);
       toast.success(
-        `Found ${stats.additions} additions, ${stats.deletions} deletions, ${stats.unchanged} unchanged`
+        `${stats.additions} ${t('tools.diff.additions')}, ${stats.deletions} ${t('tools.diff.deletions')}, ${stats.unchanged} ${t('tools.diff.unchanged')}`
       );
     } finally {
       setIsProcessing(false);
@@ -55,7 +55,7 @@ export function TextDiff() {
     setModifiedText('');
     setDiffResults([]);
     setHasCompared(false);
-    toast.info('Cleared all text');
+    toast.info(t('common.clear'));
   };
 
   const handleCopy = async (text: string) => {
@@ -111,8 +111,8 @@ export function TextDiff() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-base">Original Text</CardTitle>
-                <CardDescription>Enter the original version</CardDescription>
+                <CardTitle className="text-base">{t('tools.diff.original')}</CardTitle>
+                <CardDescription>{t('tools.diff.originalVersion')}</CardDescription>
               </div>
               <Button
                 onClick={() => handleCopy(originalText)}
@@ -128,7 +128,7 @@ export function TextDiff() {
             <Textarea
               value={originalText}
               onChange={(e) => setOriginalText(e.target.value)}
-              placeholder="Enter original text here..."
+              placeholder={t('tools.diff.enterOriginal')}
               className="font-mono min-h-[200px]"
             />
           </CardContent>
@@ -138,8 +138,8 @@ export function TextDiff() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-base">Modified Text</CardTitle>
-                <CardDescription>Enter the modified version</CardDescription>
+                <CardTitle className="text-base">{t('tools.diff.modified')}</CardTitle>
+                <CardDescription>{t('tools.diff.modifiedVersion')}</CardDescription>
               </div>
               <Button
                 onClick={() => handleCopy(modifiedText)}
@@ -155,7 +155,7 @@ export function TextDiff() {
             <Textarea
               value={modifiedText}
               onChange={(e) => setModifiedText(e.target.value)}
-              placeholder="Enter modified text here..."
+              placeholder={t('tools.diff.enterModified')}
               className="font-mono min-h-[200px]"
             />
           </CardContent>
@@ -173,7 +173,7 @@ export function TextDiff() {
                   checked={ignoreWhitespace}
                   onCheckedChange={setIgnoreWhitespace}
                 />
-                <Label htmlFor="ignore-whitespace">Ignore Whitespace</Label>
+                <Label htmlFor="ignore-whitespace">{t('tools.diff.ignoreWhitespace')}</Label>
               </div>
 
               {hasCompared && (
@@ -183,14 +183,14 @@ export function TextDiff() {
                     size="sm"
                     onClick={() => setViewMode('unified')}
                   >
-                    Unified
+                    {t('tools.diff.unified')}
                   </Button>
                   <Button
                     variant={viewMode === 'split' ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => setViewMode('split')}
                   >
-                    Side-by-Side
+                    {t('tools.diff.sideBySide')}
                   </Button>
                 </div>
               )}
@@ -202,7 +202,7 @@ export function TextDiff() {
                 {isProcessing ? t("common.loading") : t("common.compare")}
               </Button>
               <Button onClick={handleClear} variant="outline">
-                Clear
+                {t('common.clear')}
               </Button>
             </div>
           </div>
@@ -214,15 +214,15 @@ export function TextDiff() {
         <div className="flex items-center gap-2">
           <Badge variant="default" className="gap-1">
             <span className="text-green-600 dark:text-green-400">+{stats.additions}</span>
-            <span>additions</span>
+            <span>{t('tools.diff.additions')}</span>
           </Badge>
           <Badge variant="destructive" className="gap-1">
             <span>-{stats.deletions}</span>
-            <span>deletions</span>
+            <span>{t('tools.diff.deletions')}</span>
           </Badge>
           <Badge variant="secondary" className="gap-1">
             <span>{stats.unchanged}</span>
-            <span>unchanged</span>
+            <span>{t('tools.diff.unchanged')}</span>
           </Badge>
         </div>
       )}
@@ -237,10 +237,10 @@ export function TextDiff() {
                   <div className="text-center">
                     <div className="text-green-600 dark:text-green-400 text-5xl mb-4">✓</div>
                     <p className="text-lg font-semibold text-green-900 dark:text-green-300">
-                      No differences found
+                      {t('tools.diff.noDifferences')}
                     </p>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                      The texts are identical
+                      {t('tools.diff.textsIdentical')}
                     </p>
                   </div>
                 </div>
@@ -250,8 +250,8 @@ export function TextDiff() {
             /* Unified Diff View */
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Unified Diff View</CardTitle>
-                <CardDescription>Line-by-line comparison with changes highlighted</CardDescription>
+                <CardTitle className="text-base">{t('tools.diff.unifiedView')}</CardTitle>
+                <CardDescription>{t('tools.diff.changesHighlighted')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <ScrollArea className="h-[500px] rounded-lg border border-gray-300 dark:border-gray-600">
@@ -312,9 +312,9 @@ export function TextDiff() {
             /* Side-by-Side Diff View */
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Side-by-Side Comparison</CardTitle>
+                <CardTitle className="text-base">{t('tools.diff.sideView')}</CardTitle>
                 <CardDescription>
-                  Compare both versions with synchronized scrolling
+                  {t('tools.diff.compareVersions')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -323,7 +323,7 @@ export function TextDiff() {
                   <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
                     <div className="bg-gray-100 dark:bg-gray-800 px-3 py-2 border-b border-gray-300 dark:border-gray-600">
                       <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        Original
+                        {t('tools.diff.original')}
                       </p>
                     </div>
                     <ScrollArea
@@ -368,7 +368,7 @@ export function TextDiff() {
                   <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
                     <div className="bg-gray-100 dark:bg-gray-800 px-3 py-2 border-b border-gray-300 dark:border-gray-600">
                       <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        Modified
+                        {t('tools.diff.modified')}
                       </p>
                     </div>
                     <ScrollArea
@@ -418,14 +418,14 @@ export function TextDiff() {
       {/* Info Section */}
       <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
         <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-2">
-          How to Use
+          {t('tools.diff.howToUse')}
         </h3>
         <ul className="text-sm text-blue-800 dark:text-blue-400 space-y-1">
-          <li>• Enter original and modified text in the respective areas</li>
-          <li>• Toggle "Ignore Whitespace" to compare content without spacing differences</li>
-          <li>• Choose between Unified (line-by-line) or Side-by-Side comparison views</li>
-          <li>• Green highlights show additions, red shows deletions</li>
-          <li>• Side-by-side view features synchronized scrolling</li>
+          <li>• {t('tools.diff.step1')}</li>
+          <li>• {t('tools.diff.step2')}</li>
+          <li>• {t('tools.diff.step3')}</li>
+          <li>• {t('tools.diff.step4')}</li>
+          <li>• {t('tools.diff.step5')}</li>
         </ul>
       </div>
     </div>
