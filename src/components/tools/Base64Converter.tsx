@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -11,8 +12,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ArrowUp, ArrowDown } from 'lucide-react';
+import { toast } from 'sonner';
 
 export function Base64Converter() {
+  const { t } = useTranslation();
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
   const [error, setError] = useState('');
@@ -116,6 +119,7 @@ export function Base64Converter() {
   const copyToClipboard = () => {
     if (output) {
       navigator.clipboard.writeText(output);
+      toast.success(t('common.copied'));
     }
   };
 
@@ -141,7 +145,7 @@ export function Base64Converter() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Base64 Encoder/Decoder</h2>
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('tools.base64.title')}</h2>
 
       {/* Settings Section */}
       <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
@@ -154,13 +158,13 @@ export function Base64Converter() {
               onCheckedChange={setUrlSafe}
             />
             <Label htmlFor="url-safe" className="cursor-pointer">
-              URL-safe Base64
+              {t('tools.base64.urlSafe')}
             </Label>
           </div>
 
           {/* Encoding Select */}
           <div className="flex items-center gap-2">
-            <Label htmlFor="encoding">Encoding:</Label>
+            <Label htmlFor="encoding">{t('common.options')}:</Label>
             <Select value={encoding} onValueChange={setEncoding}>
               <SelectTrigger id="encoding" className="w-32">
                 <SelectValue />
@@ -178,11 +182,11 @@ export function Base64Converter() {
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="encode" className="flex items-center gap-2">
             <ArrowUp className="h-4 w-4" />
-            Encode
+            {t('tools.base64.encodeTab')}
           </TabsTrigger>
           <TabsTrigger value="decode" className="flex items-center gap-2">
             <ArrowDown className="h-4 w-4" />
-            Decode
+            {t('tools.base64.decodeTab')}
           </TabsTrigger>
         </TabsList>
 
@@ -190,7 +194,7 @@ export function Base64Converter() {
           {/* Input Section */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="encode-input">Input Text</Label>
+              <Label htmlFor="encode-input">{t('tools.base64.input')}</Label>
               <span className="text-sm text-muted-foreground">
                 {inputCharCount} characters ({inputSize})
               </span>
@@ -201,7 +205,7 @@ export function Base64Converter() {
               onChange={(e) => setInput(e.target.value)}
               onDrop={handleFileDrop}
               onDragOver={handleDragOver}
-              placeholder="Enter text to encode or Base64 to decode"
+              placeholder={t('tools.base64.enterText')}
               className="h-32 font-mono"
             />
           </div>
@@ -212,19 +216,19 @@ export function Base64Converter() {
               onClick={handleEncode}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
             >
-              Encode
+              {t('common.encode')}
             </button>
             <button
               onClick={handleClear}
               className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors"
             >
-              Clear
+              {t('common.clear')}
             </button>
             <button
               onClick={copyToClipboard}
               className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
             >
-              Copy
+              {t('common.copy')}
             </button>
           </div>
         </TabsContent>
@@ -233,7 +237,7 @@ export function Base64Converter() {
           {/* Input Section */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="decode-input">Input Text</Label>
+              <Label htmlFor="decode-input">{t('tools.base64.input')}</Label>
               <span className="text-sm text-muted-foreground">
                 {inputCharCount} characters ({inputSize})
               </span>
@@ -244,7 +248,7 @@ export function Base64Converter() {
               onChange={(e) => setInput(e.target.value)}
               onDrop={handleFileDrop}
               onDragOver={handleDragOver}
-              placeholder="Enter text to encode or Base64 to decode"
+              placeholder={t('tools.base64.enterBase64')}
               className="h-32 font-mono"
             />
           </div>
@@ -255,19 +259,19 @@ export function Base64Converter() {
               onClick={handleDecode}
               className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
             >
-              Decode
+              {t('common.decode')}
             </button>
             <button
               onClick={handleClear}
               className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors"
             >
-              Clear
+              {t('common.clear')}
             </button>
             <button
               onClick={copyToClipboard}
               className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
             >
-              Copy
+              {t('common.copy')}
             </button>
           </div>
         </TabsContent>
@@ -283,7 +287,7 @@ export function Base64Converter() {
       {/* Output Section */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label htmlFor="output">Output</Label>
+          <Label htmlFor="output">{t('tools.base64.output')}</Label>
           {output && (
             <span className="text-sm text-muted-foreground">
               {outputCharCount} characters ({outputSize})
@@ -294,20 +298,9 @@ export function Base64Converter() {
           id="output"
           value={output}
           readOnly
-          placeholder="Base64 output will appear here"
+          placeholder={t('tools.base64.output')}
           className="h-32 font-mono bg-muted"
         />
-      </div>
-
-      {/* Info Section */}
-      <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-        <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-2">How to use:</h3>
-        <ul className="text-sm text-blue-800 dark:text-blue-400 space-y-1">
-          <li>• <strong>Encode</strong>: Enter plain text and click "Encode" to convert to Base64</li>
-          <li>• <strong>Decode</strong>: Enter Base64 text and click "Decode" to convert back to plain text</li>
-          <li>• Supports UTF-8 encoding (Korean, emojis, special characters)</li>
-          <li>• Click "Copy" to copy the output to clipboard</li>
-        </ul>
       </div>
     </div>
   );

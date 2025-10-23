@@ -20,8 +20,10 @@ import {
   TooltipTrigger,
 } from '../ui/tooltip';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 export function JsonFormatter() {
+  const { t } = useTranslation();
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
   const [error, setError] = useState('');
@@ -83,10 +85,10 @@ export function JsonFormatter() {
       try {
         await navigator.clipboard.writeText(output);
         setCopied(true);
-        toast.success('Copied to clipboard');
+        toast.success(t('common.copied'));
         setTimeout(() => setCopied(false), 2000);
       } catch (err) {
-        toast.error('Failed to copy to clipboard');
+        toast.error(t('common.copyFailed'));
       }
     }
   };
@@ -96,12 +98,12 @@ export function JsonFormatter() {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>JSON Formatter</CardTitle>
-            <CardDescription>Format, validate, and compress JSON data</CardDescription>
+            <CardTitle>{t('tools.json.title')}</CardTitle>
+            <CardDescription>{t('tools.json.description')}</CardDescription>
           </div>
           {isValid !== null && (
             <Badge variant={isValid ? 'default' : 'destructive'} className={isValid ? 'bg-green-500' : ''}>
-              {isValid ? 'Valid' : 'Invalid'}
+              {isValid ? t('tools.json.valid') : t('tools.json.invalid')}
             </Badge>
           )}
         </div>
@@ -110,12 +112,12 @@ export function JsonFormatter() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Input Section */}
           <div className="space-y-2">
-            <Label htmlFor="json-input">Input JSON</Label>
+            <Label htmlFor="json-input">{t('tools.json.input')}</Label>
             <Textarea
               id="json-input"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Paste your JSON here..."
+              placeholder={t('tools.json.pasteJson')}
               className={`h-96 font-mono text-sm resize-none ${
                 error ? 'border-destructive' : ''
               }`}
@@ -124,13 +126,13 @@ export function JsonFormatter() {
 
           {/* Output Section */}
           <div className="space-y-2">
-            <Label htmlFor="json-output">Formatted Output</Label>
+            <Label htmlFor="json-output">{t('tools.json.output')}</Label>
             <Textarea
               id="json-output"
               aria-label="Formatted Output"
               value={output}
               readOnly
-              placeholder="Formatted JSON will appear here..."
+              placeholder={t('tools.json.output')}
               className="h-96 font-mono text-sm bg-muted resize-none"
             />
           </div>
@@ -170,7 +172,7 @@ export function JsonFormatter() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button onClick={handleFormat} className="bg-primary">
-                    Format
+                    {t('common.format')}
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent role="tooltip">
@@ -181,7 +183,7 @@ export function JsonFormatter() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button onClick={handleCompress} variant="secondary">
-                    Compress
+                    {t('tools.json.compress')}
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent role="tooltip">
@@ -201,7 +203,7 @@ export function JsonFormatter() {
                     ) : (
                       <Copy className="h-4 w-4 mr-2" />
                     )}
-                    Copy
+                    {t('common.copy')}
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent role="tooltip">
@@ -212,7 +214,7 @@ export function JsonFormatter() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button onClick={handleClear} variant="ghost" className="variant-ghost">
-                    Clear
+                    {t('common.clear')}
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent role="tooltip">

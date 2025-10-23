@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,6 +18,7 @@ interface DecodedJWT {
 }
 
 export function JwtDecoder() {
+  const { t } = useTranslation();
   const [input, setInput] = useState('');
   const [decoded, setDecoded] = useState<DecodedJWT>({
     header: '',
@@ -86,9 +88,9 @@ export function JwtDecoder() {
     setExpirationDate(null);
   };
 
-  const copyToClipboard = (text: string, section: string) => {
+  const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast.success(`${section} copied to clipboard`);
+    toast.success(t('common.copied'));
   };
 
   return (
@@ -96,26 +98,26 @@ export function JwtDecoder() {
       {/* Input Section */}
       <Card>
         <CardHeader>
-          <CardTitle>JWT Token Input</CardTitle>
+          <CardTitle>{t('tools.jwt.input')}</CardTitle>
           <CardDescription>
-            Paste your JWT token to decode and inspect its contents
+            {t('tools.jwt.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+            placeholder={t('tools.jwt.pasteToken')}
             className="min-h-[120px] font-mono text-sm"
           />
 
           <div className="flex gap-2">
             <Button onClick={decodeJWT}>
               <Shield className="mr-2 h-4 w-4" />
-              Decode Token
+              {t('common.decode')}
             </Button>
             <Button onClick={handleClear} variant="outline">
-              Clear
+              {t('common.clear')}
             </Button>
           </div>
         </CardContent>
@@ -152,8 +154,8 @@ export function JwtDecoder() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Header</CardTitle>
-                <CardDescription>Token algorithm and type information</CardDescription>
+                <CardTitle>{t('tools.jwt.header')}</CardTitle>
+                <CardDescription>{t('tools.jwt.algorithm')} & {t('tools.jwt.type')}</CardDescription>
               </div>
               <div className="flex items-center gap-2">
                 {decoded.headerObj?.alg !== undefined && (
@@ -164,7 +166,7 @@ export function JwtDecoder() {
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={() => copyToClipboard(decoded.header, 'Header')}
+                  onClick={() => copyToClipboard(decoded.header)}
                 >
                   <Copy className="h-4 w-4" />
                 </Button>
@@ -190,7 +192,7 @@ export function JwtDecoder() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Payload</CardTitle>
+                <CardTitle>{t('tools.jwt.payload')}</CardTitle>
                 <CardDescription>Claims and user data</CardDescription>
               </div>
               <div className="flex items-center gap-2">
@@ -202,7 +204,7 @@ export function JwtDecoder() {
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={() => copyToClipboard(decoded.payload, 'Payload')}
+                  onClick={() => copyToClipboard(decoded.payload)}
                 >
                   <Copy className="h-4 w-4" />
                 </Button>
@@ -228,7 +230,7 @@ export function JwtDecoder() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Signature</CardTitle>
+                <CardTitle>{t('tools.jwt.signature')}</CardTitle>
                 <CardDescription>
                   Used to verify the token hasn't been tampered with
                 </CardDescription>
@@ -236,7 +238,7 @@ export function JwtDecoder() {
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={() => copyToClipboard(decoded.signature, 'Signature')}
+                onClick={() => copyToClipboard(decoded.signature)}
               >
                 <Copy className="h-4 w-4" />
               </Button>

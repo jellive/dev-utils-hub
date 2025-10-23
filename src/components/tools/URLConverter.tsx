@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -27,6 +28,7 @@ interface QueryParam {
 }
 
 export function URLConverter() {
+  const { t } = useTranslation();
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
   const [encodingMode, setEncodingMode] = useState<EncodingMode>('full');
@@ -99,7 +101,7 @@ export function URLConverter() {
         setIsValidUrl(false);
       }
 
-      toast.success('Text encoded successfully!');
+      toast.success(t('common.success'));
     } catch (err) {
       toast.error('Failed to encode text. Please try again.');
       setOutput('');
@@ -130,9 +132,9 @@ export function URLConverter() {
         setIsValidUrl(validateURL(input));
       }
 
-      toast.success('Text decoded successfully!');
+      toast.success(t('common.success'));
     } catch (err) {
-      toast.error('Invalid URL encoding. Please check your input.');
+      toast.error(t('tools.url.invalidUrl'));
       setOutput('');
       setUrlComponents(null);
       setQueryParams([]);
@@ -143,9 +145,9 @@ export function URLConverter() {
   const handleCopy = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      toast.success('Copied to clipboard!');
+      toast.success(t('common.copied'));
     } catch (err) {
-      toast.error('Failed to copy');
+      toast.error(t('common.copyFailed'));
     }
   };
 
@@ -174,12 +176,12 @@ export function URLConverter() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">URL Encoder/Decoder</h2>
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('tools.url.title')}</h2>
 
       <Tabs defaultValue="encode" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="encode">Encode</TabsTrigger>
-          <TabsTrigger value="decode">Decode</TabsTrigger>
+          <TabsTrigger value="encode">{t('tools.url.encodeTab')}</TabsTrigger>
+          <TabsTrigger value="decode">{t('tools.url.decodeTab')}</TabsTrigger>
         </TabsList>
 
         {/* Encode Tab */}
@@ -188,8 +190,8 @@ export function URLConverter() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>Input Text</CardTitle>
-                  <CardDescription>Enter text or URL to encode</CardDescription>
+                  <CardTitle>{t('tools.url.input')}</CardTitle>
+                  <CardDescription>{t('tools.url.description')}</CardDescription>
                 </div>
                 <TooltipProvider>
                   <Tooltip>
@@ -200,8 +202,8 @@ export function URLConverter() {
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className="max-w-xs">
-                        <strong>Full URL:</strong> Encodes entire URL preserving structure<br/>
-                        <strong>Query Params:</strong> Encodes only parameter values
+                        <strong>{t('tools.url.fullUrl')}:</strong> Encodes entire URL preserving structure<br/>
+                        <strong>{t('tools.url.queryOnly')}:</strong> Encodes only parameter values
                       </p>
                     </TooltipContent>
                   </Tooltip>
@@ -212,7 +214,7 @@ export function URLConverter() {
               <Textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Enter text or URL to encode..."
+                placeholder={t('tools.url.enterUrl')}
                 className="font-mono min-h-[120px]"
               />
 
@@ -222,22 +224,22 @@ export function URLConverter() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="full">Full URL</SelectItem>
-                    <SelectItem value="query">Query Parameters</SelectItem>
+                    <SelectItem value="full">{t('tools.url.fullUrl')}</SelectItem>
+                    <SelectItem value="query">{t('tools.url.queryOnly')}</SelectItem>
                   </SelectContent>
                 </Select>
                 <Button onClick={handleEncode} className="gap-2">
                   <Link2 className="h-4 w-4" />
-                  Encode
+                  {t('common.encode')}
                 </Button>
                 <Button onClick={handleClear} variant="outline">
-                  Clear
+                  {t('common.clear')}
                 </Button>
               </div>
 
               {/* Examples */}
               <div className="space-y-2">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Examples:</p>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('tools.url.exampleUrls')}:</p>
                 <div className="flex flex-wrap gap-2">
                   {exampleURLs.map((example) => (
                     <TooltipProvider key={example.label}>
@@ -267,10 +269,10 @@ export function URLConverter() {
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle>Encoded Output</CardTitle>
+                  <CardTitle>{t('tools.url.output')}</CardTitle>
                   <Button onClick={() => handleCopy(output)} variant="ghost" size="sm" className="gap-2">
                     <Copy className="h-4 w-4" />
-                    Copy
+                    {t('common.copy')}
                   </Button>
                 </div>
               </CardHeader>
@@ -289,24 +291,24 @@ export function URLConverter() {
         <TabsContent value="decode" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Encoded Input</CardTitle>
-              <CardDescription>Enter URL encoded text to decode</CardDescription>
+              <CardTitle>{t('tools.url.input')}</CardTitle>
+              <CardDescription>{t('tools.url.description')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Enter URL encoded text to decode..."
+                placeholder={t('tools.url.enterUrl')}
                 className="font-mono min-h-[120px]"
               />
 
               <div className="flex items-center gap-2">
                 <Button onClick={handleDecode} className="gap-2">
                   <Link2 className="h-4 w-4" />
-                  Decode
+                  {t('common.decode')}
                 </Button>
                 <Button onClick={handleClear} variant="outline">
-                  Clear
+                  {t('common.clear')}
                 </Button>
               </div>
             </CardContent>
@@ -317,10 +319,10 @@ export function URLConverter() {
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle>Decoded Output</CardTitle>
+                  <CardTitle>{t('tools.url.output')}</CardTitle>
                   <Button onClick={() => handleCopy(output)} variant="ghost" size="sm" className="gap-2">
                     <Copy className="h-4 w-4" />
-                    Copy
+                    {t('common.copy')}
                   </Button>
                 </div>
               </CardHeader>
@@ -345,7 +347,7 @@ export function URLConverter() {
             <AlertCircle className="h-4 w-4" />
           )}
           <AlertDescription>
-            {isValidUrl ? 'Valid URL format detected' : 'Not a valid URL format'}
+            {isValidUrl ? 'Valid URL format detected' : t('tools.url.invalidUrl')}
           </AlertDescription>
         </Alert>
       )}
@@ -354,44 +356,44 @@ export function URLConverter() {
       {urlComponents && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">URL Components</CardTitle>
+            <CardTitle className="text-base">{t('tools.url.components')}</CardTitle>
             <CardDescription>Structured breakdown of the URL</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               {urlComponents.protocol && (
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Protocol</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('tools.url.protocol')}</p>
                   <p className="font-mono text-sm font-semibold">{urlComponents.protocol}</p>
                 </div>
               )}
               {urlComponents.host && (
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Host</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('tools.url.host')}</p>
                   <p className="font-mono text-sm font-semibold">{urlComponents.host}</p>
                 </div>
               )}
               {urlComponents.port && (
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Port</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('tools.url.port')}</p>
                   <p className="font-mono text-sm font-semibold">{urlComponents.port}</p>
                 </div>
               )}
               {urlComponents.pathname && (
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Path</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('tools.url.path')}</p>
                   <p className="font-mono text-sm font-semibold">{urlComponents.pathname}</p>
                 </div>
               )}
               {urlComponents.search && (
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Query String</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('tools.url.query')}</p>
                   <p className="font-mono text-sm font-semibold">{urlComponents.search}</p>
                 </div>
               )}
               {urlComponents.hash && (
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Fragment</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('tools.url.fragment')}</p>
                   <p className="font-mono text-sm font-semibold">{urlComponents.hash}</p>
                 </div>
               )}
@@ -404,15 +406,15 @@ export function URLConverter() {
       {queryParams.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Query Parameters</CardTitle>
+            <CardTitle className="text-base">{t('tools.url.queryParams')}</CardTitle>
             <CardDescription>Parsed URL parameters</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Parameter</TableHead>
-                  <TableHead>Value</TableHead>
+                  <TableHead>{t('tools.url.key')}</TableHead>
+                  <TableHead>{t('tools.url.value')}</TableHead>
                   <TableHead className="w-[100px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -437,20 +439,6 @@ export function URLConverter() {
           </CardContent>
         </Card>
       )}
-
-      {/* Info Section */}
-      <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-        <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-2">
-          URL Encoding Guide
-        </h3>
-        <ul className="text-sm text-blue-800 dark:text-blue-400 space-y-1">
-          <li>• <strong>Full URL:</strong> Preserves URL structure (http://, /path, etc.)</li>
-          <li>• <strong>Query Parameters:</strong> Encodes all special characters</li>
-          <li>• Supports UTF-8 encoding (Korean, emojis, special characters)</li>
-          <li>• Handles both %20 and + for spaces in query strings</li>
-          <li>• Automatically parses URL components and query parameters</li>
-        </ul>
-      </div>
     </div>
   );
 }
