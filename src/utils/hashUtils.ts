@@ -193,6 +193,70 @@ export async function sha512(text: string): Promise<string> {
 }
 
 /**
+ * Generate HMAC using specified algorithm
+ */
+export async function generateHMAC(
+  text: string,
+  key: string,
+  algorithm: 'md5' | 'sha256' | 'sha512'
+): Promise<string> {
+  // HMAC implementation: H(K XOR opad, H(K XOR ipad, text))
+  const blockSize = algorithm === 'md5' ? 64 : 128; // MD5: 64 bytes, SHA-256/512: 128 bytes
+  const ipad = 0x36;
+  const opad = 0x5C;
+
+  // Prepare key
+  let keyBytes = new TextEncoder().encode(key);
+
+  // If key is longer than block size, hash it first
+  if (keyBytes.length > blockSize) {
+    const hashedKey = await generateHash(key, algorithm);
+    keyBytes = new TextEncoder().encode(hashedKey);
+  }
+
+  // Pad key to block size
+  const paddedKey = new Uint8Array(blockSize);
+  paddedKey.set(keyBytes);
+
+  // Create inner and outer padded keys
+  const innerKey = new Uint8Array(blockSize);
+  const outerKey = new Uint8Array(blockSize);
+
+  for (let i = 0; i < blockSize; i++) {
+    innerKey[i] = paddedKey[i] ^ ipad;
+    outerKey[i] = paddedKey[i] ^ opad;
+  }
+
+  // Inner hash: H(K XOR ipad, text)
+  const textBytes = new TextEncoder().encode(text);
+  const innerText = new Uint8Array(innerKey.length + textBytes.length);
+  innerText.set(innerKey, 0);
+  innerText.set(textBytes, innerKey.length);
+
+  // Convert to string for hashing - handle binary data properly
+  let innerString = '';
+  for (let i = 0; i < innerText.length; i++) {
+    innerString += String.fromCharCode(innerText[i]);
+  }
+  const innerHash = await generateHash(innerString, algorithm);
+
+  // Outer hash: H(K XOR opad, innerHash)
+  const innerHashBytes = new TextEncoder().encode(innerHash);
+  const outerText = new Uint8Array(outerKey.length + innerHashBytes.length);
+  outerText.set(outerKey, 0);
+  outerText.set(innerHashBytes, outerKey.length);
+
+  // Convert to string for hashing
+  let outerString = '';
+  for (let i = 0; i < outerText.length; i++) {
+    outerString += String.fromCharCode(outerText[i]);
+  }
+  const finalHash = await generateHash(outerString, algorithm);
+
+  return finalHash;
+}
+
+/**
  * Generate hash using specified algorithm
  */
 export async function generateHash(

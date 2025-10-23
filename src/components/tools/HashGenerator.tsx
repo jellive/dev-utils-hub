@@ -1,9 +1,11 @@
 import { useState, useRef } from 'react';
-import { generateHash } from '../../utils/hashUtils';
+import { generateHash, generateHMAC } from '../../utils/hashUtils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Upload, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { AlertCircle, Upload, X, HelpCircle } from 'lucide-react';
 
 type HashAlgorithm = 'md5' | 'sha256' | 'sha512';
 
@@ -21,6 +23,8 @@ export function HashGenerator() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [isHmacMode, setIsHmacMode] = useState(false);
+  const [hmacKey, setHmacKey] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const algorithms: AlgorithmOption[] = [
@@ -38,9 +42,16 @@ export function HashGenerator() {
       return;
     }
 
+    if (isHmacMode && !hmacKey.trim()) {
+      setError('Key is required for HMAC mode.');
+      return;
+    }
+
     try {
       setIsProcessing(true);
-      const hash = await generateHash(input, algorithm);
+      const hash = isHmacMode
+        ? await generateHMAC(input, hmacKey, algorithm)
+        : await generateHash(input, algorithm);
       setHashResult(hash);
     } catch (err) {
       setError('Failed to generate hash. Please try again.');
@@ -69,13 +80,20 @@ export function HashGenerator() {
     setError('');
     setHashResult('');
 
+    if (isHmacMode && !hmacKey.trim()) {
+      setError('Key is required for HMAC mode.');
+      return;
+    }
+
     try {
       setIsProcessing(true);
       const reader = new FileReader();
 
       reader.onload = async (e) => {
         const content = e.target?.result as string;
-        const hash = await generateHash(content, algorithm);
+        const hash = isHmacMode
+          ? await generateHMAC(content, hmacKey, algorithm)
+          : await generateHash(content, algorithm);
         setHashResult(hash);
         setIsProcessing(false);
       };
@@ -183,6 +201,64 @@ export function HashGenerator() {
         </Alert>
       )}
 
+      {/* HMAC Mode Toggle */}
+      <TooltipProvider>
+        <div className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            id="hmac-mode"
+            checked={isHmacMode}
+            onChange={(e) => {
+              setIsHmacMode(e.target.checked);
+              if (!e.target.checked) {
+                setHmacKey('');
+              }
+            }}
+            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+            aria-label="HMAC mode"
+          />
+          <label
+            htmlFor="hmac-mode"
+            className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer"
+          >
+            HMAC Mode
+          </label>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <HelpCircle className="h-4 w-4 text-gray-500 dark:text-gray-400 cursor-help" />
+            </TooltipTrigger>
+            <TooltipContent className="max-w-sm">
+              <p className="font-semibold mb-1">HMAC (Hash-based Message Authentication Code)</p>
+              <p className="text-sm">
+                HMAC은 메시지와 비밀 키를 사용하여 메시지 인증 코드를 생성합니다.
+                메시지의 무결성과 진위를 확인하는 데 사용되며, API 인증,
+                데이터 서명 등에 활용됩니다.
+              </p>
+              <p className="text-sm mt-2">
+                <strong>사용 예시:</strong> API 요청 서명, JWT 토큰 검증,
+                파일 무결성 확인
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      </TooltipProvider>
+
+      {/* HMAC Key Input */}
+      {isHmacMode && (
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            HMAC Key
+          </label>
+          <Input
+            type="text"
+            value={hmacKey}
+            onChange={(e) => setHmacKey(e.target.value)}
+            placeholder="Enter HMAC key..."
+            className="font-mono"
+          />
+        </div>
+      )}
+
       {/* File Upload Section */}
       <div className="space-y-2">
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -250,12 +326,12 @@ export function HashGenerator() {
       {/* Input Section */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Input Text
+          {isHmacMode ? 'Message to Authenticate' : 'Input Text'}
         </label>
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Enter text to hash..."
+          placeholder={isHmacMode ? "Enter message to authenticate..." : "Enter text to hash..."}
           className="w-full h-32 p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white font-mono text-sm"
         />
       </div>
@@ -267,7 +343,7 @@ export function HashGenerator() {
           disabled={isProcessing}
           className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isProcessing ? 'Generating...' : 'Generate Hash'}
+          {isProcessing ? 'Generating...' : (isHmacMode ? 'Generate HMAC' : 'Generate Hash')}
         </button>
         <button
           onClick={handleClear}
@@ -298,7 +374,7 @@ export function HashGenerator() {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Hash Result
+              {isHmacMode ? 'HMAC Result' : 'Hash Result'}
             </label>
             <button
               onClick={handleCopy}

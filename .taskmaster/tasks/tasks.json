@@ -714,7 +714,7 @@
               1
             ],
             "details": "Create a drag-and-drop zone component that accepts files and generates hashes using the selected algorithm. Implement file reading using FileReader API and hash generation for file contents. Include visual feedback for drag states and file processing status.",
-            "status": "in-progress",
+            "status": "done",
             "testStrategy": "Test file drag-and-drop functionality, hash generation for various file types, and proper error handling for unsupported files"
           },
           {
@@ -725,7 +725,7 @@
               1
             ],
             "details": "Add a key input field with proper labeling and security considerations. Implement HMAC generation using the selected hash algorithm and provided key. Include toggle to switch between regular hash and HMAC modes. Use Input component with appropriate type and validation.",
-            "status": "pending",
+            "status": "in-progress",
             "testStrategy": "Test HMAC generation with various keys and algorithms, verify toggle functionality between hash and HMAC modes"
           },
           {
@@ -951,7 +951,7 @@
     ],
     "metadata": {
       "created": "2025-10-23T00:44:28.323Z",
-      "updated": "2025-10-23T07:36:16.259Z",
+      "updated": "2025-10-23T07:46:07.912Z",
       "description": "Tasks for shadcn-ui context"
     }
   }

@@ -423,4 +423,122 @@ describe('HashGenerator', () => {
       expect(screen.queryByText(/test\.txt/i)).not.toBeInTheDocument();
     });
   });
+
+  describe('HMAC Support (Task 8.4)', () => {
+    it('should display HMAC mode toggle', () => {
+      const hmacToggle = screen.getByRole('checkbox', { name: /hmac mode/i });
+      expect(hmacToggle).toBeInTheDocument();
+      expect(hmacToggle).not.toBeChecked();
+    });
+
+    it('should show key input field when HMAC mode is enabled', () => {
+      const hmacToggle = screen.getByRole('checkbox', { name: /hmac mode/i });
+
+      // Initially key input should not be visible
+      expect(screen.queryByPlaceholderText(/enter.*key/i)).not.toBeInTheDocument();
+
+      // Enable HMAC mode
+      fireEvent.click(hmacToggle);
+
+      // Key input should now be visible
+      expect(screen.getByPlaceholderText(/enter.*key/i)).toBeInTheDocument();
+    });
+
+    it('should generate HMAC with key', async () => {
+      const input = screen.getByPlaceholderText(/enter text to hash/i);
+      const hmacToggle = screen.getByRole('checkbox', { name: /hmac mode/i });
+      const generateButton = screen.getByRole('button', { name: /generate hash/i });
+
+      // Enable HMAC mode
+      fireEvent.click(hmacToggle);
+
+      // Enter key
+      const keyInput = screen.getByPlaceholderText(/enter.*key/i);
+      fireEvent.change(keyInput, { target: { value: 'secret-key' } });
+
+      // Enter text
+      fireEvent.change(input, { target: { value: 'hello' } });
+
+      // Generate HMAC
+      fireEvent.click(generateButton);
+
+      await waitFor(() => {
+        const hashOutput = screen.getByTestId('hash-output');
+        expect(hashOutput).toBeInTheDocument();
+        // HMAC should be different from regular hash
+        expect(hashOutput.textContent).not.toBe('5d41402abc4b2a76b9719d911017c592'); // MD5 of 'hello'
+      });
+    });
+
+    it('should show error when key is empty in HMAC mode', async () => {
+      const input = screen.getByPlaceholderText(/enter text to hash/i);
+      const hmacToggle = screen.getByRole('checkbox', { name: /hmac mode/i });
+      const generateButton = screen.getByRole('button', { name: /generate hash/i });
+
+      // Enable HMAC mode
+      fireEvent.click(hmacToggle);
+
+      // Enter text but no key
+      fireEvent.change(input, { target: { value: 'hello' } });
+
+      // Try to generate HMAC
+      fireEvent.click(generateButton);
+
+      await waitFor(() => {
+        expect(screen.getByText(/key.*required/i)).toBeInTheDocument();
+      });
+    });
+
+    it('should update HMAC when key changes', async () => {
+      const input = screen.getByPlaceholderText(/enter text to hash/i);
+      const hmacToggle = screen.getByRole('checkbox', { name: /hmac mode/i });
+      const generateButton = screen.getByRole('button', { name: /generate hash/i });
+
+      // Enable HMAC mode
+      fireEvent.click(hmacToggle);
+
+      const keyInput = screen.getByPlaceholderText(/enter.*key/i);
+
+      // Generate HMAC with first key
+      fireEvent.change(keyInput, { target: { value: 'key1' } });
+      fireEvent.change(input, { target: { value: 'hello' } });
+      fireEvent.click(generateButton);
+
+      await waitFor(() => {
+        const hashOutput = screen.getByTestId('hash-output');
+        expect(hashOutput).toBeInTheDocument();
+      });
+
+      const firstHmac = screen.getByTestId('hash-output').textContent;
+
+      // Generate HMAC with different key
+      fireEvent.change(keyInput, { target: { value: 'key2' } });
+      fireEvent.click(generateButton);
+
+      await waitFor(() => {
+        const hashOutput = screen.getByTestId('hash-output');
+        expect(hashOutput.textContent).not.toBe(firstHmac);
+      });
+    });
+
+    it('should clear key input when HMAC mode is disabled', () => {
+      const hmacToggle = screen.getByRole('checkbox', { name: /hmac mode/i });
+
+      // Enable HMAC mode and enter key
+      fireEvent.click(hmacToggle);
+      const keyInput = screen.getByPlaceholderText(/enter.*key/i);
+      fireEvent.change(keyInput, { target: { value: 'secret' } });
+
+      // Disable HMAC mode
+      fireEvent.click(hmacToggle);
+
+      // Key input should be hidden
+      expect(screen.queryByPlaceholderText(/enter.*key/i)).not.toBeInTheDocument();
+
+      // Enable again - key should be cleared
+      fireEvent.click(hmacToggle);
+      const newKeyInput = screen.getByPlaceholderText(/enter.*key/i) as HTMLInputElement;
+      expect(newKeyInput.value).toBe('');
+    });
+  });
 });
