@@ -1,0 +1,29 @@
+# Dependencies
+node_modules
+
+# Testing
+coverage
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+__tests__
+e2e
+
+# Development
+.vscode
+.idea
+.DS_Store
+*.log
+.env.local
+.env.*.local
+
+# Git
+.git
+.gitignore
+
+# CI/CD
+.github
+
+# Task Master
+.taskmaster
