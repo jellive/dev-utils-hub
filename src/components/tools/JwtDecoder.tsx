@@ -1,20 +1,36 @@
 import { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Textarea } from '@/components/ui/textarea';
+import { Copy, AlertTriangle, CheckCircle2, Shield } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface DecodedJWT {
   header: string;
   payload: string;
   signature: string;
+  headerObj?: Record<string, unknown>;
+  payloadObj?: Record<string, unknown>;
 }
 
 export function JwtDecoder() {
   const [input, setInput] = useState('');
-  const [decoded, setDecoded] = useState<DecodedJWT>({ header: '', payload: '', signature: '' });
+  const [decoded, setDecoded] = useState<DecodedJWT>({
+    header: '',
+    payload: '',
+    signature: ''
+  });
   const [error, setError] = useState('');
-  const [expirationInfo, setExpirationInfo] = useState('');
+  const [isExpired, setIsExpired] = useState<boolean | null>(null);
+  const [expirationDate, setExpirationDate] = useState<Date | null>(null);
 
   const decodeJWT = () => {
     setError('');
-    setExpirationInfo('');
+    setIsExpired(null);
+    setExpirationDate(null);
 
     if (!input.trim()) {
       setError('Input is empty. Please paste a JWT token.');
@@ -45,18 +61,16 @@ export function JwtDecoder() {
         header: formattedHeader,
         payload: formattedPayload,
         signature: parts[2],
+        headerObj,
+        payloadObj,
       });
 
       // Check for expiration
       if (payloadObj.exp) {
         const expDate = new Date(payloadObj.exp * 1000);
         const now = new Date();
-
-        if (expDate < now) {
-          setExpirationInfo(`Token expired on ${expDate.toLocaleString()}`);
-        } else {
-          setExpirationInfo(`Token expires on ${expDate.toLocaleString()}`);
-        }
+        setExpirationDate(expDate);
+        setIsExpired(expDate < now);
       }
     } catch (err) {
       setError('Invalid JWT format. Unable to decode token.');
@@ -68,120 +82,176 @@ export function JwtDecoder() {
     setInput('');
     setDecoded({ header: '', payload: '', signature: '' });
     setError('');
-    setExpirationInfo('');
+    setIsExpired(null);
+    setExpirationDate(null);
   };
 
-  const copyToClipboard = (text: string) => {
+  const copyToClipboard = (text: string, section: string) => {
     navigator.clipboard.writeText(text);
+    toast.success(`${section} copied to clipboard`);
   };
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">JWT Decoder</h2>
-
+    <div className="space-y-6">
       {/* Input Section */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          JWT Token Input
-        </label>
-        <textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Paste your JWT token here (e.g., eyJhbGci...)"
-          className="w-full h-32 p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white font-mono text-sm"
-        />
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>JWT Token Input</CardTitle>
+          <CardDescription>
+            Paste your JWT token to decode and inspect its contents
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+            className="min-h-[120px] font-mono text-sm"
+          />
 
-      {/* Action Buttons */}
-      <div className="flex gap-2">
-        <button
-          onClick={decodeJWT}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-        >
-          Decode
-        </button>
-        <button
-          onClick={handleClear}
-          className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors"
-        >
-          Clear
-        </button>
-      </div>
+          <div className="flex gap-2">
+            <Button onClick={decodeJWT}>
+              <Shield className="mr-2 h-4 w-4" />
+              Decode Token
+            </Button>
+            <Button onClick={handleClear} variant="outline">
+              Clear
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Error Message */}
+      {/* Error Alert */}
       {error && (
-        <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-          <p className="text-red-600 dark:text-red-400">{error}</p>
-        </div>
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
-      {/* Expiration Info */}
-      {expirationInfo && (
-        <div className={`p-3 rounded-lg ${expirationInfo.includes('expired') ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800' : 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'}`}>
-          <p className={expirationInfo.includes('expired') ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}>
-            {expirationInfo}
-          </p>
-        </div>
+      {/* Expiration Alert */}
+      {expirationDate && (
+        <Alert variant={isExpired ? "destructive" : "default"}>
+          {isExpired ? (
+            <AlertTriangle className="h-4 w-4" />
+          ) : (
+            <CheckCircle2 className="h-4 w-4" />
+          )}
+          <AlertDescription>
+            {isExpired
+              ? `Token expired on ${expirationDate.toLocaleString()}`
+              : `Token expires on ${expirationDate.toLocaleString()}`
+            }
+          </AlertDescription>
+        </Alert>
       )}
 
       {/* Header Section */}
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Header
-          </label>
-          {decoded.header && (
-            <button
-              onClick={() => copyToClipboard(decoded.header)}
-              className="px-3 py-1 text-sm bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 rounded transition-colors"
-            >
-              Copy
-            </button>
-          )}
-        </div>
-        <pre
-          data-testid="jwt-header"
-          className="w-full min-h-[100px] p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-sm overflow-auto"
-        >
-          {decoded.header}
-        </pre>
-      </div>
+      {decoded.header && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Header</CardTitle>
+                <CardDescription>Token algorithm and type information</CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                {decoded.headerObj?.alg !== undefined && (
+                  <Badge variant="secondary">
+                    {String(decoded.headerObj.alg)}
+                  </Badge>
+                )}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => copyToClipboard(decoded.header, 'Header')}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="h-[200px] w-full rounded-md border">
+              <pre
+                data-testid="jwt-header"
+                className="p-4 text-sm font-mono"
+              >
+                {decoded.header}
+              </pre>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Payload Section */}
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Payload
-          </label>
-          {decoded.payload && (
-            <button
-              onClick={() => copyToClipboard(decoded.payload)}
-              className="px-3 py-1 text-sm bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 rounded transition-colors"
-            >
-              Copy
-            </button>
-          )}
-        </div>
-        <pre
-          data-testid="jwt-payload"
-          className="w-full min-h-[100px] p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-sm overflow-auto"
-        >
-          {decoded.payload}
-        </pre>
-      </div>
+      {decoded.payload && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Payload</CardTitle>
+                <CardDescription>Claims and user data</CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                {isExpired !== null && (
+                  <Badge variant={isExpired ? "destructive" : "default"}>
+                    {isExpired ? 'Expired' : 'Valid'}
+                  </Badge>
+                )}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => copyToClipboard(decoded.payload, 'Payload')}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="h-[300px] w-full rounded-md border">
+              <pre
+                data-testid="jwt-payload"
+                className="p-4 text-sm font-mono"
+              >
+                {decoded.payload}
+              </pre>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Signature Section */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Signature
-        </label>
-        <div
-          data-testid="jwt-signature"
-          className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-sm break-all"
-        >
-          {decoded.signature}
-        </div>
-      </div>
+      {decoded.signature && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Signature</CardTitle>
+                <CardDescription>
+                  Used to verify the token hasn't been tampered with
+                </CardDescription>
+              </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => copyToClipboard(decoded.signature, 'Signature')}
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div
+              data-testid="jwt-signature"
+              className="rounded-md border bg-muted p-4 font-mono text-sm break-all"
+            >
+              {decoded.signature}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
