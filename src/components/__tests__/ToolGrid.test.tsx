@@ -86,9 +86,9 @@ describe('ToolGrid', () => {
   });
 
   describe('Card Interactions', () => {
-    it('should have hover effect with scale transform', () => {
+    it('should have hover effect with translate transform', () => {
       const card = screen.getByRole('button', { name: /json formatter/i });
-      expect(card.className).toContain('hover:scale-105');
+      expect(card.className).toContain('hover:-translate-y-1');
     });
 
     it('should have hover effect with shadow', () => {

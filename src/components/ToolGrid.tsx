@@ -105,7 +105,7 @@ export function ToolGrid() {
               aria-label={tool.name}
               className={`
                 text-left transition-all duration-200
-                hover:scale-105 hover:shadow-lg
+                hover:-translate-y-1 hover:shadow-lg
                 ${isActive ? 'ring-2 ring-primary' : ''}
               `}
             >
