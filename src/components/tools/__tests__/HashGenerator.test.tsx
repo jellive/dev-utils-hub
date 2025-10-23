@@ -333,4 +333,94 @@ describe('HashGenerator', () => {
       expect(alert.className).toContain('destructive');
     });
   });
+
+  describe('File Hashing (Task 8.3)', () => {
+    it('should display file upload area', () => {
+      const fileUpload = screen.getByText(/drag and drop a file here/i);
+      expect(fileUpload).toBeInTheDocument();
+    });
+
+    it('should hash a file when dropped', async () => {
+      const fileContent = 'hello world';
+      const file = new File([fileContent], 'test.txt', { type: 'text/plain' });
+
+      const dropZone = screen.getByText(/drag and drop a file here/i).closest('div');
+
+      fireEvent.drop(dropZone!, {
+        dataTransfer: {
+          files: [file],
+        },
+      });
+
+      await waitFor(() => {
+        const hashOutput = screen.getByTestId('hash-output');
+        expect(hashOutput).toBeInTheDocument();
+        // MD5 hash of "hello world"
+        expect(hashOutput.textContent).toBeTruthy();
+      });
+    });
+
+    it('should display file information after upload', async () => {
+      const file = new File(['test content'], 'document.pdf', { type: 'application/pdf' });
+
+      const dropZone = screen.getByText(/drag and drop a file here/i).closest('div');
+
+      fireEvent.drop(dropZone!, {
+        dataTransfer: {
+          files: [file],
+        },
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText(/document\.pdf/i)).toBeInTheDocument();
+      });
+    });
+
+    it('should allow file selection via input', async () => {
+      const file = new File(['hello'], 'test.txt', { type: 'text/plain' });
+      const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+
+      expect(input).toBeInTheDocument();
+
+      fireEvent.change(input, {
+        target: { files: [file] },
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText(/test\.txt/i)).toBeInTheDocument();
+      });
+    });
+
+    it('should show visual feedback on drag over', () => {
+      const textElement = screen.getByText(/drag and drop a file here/i);
+      // Go up 3 levels: p -> div -> div.space-y-3 -> div with border classes
+      const dropZone = textElement.closest('div')?.parentElement?.parentElement;
+
+      fireEvent.dragEnter(dropZone!);
+
+      // Check for drag-over styling
+      expect(dropZone?.className).toContain('border-blue-500');
+    });
+
+    it('should clear file when switching to text input mode', async () => {
+      const file = new File(['test'], 'test.txt', { type: 'text/plain' });
+      const dropZone = screen.getByText(/drag and drop a file here/i).closest('div');
+
+      fireEvent.drop(dropZone!, {
+        dataTransfer: {
+          files: [file],
+        },
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText(/test\.txt/i)).toBeInTheDocument();
+      });
+
+      // Switch to text input
+      const clearButton = screen.getByRole('button', { name: /remove.*file/i });
+      fireEvent.click(clearButton);
+
+      expect(screen.queryByText(/test\.txt/i)).not.toBeInTheDocument();
+    });
+  });
 });

@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { generateHash } from '../../utils/hashUtils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Upload, X } from 'lucide-react';
 
 type HashAlgorithm = 'md5' | 'sha256' | 'sha512';
 
@@ -19,6 +19,9 @@ export function HashGenerator() {
   const [hashResult, setHashResult] = useState('');
   const [error, setError] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const algorithms: AlgorithmOption[] = [
     { value: 'md5', label: 'MD5', bits: '128-bit' },
@@ -58,6 +61,75 @@ export function HashGenerator() {
       await navigator.clipboard.writeText(hashResult);
     } catch (err) {
       // Ignore clipboard errors silently
+    }
+  };
+
+  const handleFileSelect = async (file: File) => {
+    setSelectedFile(file);
+    setError('');
+    setHashResult('');
+
+    try {
+      setIsProcessing(true);
+      const reader = new FileReader();
+
+      reader.onload = async (e) => {
+        const content = e.target?.result as string;
+        const hash = await generateHash(content, algorithm);
+        setHashResult(hash);
+        setIsProcessing(false);
+      };
+
+      reader.onerror = () => {
+        setError('Failed to read file. Please try again.');
+        setIsProcessing(false);
+      };
+
+      reader.readAsText(file);
+    } catch (err) {
+      setError('Failed to hash file. Please try again.');
+      setIsProcessing(false);
+    }
+  };
+
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleFileSelect(file);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragOver(false);
+
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      handleFileSelect(file);
+    }
+  };
+
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleRemoveFile = () => {
+    setSelectedFile(null);
+    setHashResult('');
+    setError('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -110,6 +182,70 @@ export function HashGenerator() {
           </AlertDescription>
         </Alert>
       )}
+
+      {/* File Upload Section */}
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          Upload File
+        </label>
+        <div
+          onDrop={handleDrop}
+          onDragEnter={handleDragEnter}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          className={`
+            border-2 border-dashed rounded-lg p-8 text-center transition-colors
+            ${isDragOver ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-300 dark:border-gray-600'}
+            ${selectedFile ? 'bg-green-50 dark:bg-green-900/20 border-green-500' : 'hover:border-gray-400 dark:hover:border-gray-500'}
+          `}
+        >
+          {selectedFile ? (
+            <div className="space-y-3">
+              <div className="flex items-center justify-center gap-2">
+                <Upload className="h-5 w-5 text-green-600 dark:text-green-400" />
+                <p className="text-sm font-medium text-green-900 dark:text-green-300">
+                  {selectedFile.name}
+                </p>
+              </div>
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                Size: {(selectedFile.size / 1024).toFixed(2)} KB
+              </p>
+              <button
+                onClick={handleRemoveFile}
+                className="inline-flex items-center gap-1 px-3 py-1 text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+              >
+                <X className="h-4 w-4" />
+                Remove file
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <Upload className="h-12 w-12 mx-auto text-gray-400" />
+              <div>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Drag and drop a file here
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  or click to browse
+                </p>
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                onChange={handleFileInput}
+                className="hidden"
+                id="file-upload"
+              />
+              <label
+                htmlFor="file-upload"
+                className="inline-block px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors cursor-pointer"
+              >
+                Choose File
+              </label>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Input Section */}
       <div>
