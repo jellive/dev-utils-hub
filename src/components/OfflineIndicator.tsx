@@ -1,7 +1,9 @@
 import { useNetworkStore } from '../store/useNetworkStore';
+import { useTranslation } from 'react-i18next';
 
 export function OfflineIndicator() {
   const isOnline = useNetworkStore((state) => state.isOnline);
+  const { t } = useTranslation();
 
   if (isOnline) {
     return null;
@@ -24,8 +26,8 @@ export function OfflineIndicator() {
           />
         </svg>
         <div>
-          <p className="font-semibold text-sm">You are offline</p>
-          <p className="text-xs opacity-90">All tools work without internet connection</p>
+          <p className="font-semibold text-sm">{t('offline.message')}</p>
+          <p className="text-xs opacity-90">{t('offline.description')}</p>
         </div>
       </div>
     </div>

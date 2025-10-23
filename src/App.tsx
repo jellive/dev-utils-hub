@@ -9,6 +9,8 @@ import { Button } from './components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useAppStore } from './stores/useAppStore';
 import { usePerformanceMonitor } from './hooks/usePerformanceMonitor';
+import { useTranslation } from 'react-i18next';
+import './i18n/config';
 
 // Lazy load tool components for code splitting
 const JsonFormatter = lazy(() =>
@@ -41,6 +43,7 @@ const TimestampConverter = lazy(() =>
 
 function App() {
   const { activeTool, setActiveTool } = useAppStore();
+  const { t } = useTranslation();
   const [showToolGrid, setShowToolGrid] = useState(true);
   const [previousTool, setPreviousTool] = useState<string | null>(null);
   usePerformanceMonitor(`Tool view: ${showToolGrid ? 'grid' : activeTool}`);
@@ -111,7 +114,7 @@ function App() {
               className="gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to Tools
+              {t('common.backToTools')}
             </Button>
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
               <Suspense fallback={<ToolLoadingSkeleton />}>

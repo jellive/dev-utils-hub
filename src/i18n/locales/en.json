@@ -1,0 +1,72 @@
+{
+  "app": {
+    "title": "Developer Utils",
+    "subtitle": "Essential utilities for developers"
+  },
+  "header": {
+    "darkMode": "Dark Mode",
+    "lightMode": "Light Mode",
+    "language": "Language"
+  },
+  "tools": {
+    "json": {
+      "name": "JSON Formatter",
+      "description": "Format and validate JSON data"
+    },
+    "jwt": {
+      "name": "JWT Decoder",
+      "description": "Decode and inspect JWT tokens"
+    },
+    "base64": {
+      "name": "Base64 Converter",
+      "description": "Encode and decode Base64"
+    },
+    "url": {
+      "name": "URL Encoder/Decoder",
+      "description": "Encode and decode URLs"
+    },
+    "regex": {
+      "name": "Regex Tester",
+      "description": "Test regular expressions"
+    },
+    "diff": {
+      "name": "Text Diff",
+      "description": "Compare text differences"
+    },
+    "hash": {
+      "name": "Hash Generator",
+      "description": "Generate hash values"
+    },
+    "uuid": {
+      "name": "UUID Generator",
+      "description": "Generate unique identifiers"
+    },
+    "timestamp": {
+      "name": "Timestamp Converter",
+      "description": "Convert timestamps and dates"
+    }
+  },
+  "common": {
+    "search": "Search tools...",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "clear": "Clear",
+    "format": "Format",
+    "validate": "Validate",
+    "encode": "Encode",
+    "decode": "Decode",
+    "generate": "Generate",
+    "compare": "Compare",
+    "test": "Test",
+    "backToTools": "Back to Tools"
+  },
+  "offline": {
+    "message": "You are currently offline",
+    "description": "Some features may be limited"
+  },
+  "install": {
+    "button": "Install App",
+    "title": "Install Developer Utils",
+    "description": "Install this app for offline access and better performance"
+  }
+}

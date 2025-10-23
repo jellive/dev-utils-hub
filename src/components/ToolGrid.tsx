@@ -13,81 +13,39 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
 import { useAppStore } from '../stores/useAppStore';
+import { useTranslation } from 'react-i18next';
 import type { ToolType } from '../types';
 
 interface ToolConfig {
   id: ToolType;
-  name: string;
-  description: string;
   icon: React.ComponentType<{ className?: string }>;
 }
 
 const tools: ToolConfig[] = [
-  {
-    id: 'json',
-    name: 'JSON Formatter',
-    description: 'Format, validate, and compress JSON data',
-    icon: FileJson,
-  },
-  {
-    id: 'jwt',
-    name: 'JWT Decoder',
-    description: 'Decode and verify JWT tokens',
-    icon: Key,
-  },
-  {
-    id: 'base64',
-    name: 'Base64 Converter',
-    description: 'Encode and decode Base64 data',
-    icon: FileCode,
-  },
-  {
-    id: 'url',
-    name: 'URL Encoder/Decoder',
-    description: 'Encode and decode URL parameters',
-    icon: Link,
-  },
-  {
-    id: 'regex',
-    name: 'Regex Tester',
-    description: 'Test and debug regular expressions',
-    icon: Regex,
-  },
-  {
-    id: 'diff',
-    name: 'Text Diff',
-    description: 'Compare and highlight text differences',
-    icon: FileDiff,
-  },
-  {
-    id: 'hash',
-    name: 'Hash Generator',
-    description: 'Generate MD5, SHA-1, SHA-256 hashes',
-    icon: Hash,
-  },
-  {
-    id: 'uuid',
-    name: 'UUID Generator',
-    description: 'Generate unique identifiers (UUID v4)',
-    icon: Fingerprint,
-  },
-  {
-    id: 'timestamp',
-    name: 'Timestamp Converter',
-    description: 'Convert between timestamps and dates',
-    icon: Calendar,
-  },
+  { id: 'json', icon: FileJson },
+  { id: 'jwt', icon: Key },
+  { id: 'base64', icon: FileCode },
+  { id: 'url', icon: Link },
+  { id: 'regex', icon: Regex },
+  { id: 'diff', icon: FileDiff },
+  { id: 'hash', icon: Hash },
+  { id: 'uuid', icon: Fingerprint },
+  { id: 'timestamp', icon: Calendar },
 ];
 
 export function ToolGrid() {
   const { activeTool, setActiveTool } = useAppStore();
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredTools = tools.filter(
-    (tool) =>
-      tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      tool.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredTools = tools.filter((tool) => {
+    const name = t(`tools.${tool.id}.name`);
+    const description = t(`tools.${tool.id}.description`);
+    return (
+      name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      description.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  });
 
   return (
     <div className="space-y-6">
@@ -95,7 +53,7 @@ export function ToolGrid() {
       <div className="max-w-md">
         <Input
           type="text"
-          placeholder="Search tools..."
+          placeholder={t('common.search')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full"
@@ -111,12 +69,14 @@ export function ToolGrid() {
         {filteredTools.map((tool) => {
           const Icon = tool.icon;
           const isActive = activeTool === tool.id;
+          const name = t(`tools.${tool.id}.name`);
+          const description = t(`tools.${tool.id}.description`);
 
           return (
             <button
               key={tool.id}
               onClick={() => setActiveTool(tool.id)}
-              aria-label={tool.name}
+              aria-label={name}
               className={`
                 group text-left transition-all duration-300 ease-out
                 hover:-translate-y-2 hover:shadow-xl
@@ -130,11 +90,11 @@ export function ToolGrid() {
                     <div className="p-2 rounded-lg bg-primary/10">
                       <Icon className="h-6 w-6 text-primary" />
                     </div>
-                    <CardTitle className="text-lg">{tool.name}</CardTitle>
+                    <CardTitle className="text-lg">{name}</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <CardDescription>{tool.description}</CardDescription>
+                  <CardDescription>{description}</CardDescription>
                 </CardContent>
               </Card>
             </button>
