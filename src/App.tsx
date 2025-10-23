@@ -4,6 +4,7 @@ import { Header } from './components/Header';
 import { ToolGrid } from './components/ToolGrid';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { InstallPWAButton } from './components/InstallPWAButton';
+import { ToolLoadingSkeleton } from './components/ToolLoadingSkeleton';
 import { Button } from './components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useAppStore } from './stores/useAppStore';
@@ -113,16 +114,7 @@ function App() {
               Back to Tools
             </Button>
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-              <Suspense
-                fallback={
-                  <div className="flex items-center justify-center min-h-[400px]">
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="animate-spin h-8 w-8 border-4 border-blue-600 dark:border-blue-400 border-t-transparent rounded-full"></div>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm">Loading tool...</p>
-                    </div>
-                  </div>
-                }
-              >
+              <Suspense fallback={<ToolLoadingSkeleton />}>
                 {renderTool()}
               </Suspense>
             </div>
