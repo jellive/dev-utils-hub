@@ -1,4 +1,13 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { FileDiff, Copy } from 'lucide-react';
+import { toast } from 'sonner';
 import { diffLines } from '../../utils/diffAlgorithm';
 import type { DiffResult } from '../../utils/diffAlgorithm';
 
@@ -8,13 +17,32 @@ export function TextDiff() {
   const [diffResults, setDiffResults] = useState<DiffResult[]>([]);
   const [hasCompared, setHasCompared] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [ignoreWhitespace, setIgnoreWhitespace] = useState(false);
+  const [viewMode, setViewMode] = useState<'unified' | 'split'>('split');
+
+  const leftScrollRef = useRef<HTMLDivElement>(null);
+  const rightScrollRef = useRef<HTMLDivElement>(null);
 
   const handleCompare = () => {
     try {
       setIsProcessing(true);
-      const results = diffLines(originalText, modifiedText);
+
+      let original = originalText;
+      let modified = modifiedText;
+
+      if (ignoreWhitespace) {
+        original = original.replace(/\s+/g, ' ').trim();
+        modified = modified.replace(/\s+/g, ' ').trim();
+      }
+
+      const results = diffLines(original, modified);
       setDiffResults(results);
       setHasCompared(true);
+
+      const stats = getDiffStats(results);
+      toast.success(
+        `Found ${stats.additions} additions, ${stats.deletions} deletions, ${stats.unchanged} unchanged`
+      );
     } finally {
       setIsProcessing(false);
     }
@@ -25,137 +53,379 @@ export function TextDiff() {
     setModifiedText('');
     setDiffResults([]);
     setHasCompared(false);
+    toast.info('Cleared all text');
   };
 
-  const hasDifferences = diffResults.some(result => result.type !== 'equal');
+  const handleCopy = async (text: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success(`${label} copied to clipboard!`);
+    } catch (err) {
+      toast.error('Failed to copy');
+    }
+  };
+
+  const getDiffStats = (results: DiffResult[]) => {
+    return {
+      additions: results.filter((r) => r.type === 'insert').length,
+      deletions: results.filter((r) => r.type === 'delete').length,
+      unchanged: results.filter((r) => r.type === 'equal').length,
+    };
+  };
+
+  const hasDifferences = diffResults.some((result) => result.type !== 'equal');
+  const stats = getDiffStats(diffResults);
+
+  // Synchronized scrolling for side-by-side view
+  const handleLeftScroll = () => {
+    if (leftScrollRef.current && rightScrollRef.current) {
+      rightScrollRef.current.scrollTop = leftScrollRef.current.scrollTop;
+    }
+  };
+
+  const handleRightScroll = () => {
+    if (leftScrollRef.current && rightScrollRef.current) {
+      leftScrollRef.current.scrollTop = rightScrollRef.current.scrollTop;
+    }
+  };
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Text Diff Tool</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Text Diff Tool</h2>
+
+        {hasCompared && (
+          <div className="flex items-center gap-2">
+            <Badge variant={hasDifferences ? 'default' : 'secondary'} className="text-sm">
+              {hasDifferences ? 'Differences Found' : 'Identical'}
+            </Badge>
+          </div>
+        )}
+      </div>
 
       {/* Input Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Original Text
-          </label>
-          <textarea
-            value={originalText}
-            onChange={(e) => setOriginalText(e.target.value)}
-            placeholder="Enter original text here..."
-            className="w-full h-64 p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white font-mono text-sm"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Modified Text
-          </label>
-          <textarea
-            value={modifiedText}
-            onChange={(e) => setModifiedText(e.target.value)}
-            placeholder="Enter modified text here..."
-            className="w-full h-64 p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white font-mono text-sm"
-          />
-        </div>
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base">Original Text</CardTitle>
+                <CardDescription>Enter the original version</CardDescription>
+              </div>
+              <Button
+                onClick={() => handleCopy(originalText, 'Original text')}
+                variant="ghost"
+                size="sm"
+                className="gap-2"
+              >
+                <Copy className="h-3 w-3" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Textarea
+              value={originalText}
+              onChange={(e) => setOriginalText(e.target.value)}
+              placeholder="Enter original text here..."
+              className="font-mono min-h-[200px]"
+            />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base">Modified Text</CardTitle>
+                <CardDescription>Enter the modified version</CardDescription>
+              </div>
+              <Button
+                onClick={() => handleCopy(modifiedText, 'Modified text')}
+                variant="ghost"
+                size="sm"
+                className="gap-2"
+              >
+                <Copy className="h-3 w-3" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Textarea
+              value={modifiedText}
+              onChange={(e) => setModifiedText(e.target.value)}
+              placeholder="Enter modified text here..."
+              className="font-mono min-h-[200px]"
+            />
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex gap-2">
-        <button
-          onClick={handleCompare}
-          disabled={isProcessing}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isProcessing ? 'Processing...' : 'Compare'}
-        </button>
-        <button
-          onClick={handleClear}
-          disabled={isProcessing}
-          className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Clear
-        </button>
-      </div>
+      {/* Options and Actions */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="ignore-whitespace"
+                  checked={ignoreWhitespace}
+                  onCheckedChange={setIgnoreWhitespace}
+                />
+                <Label htmlFor="ignore-whitespace">Ignore Whitespace</Label>
+              </div>
 
-      {/* Processing Indicator */}
-      {isProcessing && (
-        <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-          <div className="animate-spin h-4 w-4 border-2 border-blue-600 dark:border-blue-400 border-t-transparent rounded-full"></div>
-          <span className="text-blue-900 dark:text-blue-300 text-sm">Processing diff...</span>
+              {hasCompared && (
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant={viewMode === 'unified' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setViewMode('unified')}
+                  >
+                    Unified
+                  </Button>
+                  <Button
+                    variant={viewMode === 'split' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setViewMode('split')}
+                  >
+                    Side-by-Side
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button onClick={handleCompare} disabled={isProcessing} className="gap-2">
+                <FileDiff className="h-4 w-4" />
+                {isProcessing ? 'Processing...' : 'Compare'}
+              </Button>
+              <Button onClick={handleClear} variant="outline">
+                Clear
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Statistics Badge */}
+      {hasCompared && hasDifferences && (
+        <div className="flex items-center gap-2">
+          <Badge variant="default" className="gap-1">
+            <span className="text-green-600 dark:text-green-400">+{stats.additions}</span>
+            <span>additions</span>
+          </Badge>
+          <Badge variant="destructive" className="gap-1">
+            <span>-{stats.deletions}</span>
+            <span>deletions</span>
+          </Badge>
+          <Badge variant="secondary" className="gap-1">
+            <span>{stats.unchanged}</span>
+            <span>unchanged</span>
+          </Badge>
         </div>
       )}
 
       {/* Results Section */}
       {hasCompared && (
-        <div className="space-y-4">
+        <>
           {!hasDifferences ? (
-            <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-              <p className="text-green-900 dark:text-green-300 font-semibold">
-                No differences found. The texts are identical.
-              </p>
-            </div>
-          ) : (
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                Differences
-              </h3>
-              <div
-                data-testid="diff-viewer"
-                className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden"
-              >
-                {diffResults.map((result, index) => (
-                  <div
-                    key={index}
-                    className={`flex border-b border-gray-200 dark:border-gray-700 last:border-b-0 ${
-                      result.type === 'insert'
-                        ? 'bg-green-50 dark:bg-green-900/20'
-                        : result.type === 'delete'
-                        ? 'bg-red-50 dark:bg-red-900/20'
-                        : 'bg-white dark:bg-gray-800'
-                    }`}
-                  >
-                    {/* Line Numbers */}
-                    <div className="flex-shrink-0 w-24 flex">
-                      <div className="w-12 px-2 py-1 text-right text-xs text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-gray-700">
-                        {result.oldIndex !== undefined ? result.oldIndex + 1 : ''}
-                      </div>
-                      <div className="w-12 px-2 py-1 text-right text-xs text-gray-500 dark:text-gray-400">
-                        {result.newIndex !== undefined ? result.newIndex + 1 : ''}
-                      </div>
-                    </div>
-
-                    {/* Change Indicator */}
-                    <div className="flex-shrink-0 w-8 flex items-center justify-center border-r border-gray-200 dark:border-gray-700">
-                      {result.type === 'insert' ? (
-                        <span className="text-green-600 dark:text-green-400 font-bold">+</span>
-                      ) : result.type === 'delete' ? (
-                        <span className="text-red-600 dark:text-red-400 font-bold">-</span>
-                      ) : (
-                        <span className="text-gray-400">·</span>
-                      )}
-                    </div>
-
-                    {/* Content */}
-                    <div className="flex-1 px-3 py-1 font-mono text-sm overflow-x-auto">
-                      <pre
-                        className={`${
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-center p-8">
+                  <div className="text-center">
+                    <div className="text-green-600 dark:text-green-400 text-5xl mb-4">✓</div>
+                    <p className="text-lg font-semibold text-green-900 dark:text-green-300">
+                      No differences found
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                      The texts are identical
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ) : viewMode === 'unified' ? (
+            /* Unified Diff View */
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Unified Diff View</CardTitle>
+                <CardDescription>Line-by-line comparison with changes highlighted</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[500px] rounded-lg border border-gray-300 dark:border-gray-600">
+                  <div data-testid="diff-viewer">
+                    {diffResults.map((result, index) => (
+                      <div
+                        key={index}
+                        className={`flex border-b border-gray-200 dark:border-gray-700 last:border-b-0 ${
                           result.type === 'insert'
-                            ? 'text-green-900 dark:text-green-200'
+                            ? 'bg-green-50 dark:bg-green-900/20'
                             : result.type === 'delete'
-                            ? 'text-red-900 dark:text-red-200'
-                            : 'text-gray-900 dark:text-gray-100'
+                            ? 'bg-red-50 dark:bg-red-900/20'
+                            : 'bg-white dark:bg-gray-800'
                         }`}
                       >
-                        {result.value}
-                      </pre>
-                    </div>
+                        {/* Line Numbers */}
+                        <div className="flex-shrink-0 w-24 flex">
+                          <div className="w-12 px-2 py-1 text-right text-xs text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-gray-700">
+                            {result.oldIndex !== undefined ? result.oldIndex + 1 : ''}
+                          </div>
+                          <div className="w-12 px-2 py-1 text-right text-xs text-gray-500 dark:text-gray-400">
+                            {result.newIndex !== undefined ? result.newIndex + 1 : ''}
+                          </div>
+                        </div>
+
+                        {/* Change Indicator */}
+                        <div className="flex-shrink-0 w-8 flex items-center justify-center border-r border-gray-200 dark:border-gray-700">
+                          {result.type === 'insert' ? (
+                            <span className="text-green-600 dark:text-green-400 font-bold">+</span>
+                          ) : result.type === 'delete' ? (
+                            <span className="text-red-600 dark:text-red-400 font-bold">-</span>
+                          ) : (
+                            <span className="text-gray-400">·</span>
+                          )}
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 px-3 py-1 font-mono text-sm overflow-x-auto">
+                          <pre
+                            className={`${
+                              result.type === 'insert'
+                                ? 'text-green-900 dark:text-green-200'
+                                : result.type === 'delete'
+                                ? 'text-red-900 dark:text-red-200'
+                                : 'text-gray-900 dark:text-gray-100'
+                            }`}
+                          >
+                            {result.value}
+                          </pre>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          ) : (
+            /* Side-by-Side Diff View */
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Side-by-Side Comparison</CardTitle>
+                <CardDescription>
+                  Compare both versions with synchronized scrolling
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Left Side - Original */}
+                  <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
+                    <div className="bg-gray-100 dark:bg-gray-800 px-3 py-2 border-b border-gray-300 dark:border-gray-600">
+                      <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Original
+                      </p>
+                    </div>
+                    <ScrollArea
+                      className="h-[500px]"
+                      ref={leftScrollRef}
+                      onScroll={handleLeftScroll}
+                    >
+                      <div>
+                        {diffResults.map((result, index) => {
+                          if (result.type === 'insert') return null;
+                          return (
+                            <div
+                              key={index}
+                              className={`flex border-b border-gray-200 dark:border-gray-700 last:border-b-0 ${
+                                result.type === 'delete'
+                                  ? 'bg-red-50 dark:bg-red-900/20'
+                                  : 'bg-white dark:bg-gray-800'
+                              }`}
+                            >
+                              <div className="w-12 px-2 py-1 text-right text-xs text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-gray-700">
+                                {result.oldIndex !== undefined ? result.oldIndex + 1 : ''}
+                              </div>
+                              <div className="flex-1 px-3 py-1 font-mono text-sm overflow-x-auto">
+                                <pre
+                                  className={
+                                    result.type === 'delete'
+                                      ? 'text-red-900 dark:text-red-200'
+                                      : 'text-gray-900 dark:text-gray-100'
+                                  }
+                                >
+                                  {result.value}
+                                </pre>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </ScrollArea>
+                  </div>
+
+                  {/* Right Side - Modified */}
+                  <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
+                    <div className="bg-gray-100 dark:bg-gray-800 px-3 py-2 border-b border-gray-300 dark:border-gray-600">
+                      <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Modified
+                      </p>
+                    </div>
+                    <ScrollArea
+                      className="h-[500px]"
+                      ref={rightScrollRef}
+                      onScroll={handleRightScroll}
+                    >
+                      <div>
+                        {diffResults.map((result, index) => {
+                          if (result.type === 'delete') return null;
+                          return (
+                            <div
+                              key={index}
+                              className={`flex border-b border-gray-200 dark:border-gray-700 last:border-b-0 ${
+                                result.type === 'insert'
+                                  ? 'bg-green-50 dark:bg-green-900/20'
+                                  : 'bg-white dark:bg-gray-800'
+                              }`}
+                            >
+                              <div className="w-12 px-2 py-1 text-right text-xs text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-gray-700">
+                                {result.newIndex !== undefined ? result.newIndex + 1 : ''}
+                              </div>
+                              <div className="flex-1 px-3 py-1 font-mono text-sm overflow-x-auto">
+                                <pre
+                                  className={
+                                    result.type === 'insert'
+                                      ? 'text-green-900 dark:text-green-200'
+                                      : 'text-gray-900 dark:text-gray-100'
+                                  }
+                                >
+                                  {result.value}
+                                </pre>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </ScrollArea>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           )}
-        </div>
+        </>
       )}
+
+      {/* Info Section */}
+      <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+        <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-2">
+          How to Use
+        </h3>
+        <ul className="text-sm text-blue-800 dark:text-blue-400 space-y-1">
+          <li>• Enter original and modified text in the respective areas</li>
+          <li>• Toggle "Ignore Whitespace" to compare content without spacing differences</li>
+          <li>• Choose between Unified (line-by-line) or Side-by-Side comparison views</li>
+          <li>• Green highlights show additions, red shows deletions</li>
+          <li>• Side-by-side view features synchronized scrolling</li>
+        </ul>
+      </div>
     </div>
   );
 }
