@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link as RouterLink, useLocation } from 'react-router-dom';
 import {
   FileJson,
   Key,
@@ -12,7 +13,6 @@ import {
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
-import { useAppStore } from '../stores/useAppStore';
 import { useTranslation } from 'react-i18next';
 import type { ToolType } from '../types';
 
@@ -34,8 +34,8 @@ const tools: ToolConfig[] = [
 ];
 
 export function ToolGrid() {
-  const { activeTool, setActiveTool } = useAppStore();
   const { t } = useTranslation();
+  const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredTools = tools.filter((tool) => {
@@ -68,14 +68,14 @@ export function ToolGrid() {
       >
         {filteredTools.map((tool) => {
           const Icon = tool.icon;
-          const isActive = activeTool === tool.id;
+          const isActive = location.pathname === `/${tool.id}`;
           const name = t(`tools.${tool.id}.name`);
           const description = t(`tools.${tool.id}.description`);
 
           return (
-            <button
+            <RouterLink
               key={tool.id}
-              onClick={() => setActiveTool(tool.id)}
+              to={`/${tool.id}`}
               aria-label={name}
               className={`
                 group text-left transition-all duration-300 ease-out
@@ -97,7 +97,7 @@ export function ToolGrid() {
                   <CardDescription>{description}</CardDescription>
                 </CardContent>
               </Card>
-            </button>
+            </RouterLink>
           );
         })}
       </div>
