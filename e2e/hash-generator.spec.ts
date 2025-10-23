@@ -3,9 +3,12 @@ import { test, expect } from '@playwright/test';
 test.describe('Hash Generator E2E Tests', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    // Navigate to Hash tab
-    await page.click('text=Hash');
-    await page.waitForSelector('h2:has-text("Hash Generator")');
+    // Wait for ToolGrid to load
+    await page.waitForSelector('role=grid[name="Tool Selection Grid"]');
+    // Click on Hash Generator card
+    await page.click('button:has-text("Hash Generator")');
+    // Wait for tool to load
+    await page.waitForSelector('h2:has-text("Hash Generator")', { timeout: 10000 });
   });
 
   test('should display Hash Generator UI elements', async ({ page }) => {
