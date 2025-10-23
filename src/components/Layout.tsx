@@ -1,10 +1,8 @@
-import { Suspense } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { Header } from './Header';
 import { OfflineIndicator } from './OfflineIndicator';
 import { InstallPWAButton } from './InstallPWAButton';
-import { ToolLoadingSkeleton } from './ToolLoadingSkeleton';
 import { Button } from './ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { usePerformanceMonitor } from '../hooks/usePerformanceMonitor';
@@ -27,9 +25,7 @@ export function Layout() {
       <Header />
       <main className="container mx-auto px-4 py-8">
         {isHomePage ? (
-          <Suspense fallback={<ToolLoadingSkeleton />}>
-            <Outlet />
-          </Suspense>
+          <Outlet />
         ) : (
           <div className="space-y-4">
             <Button
@@ -41,9 +37,7 @@ export function Layout() {
               {t('common.backToTools')}
             </Button>
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-              <Suspense fallback={<ToolLoadingSkeleton />}>
-                <Outlet />
-              </Suspense>
+              <Outlet />
             </div>
           </div>
         )}

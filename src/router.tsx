@@ -1,6 +1,8 @@
-import { lazy } from 'react';
+import { lazy, Suspense } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { Layout } from './components/Layout';
+import { SingleColumnSkeleton } from './components/SingleColumnSkeleton';
+import { TwoColumnSkeleton } from './components/TwoColumnSkeleton';
 
 // Lazy load tool components for code splitting
 const JsonFormatter = lazy(() =>
@@ -34,6 +36,15 @@ const ToolGrid = lazy(() =>
   import('./components/ToolGrid').then((module) => ({ default: module.ToolGrid }))
 );
 
+// Helper components for Suspense with appropriate skeletons
+const SingleColumnTool = ({ children }: { children: React.ReactNode }) => (
+  <Suspense fallback={<SingleColumnSkeleton />}>{children}</Suspense>
+);
+
+const TwoColumnTool = ({ children }: { children: React.ReactNode }) => (
+  <Suspense fallback={<TwoColumnSkeleton />}>{children}</Suspense>
+);
+
 export const router = createBrowserRouter([
   {
     path: '/',
@@ -41,43 +52,43 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <ToolGrid />,
+        element: <Suspense fallback={<SingleColumnSkeleton />}><ToolGrid /></Suspense>,
       },
       {
         path: 'json',
-        element: <JsonFormatter />,
+        element: <SingleColumnTool><JsonFormatter /></SingleColumnTool>,
       },
       {
         path: 'jwt',
-        element: <JwtDecoder />,
+        element: <SingleColumnTool><JwtDecoder /></SingleColumnTool>,
       },
       {
         path: 'base64',
-        element: <Base64Converter />,
+        element: <SingleColumnTool><Base64Converter /></SingleColumnTool>,
       },
       {
         path: 'url',
-        element: <URLConverter />,
+        element: <SingleColumnTool><URLConverter /></SingleColumnTool>,
       },
       {
         path: 'regex',
-        element: <RegexTester />,
+        element: <SingleColumnTool><RegexTester /></SingleColumnTool>,
       },
       {
         path: 'diff',
-        element: <TextDiff />,
+        element: <TwoColumnTool><TextDiff /></TwoColumnTool>,
       },
       {
         path: 'hash',
-        element: <HashGenerator />,
+        element: <SingleColumnTool><HashGenerator /></SingleColumnTool>,
       },
       {
         path: 'uuid',
-        element: <UUIDGenerator />,
+        element: <SingleColumnTool><UUIDGenerator /></SingleColumnTool>,
       },
       {
         path: 'timestamp',
-        element: <TimestampConverter />,
+        element: <TwoColumnTool><TimestampConverter /></TwoColumnTool>,
       },
       {
         path: '*',
