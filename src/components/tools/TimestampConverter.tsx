@@ -142,7 +142,7 @@ export function TimestampConverter() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">ISO 8601</CardTitle>
+                    <CardTitle className="text-base">{t('tools.timestamp.iso8601')}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center justify-between gap-2">
@@ -160,7 +160,7 @@ export function TimestampConverter() {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">Local Time</CardTitle>
+                    <CardTitle className="text-base">{t('tools.timestamp.localTime')}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center justify-between gap-2">
@@ -178,7 +178,7 @@ export function TimestampConverter() {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">UTC</CardTitle>
+                    <CardTitle className="text-base">{t('tools.timestamp.utc')}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center justify-between gap-2">
@@ -196,7 +196,7 @@ export function TimestampConverter() {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">Relative Time</CardTitle>
+                    <CardTitle className="text-base">{t('tools.timestamp.relativeTime')}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center justify-between gap-2">
@@ -216,32 +216,32 @@ export function TimestampConverter() {
               {/* Date Components */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Date Components</CardTitle>
+                  <CardTitle>{t('tools.timestamp.dateComponents')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Year</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{t('tools.timestamp.year')}</p>
                       <p className="text-lg font-semibold">{date.getFullYear()}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Month</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{t('tools.timestamp.month')}</p>
                       <p className="text-lg font-semibold">{date.getMonth() + 1}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Day</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{t('tools.timestamp.day')}</p>
                       <p className="text-lg font-semibold">{date.getDate()}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Hour</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{t('tools.timestamp.hour')}</p>
                       <p className="text-lg font-semibold">{date.getHours()}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Minute</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{t('tools.timestamp.minute')}</p>
                       <p className="text-lg font-semibold">{date.getMinutes()}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Second</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{t('tools.timestamp.second')}</p>
                       <p className="text-lg font-semibold">{date.getSeconds()}</p>
                     </div>
                   </div>
@@ -256,8 +256,8 @@ export function TimestampConverter() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card>
               <CardHeader>
-                <CardTitle>Select Date</CardTitle>
-                <CardDescription>Choose a date from the calendar</CardDescription>
+                <CardTitle>{t('tools.timestamp.selectDate')}</CardTitle>
+                <CardDescription>{t('tools.timestamp.selectDateDesc')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <Calendar
@@ -272,7 +272,7 @@ export function TimestampConverter() {
             <div className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Timezone</CardTitle>
+                  <CardTitle>{t('tools.timestamp.timezone')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Select value={timezone} onValueChange={setTimezone}>
@@ -293,12 +293,12 @@ export function TimestampConverter() {
               {selectedDate && (
                 <Card>
                   <CardHeader>
-                    <CardTitle>Timestamp</CardTitle>
+                    <CardTitle>{t('tools.timestamp.timestamp')}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-2">
                     <div className="flex items-center justify-between gap-2">
                       <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Seconds</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{t('tools.timestamp.seconds')}</p>
                         <code className="text-sm font-mono">
                           {Math.floor(selectedDate.getTime() / 1000)}
                         </code>
@@ -313,7 +313,7 @@ export function TimestampConverter() {
                     </div>
                     <div className="flex items-center justify-between gap-2">
                       <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Milliseconds</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{t('tools.timestamp.milliseconds')}</p>
                         <code className="text-sm font-mono">{selectedDate.getTime()}</code>
                       </div>
                       <Button

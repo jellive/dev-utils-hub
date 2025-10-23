@@ -171,11 +171,11 @@ export function UUIDGenerator() {
                   <div className="flex gap-2">
                     <Button onClick={copyAllBulk} className="flex-1 gap-2">
                       <Copy className="h-4 w-4" />
-                      Copy All
+                      {t('tools.uuid.copyAll')}
                     </Button>
                     <Button onClick={downloadBulk} variant="outline" className="flex-1 gap-2">
                       <Download className="h-4 w-4" />
-                      Download
+                      {t('tools.uuid.download')}
                     </Button>
                   </div>
 
@@ -204,7 +204,7 @@ export function UUIDGenerator() {
 
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                Close
+                {t('tools.uuid.close')}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -215,7 +215,7 @@ export function UUIDGenerator() {
       {currentUUID && (
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Generated UUID
+            {t('tools.uuid.generatedUuid')}
           </label>
           <div className="flex gap-2">
             <Input
@@ -252,7 +252,7 @@ export function UUIDGenerator() {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              History ({history.length})
+              {t('tools.uuid.history')} ({history.length})
             </label>
             <Button
               onClick={clearHistory}
@@ -261,7 +261,7 @@ export function UUIDGenerator() {
               className="gap-2"
             >
               <Trash2 className="h-4 w-4" />
-              Clear
+              {t('tools.uuid.clearHistory')}
             </Button>
           </div>
           <ScrollArea className="h-[200px] rounded-lg border border-gray-300 dark:border-gray-600 p-2">

@@ -227,7 +227,7 @@ export function HashGenerator() {
             htmlFor="hmac-mode"
             className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer"
           >
-            HMAC Mode
+            {t('tools.hash.hmacMode')}
           </label>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -253,7 +253,7 @@ export function HashGenerator() {
       {isHmacMode && (
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            HMAC Key
+            {t('tools.hash.hmacKey')}
           </label>
           <Input
             type="text"
@@ -268,7 +268,7 @@ export function HashGenerator() {
       {/* File Upload Section */}
       <div className="space-y-2">
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Upload File
+          {t('tools.hash.uploadFile')}
         </label>
         <div
           onDrop={handleDrop}
@@ -332,7 +332,7 @@ export function HashGenerator() {
       {/* Input Section */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          {isHmacMode ? 'Message to Authenticate' : 'Input Text'}
+          {isHmacMode ? t('tools.hash.messageToAuthenticate') : t('tools.hash.inputText')}
         </label>
         <textarea
           value={input}
@@ -349,7 +349,7 @@ export function HashGenerator() {
           disabled={isProcessing}
           className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isProcessing ? 'Generating...' : (isHmacMode ? 'Generate HMAC' : 'Generate Hash')}
+          {isProcessing ? t('tools.hash.generating') : (isHmacMode ? t('tools.hash.generateHmac') : t('tools.hash.generateHash'))}
         </button>
         <button
           onClick={handleClear}
@@ -380,13 +380,13 @@ export function HashGenerator() {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              {isHmacMode ? 'HMAC Result' : 'Hash Result'}
+              {isHmacMode ? t('tools.hash.hmacResult') : t('tools.hash.hashResult')}
             </label>
             <button
               onClick={handleCopy}
               className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm font-medium transition-colors"
             >
-              Copy
+              {t('common.copy')}
             </button>
           </div>
           <div className="p-4 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg">
@@ -403,7 +403,7 @@ export function HashGenerator() {
       {/* Hash Comparison */}
       <div className="space-y-2">
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Compare Hash
+          {t('tools.hash.compareHash')}
         </label>
         <Input
           type="text"
