@@ -31,6 +31,9 @@ const TextDiff = lazy(() =>
 const HashGenerator = lazy(() =>
   import('./components/tools/HashGenerator').then((module) => ({ default: module.HashGenerator }))
 );
+const UUIDGenerator = lazy(() =>
+  import('./components/tools/UUIDGenerator').then((module) => ({ default: module.UUIDGenerator }))
+);
 
 function App() {
   const { activeTool, setActiveTool } = useAppStore();
@@ -74,6 +77,8 @@ function App() {
         return <TextDiff />;
       case 'hash':
         return <HashGenerator />;
+      case 'uuid':
+        return <UUIDGenerator />;
       default: {
         // Exhaustive check - should never reach here
         const _exhaustiveCheck: never = activeTool;

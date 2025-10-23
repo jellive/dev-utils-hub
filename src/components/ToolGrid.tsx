@@ -7,6 +7,7 @@ import {
   Regex,
   FileDiff,
   Hash,
+  Fingerprint,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
@@ -62,6 +63,12 @@ const tools: ToolConfig[] = [
     name: 'Hash Generator',
     description: 'Generate MD5, SHA-1, SHA-256 hashes',
     icon: Hash,
+  },
+  {
+    id: 'uuid',
+    name: 'UUID Generator',
+    description: 'Generate unique identifiers (UUID v4)',
+    icon: Fingerprint,
   },
 ];
 

@@ -21,7 +21,8 @@ export type ToolType =
   | 'url'
   | 'regex'
   | 'diff'
-  | 'hash';
+  | 'hash'
+  | 'uuid';
 
 export interface Tool {
   id: ToolType;
