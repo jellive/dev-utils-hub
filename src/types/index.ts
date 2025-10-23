@@ -22,7 +22,8 @@ export type ToolType =
   | 'regex'
   | 'diff'
   | 'hash'
-  | 'uuid';
+  | 'uuid'
+  | 'timestamp';
 
 export interface Tool {
   id: ToolType;

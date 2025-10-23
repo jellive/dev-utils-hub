@@ -8,6 +8,7 @@ import {
   FileDiff,
   Hash,
   Fingerprint,
+  Calendar,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
@@ -69,6 +70,12 @@ const tools: ToolConfig[] = [
     name: 'UUID Generator',
     description: 'Generate unique identifiers (UUID v4)',
     icon: Fingerprint,
+  },
+  {
+    id: 'timestamp',
+    name: 'Timestamp Converter',
+    description: 'Convert between timestamps and dates',
+    icon: Calendar,
   },
 ];
 

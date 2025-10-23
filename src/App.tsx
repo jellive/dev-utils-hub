@@ -34,6 +34,9 @@ const HashGenerator = lazy(() =>
 const UUIDGenerator = lazy(() =>
   import('./components/tools/UUIDGenerator').then((module) => ({ default: module.UUIDGenerator }))
 );
+const TimestampConverter = lazy(() =>
+  import('./components/tools/TimestampConverter').then((module) => ({ default: module.TimestampConverter }))
+);
 
 function App() {
   const { activeTool, setActiveTool } = useAppStore();
@@ -79,6 +82,8 @@ function App() {
         return <HashGenerator />;
       case 'uuid':
         return <UUIDGenerator />;
+      case 'timestamp':
+        return <TimestampConverter />;
       default: {
         // Exhaustive check - should never reach here
         const _exhaustiveCheck: never = activeTool;
