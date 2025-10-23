@@ -7,6 +7,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Clock, Copy } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 type TimestampUnit = 'seconds' | 'milliseconds';
 
@@ -22,6 +23,7 @@ const TIMEZONES = [
 ];
 
 export function TimestampConverter() {
+  const { t } = useTranslation();
   const [timestamp, setTimestamp] = useState('');
   const [unit, setUnit] = useState<TimestampUnit>('milliseconds');
   const [timezone, setTimezone] = useState('UTC');
@@ -51,9 +53,9 @@ export function TimestampConverter() {
   const handleCopy = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      toast.success('Copied to clipboard!');
+      toast.success(t('common.copied'));
     } catch (err) {
-      toast.error('Failed to copy');
+      toast.error(t('common.copyFailed'));
     }
   };
 
@@ -87,20 +89,20 @@ export function TimestampConverter() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Timestamp Converter</h2>
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('tools.timestamp.title')}</h2>
 
       <Tabs defaultValue="timestamp-to-date" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="timestamp-to-date">Timestamp to Date</TabsTrigger>
-          <TabsTrigger value="date-to-timestamp">Date to Timestamp</TabsTrigger>
+          <TabsTrigger value="timestamp-to-date">{t('tools.timestamp.timestampToDate')}</TabsTrigger>
+          <TabsTrigger value="date-to-timestamp">{t('tools.timestamp.dateToTimestamp')}</TabsTrigger>
         </TabsList>
 
         {/* Timestamp to Date Tab */}
         <TabsContent value="timestamp-to-date" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Timestamp Input</CardTitle>
-              <CardDescription>Enter a Unix timestamp to convert</CardDescription>
+              <CardTitle>{t('tools.timestamp.timestampInput')}</CardTitle>
+              <CardDescription>{t('tools.timestamp.enterTimestamp')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-2">
@@ -108,7 +110,7 @@ export function TimestampConverter() {
                   type="text"
                   value={timestamp}
                   onChange={(e) => setTimestamp(e.target.value)}
-                  placeholder="Enter timestamp..."
+                  placeholder={t('tools.timestamp.enterTimestamp')}
                   className="flex-1"
                 />
                 <Select value={unit} onValueChange={(v) => setUnit(v as TimestampUnit)}>
@@ -116,19 +118,19 @@ export function TimestampConverter() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="seconds">Seconds</SelectItem>
-                    <SelectItem value="milliseconds">Milliseconds</SelectItem>
+                    <SelectItem value="seconds">{t('tools.timestamp.seconds')}</SelectItem>
+                    <SelectItem value="milliseconds">{t('tools.timestamp.milliseconds')}</SelectItem>
                   </SelectContent>
                 </Select>
                 <Button onClick={handleCurrentTime} variant="outline" className="gap-2">
                   <Clock className="h-4 w-4" />
-                  Now
+                  {t('tools.timestamp.now')}
                 </Button>
               </div>
 
               <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                 <p className="text-sm text-blue-900 dark:text-blue-300">
-                  Current time: {currentTime.toLocaleString()} ({Math.floor(currentTime.getTime() / 1000)})
+                  {t('tools.timestamp.currentTime')}: {currentTime.toLocaleString()} ({Math.floor(currentTime.getTime() / 1000)})
                 </p>
               </div>
             </CardContent>

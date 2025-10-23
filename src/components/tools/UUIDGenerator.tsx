@@ -6,11 +6,13 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Badge } from '@/components/ui/badge';
 import { RefreshCw, Copy, Trash2, Download, Package } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 const MAX_HISTORY = 50;
 const STORAGE_KEY = 'uuid-history';
 
 export function UUIDGenerator() {
+  const { t } = useTranslation();
   const [currentUUID, setCurrentUUID] = useState('');
   const [history, setHistory] = useState<string[]>([]);
   const [bulkCount, setBulkCount] = useState('10');
@@ -50,16 +52,16 @@ export function UUIDGenerator() {
   const handleCopy = async (uuid: string) => {
     try {
       await navigator.clipboard.writeText(uuid);
-      toast.success('UUID copied to clipboard!');
+      toast.success(t('common.copied'));
     } catch (err) {
-      toast.error('Failed to copy UUID');
+      toast.error(t('common.copyFailed'));
     }
   };
 
   const clearHistory = () => {
     setHistory([]);
     localStorage.removeItem(STORAGE_KEY);
-    toast.success('History cleared');
+    toast.success(t('tools.uuid.historyCleared'));
   };
 
   const generateBulk = () => {
@@ -123,7 +125,7 @@ export function UUIDGenerator() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">UUID Generator</h2>
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('tools.uuid.title')}</h2>
 
       {/* Generate Buttons */}
       <div className="flex gap-2">
@@ -133,21 +135,21 @@ export function UUIDGenerator() {
           size="lg"
         >
           <RefreshCw className="h-5 w-5" />
-          Generate UUID
+          {t('tools.uuid.generate')}
         </Button>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button variant="outline" size="lg" className="gap-2">
               <Package className="h-5 w-5" />
-              Bulk
+              {t('tools.uuid.bulk')}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
-              <DialogTitle>Bulk UUID Generation</DialogTitle>
+              <DialogTitle>{t('tools.uuid.bulkGeneration')}</DialogTitle>
               <DialogDescription>
-                Generate multiple UUIDs at once (1-100)
+                {t('tools.uuid.generateMultiple')}
               </DialogDescription>
             </DialogHeader>
 

@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Search, AlertCircle, HelpCircle, BookOpen, Copy } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 interface Match {
   text: string;
@@ -79,6 +80,7 @@ const PRESET_EXAMPLES: Record<string, PresetExample> = {
 };
 
 export function RegexTester() {
+  const { t } = useTranslation();
   const [pattern, setPattern] = useState('');
   const [testString, setTestString] = useState('');
   const [flags, setFlags] = useState({ g: false, i: false, m: false });
@@ -197,9 +199,9 @@ export function RegexTester() {
   const handleCopy = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      toast.success('Copied to clipboard!');
+      toast.success(t('common.copied'));
     } catch (err) {
-      toast.error('Failed to copy');
+      toast.error(t('common.copyFailed'));
     }
   };
 
@@ -227,13 +229,13 @@ export function RegexTester() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Regex Tester</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('tools.regex.title')}</h2>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button variant="outline" className="gap-2">
               <BookOpen className="h-4 w-4" />
-              Examples
+              {t('tools.regex.examples')}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">

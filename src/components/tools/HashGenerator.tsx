@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AlertCircle, Upload, X, HelpCircle, Check, X as XCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 type HashAlgorithm = 'md5' | 'sha256' | 'sha512';
 
@@ -17,6 +18,7 @@ interface AlgorithmOption {
 }
 
 export function HashGenerator() {
+  const { t } = useTranslation();
   const [input, setInput] = useState('');
   const [algorithm, setAlgorithm] = useState<HashAlgorithm>('md5');
   const [hashResult, setHashResult] = useState('');
@@ -73,9 +75,9 @@ export function HashGenerator() {
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(hashResult);
-      toast.success('Hash copied to clipboard!');
+      toast.success(t('common.copied'));
     } catch (err) {
-      toast.error('Failed to copy hash');
+      toast.error(t('common.copyFailed'));
     }
   };
 
@@ -157,12 +159,12 @@ export function HashGenerator() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Hash Generator</h2>
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('tools.hash.title')}</h2>
 
       {/* Algorithm Selector */}
       <div className="space-y-2">
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Select Hash Algorithm
+          {t('tools.hash.selectAlgorithm')}
         </label>
         <div className="flex flex-wrap gap-2">
           {algorithms.map((algo) => (

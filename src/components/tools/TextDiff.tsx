@@ -8,10 +8,12 @@ import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { FileDiff, Copy } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { diffLines } from '../../utils/diffAlgorithm';
 import type { DiffResult } from '../../utils/diffAlgorithm';
 
 export function TextDiff() {
+  const { t } = useTranslation();
   const [originalText, setOriginalText] = useState('');
   const [modifiedText, setModifiedText] = useState('');
   const [diffResults, setDiffResults] = useState<DiffResult[]>([]);
@@ -56,12 +58,12 @@ export function TextDiff() {
     toast.info('Cleared all text');
   };
 
-  const handleCopy = async (text: string, label: string) => {
+  const handleCopy = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      toast.success(`${label} copied to clipboard!`);
+      toast.success(t('common.copied'));
     } catch (err) {
-      toast.error('Failed to copy');
+      toast.error(t('common.copyFailed'));
     }
   };
 
@@ -92,12 +94,12 @@ export function TextDiff() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Text Diff Tool</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('tools.diff.title')}</h2>
 
         {hasCompared && (
           <div className="flex items-center gap-2">
             <Badge variant={hasDifferences ? 'default' : 'secondary'} className="text-sm">
-              {hasDifferences ? 'Differences Found' : 'Identical'}
+              {hasDifferences ? t('tools.diff.differencesFound') : t('tools.diff.identical')}
             </Badge>
           </div>
         )}
@@ -113,7 +115,7 @@ export function TextDiff() {
                 <CardDescription>Enter the original version</CardDescription>
               </div>
               <Button
-                onClick={() => handleCopy(originalText, 'Original text')}
+                onClick={() => handleCopy(originalText)}
                 variant="ghost"
                 size="sm"
                 className="gap-2"
@@ -140,7 +142,7 @@ export function TextDiff() {
                 <CardDescription>Enter the modified version</CardDescription>
               </div>
               <Button
-                onClick={() => handleCopy(modifiedText, 'Modified text')}
+                onClick={() => handleCopy(modifiedText)}
                 variant="ghost"
                 size="sm"
                 className="gap-2"
@@ -197,7 +199,7 @@ export function TextDiff() {
             <div className="flex items-center gap-2">
               <Button onClick={handleCompare} disabled={isProcessing} className="gap-2">
                 <FileDiff className="h-4 w-4" />
-                {isProcessing ? 'Processing...' : 'Compare'}
+                {isProcessing ? t("common.loading") : t("common.compare")}
               </Button>
               <Button onClick={handleClear} variant="outline">
                 Clear
