@@ -1,3 +1,6 @@
 {
-  "migrationNoticeShown": true
+  "migrationNoticeShown": true,
+  "currentTag": "shadcn-ui",
+  "lastSwitched": "2025-10-23T00:44:36.597Z",
+  "branchTagMapping": {}
 }

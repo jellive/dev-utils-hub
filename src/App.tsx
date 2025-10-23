@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react';
+import { Toaster } from 'sonner';
 import { Header } from './components/Header';
 import { TabNavigation } from './components/TabNavigation';
 import { OfflineIndicator } from './components/OfflineIndicator';
@@ -79,6 +80,7 @@ function App() {
       </main>
       <OfflineIndicator />
       <InstallPWAButton />
+      <Toaster />
     </div>
   );
 }

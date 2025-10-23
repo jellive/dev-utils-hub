@@ -32,9 +32,9 @@ describe('JsonFormatter', () => {
       fireEvent.change(input, { target: { value: '{"name":"test","age":25}' } });
       fireEvent.click(formatButton);
 
-      const output = screen.getByTestId('json-output');
-      expect(output.textContent).toContain('"name": "test"');
-      expect(output.textContent).toContain('"age": 25');
+      const output = screen.getByRole('textbox', { name: /formatted output/i }) as HTMLTextAreaElement;
+      expect(output.value).toContain('"name": "test"');
+      expect(output.value).toContain('"age": 25');
     });
 
     it('should handle nested objects', () => {
@@ -45,10 +45,10 @@ describe('JsonFormatter', () => {
       fireEvent.change(input, { target: { value: nestedJson } });
       fireEvent.click(formatButton);
 
-      const output = screen.getByTestId('json-output');
-      expect(output.textContent).toContain('"user"');
-      expect(output.textContent).toContain('"address"');
-      expect(output.textContent).toContain('"city": "Seoul"');
+      const output = screen.getByRole('textbox', { name: /formatted output/i }) as HTMLTextAreaElement;
+      expect(output.value).toContain('"user"');
+      expect(output.value).toContain('"address"');
+      expect(output.value).toContain('"city": "Seoul"');
     });
 
     it('should handle arrays', () => {
@@ -59,9 +59,9 @@ describe('JsonFormatter', () => {
       fireEvent.change(input, { target: { value: arrayJson } });
       fireEvent.click(formatButton);
 
-      const output = screen.getByTestId('json-output');
-      expect(output.textContent).toContain('"items"');
-      expect(output.textContent).toContain('[');
+      const output = screen.getByRole('textbox', { name: /formatted output/i }) as HTMLTextAreaElement;
+      expect(output.value).toContain('"items"');
+      expect(output.value).toContain('[');
     });
   });
 
@@ -77,8 +77,8 @@ describe('JsonFormatter', () => {
       fireEvent.change(input, { target: { value: formattedJson } });
       fireEvent.click(compressButton);
 
-      const output = screen.getByTestId('json-output');
-      expect(output.textContent).toBe('{"name":"test","age":25}');
+      const output = screen.getByRole('textbox', { name: /formatted output/i }) as HTMLTextAreaElement;
+      expect(output.value).toBe('{"name":"test","age":25}');
     });
   });
 
@@ -90,10 +90,10 @@ describe('JsonFormatter', () => {
       fireEvent.change(input, { target: { value: '{invalid json}' } });
       fireEvent.click(formatButton);
 
-      // Use getAllByText to handle multiple matches (input value + error message)
-      const errorElements = screen.getAllByText(/invalid json/i);
-      // Check that at least one of them is the error message (has class text-red-*)
-      expect(errorElements.some(el => el.className.includes('text-red'))).toBe(true);
+      // Check for Alert component with error role
+      const alert = screen.getByRole('alert');
+      expect(alert).toBeInTheDocument();
+      expect(alert).toHaveTextContent(/invalid json/i);
     });
 
     it('should show error for empty input', () => {
@@ -111,16 +111,14 @@ describe('JsonFormatter', () => {
       // First, trigger error
       fireEvent.change(input, { target: { value: '{invalid}' } });
       fireEvent.click(formatButton);
-      const errorElements = screen.getAllByText(/invalid json/i);
-      expect(errorElements.some(el => el.className.includes('text-red'))).toBe(true);
+      expect(screen.getByRole('alert')).toBeInTheDocument();
 
       // Then, fix with valid JSON
       fireEvent.change(input, { target: { value: '{"valid":true}' } });
       fireEvent.click(formatButton);
 
-      // Error message should not be present (only the valid JSON in input might remain)
-      const remainingElements = screen.queryAllByText(/invalid json/i);
-      expect(remainingElements.every(el => !el.className.includes('text-red'))).toBe(true);
+      // Error Alert should not be present
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     });
   });
 
@@ -137,8 +135,8 @@ describe('JsonFormatter', () => {
       fireEvent.click(clearButton);
       expect(input.value).toBe('');
 
-      const output = screen.getByTestId('json-output');
-      expect(output.textContent).toBe('');
+      const output = screen.getByRole('textbox', { name: /formatted output/i }) as HTMLTextAreaElement;
+      expect(output.value).toBe('');
     });
   });
 
@@ -181,8 +179,8 @@ describe('JsonFormatter', () => {
       // Should process in less than 1 second
       expect(endTime - startTime).toBeLessThan(1000);
 
-      const output = screen.getByTestId('json-output');
-      expect(output.textContent).toContain('"items"');
+      const output = screen.getByRole('textbox', { name: /formatted output/i }) as HTMLTextAreaElement;
+      expect(output.value).toContain('"items"');
     });
   });
 });
