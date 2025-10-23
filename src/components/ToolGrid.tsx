@@ -104,12 +104,13 @@ export function ToolGrid() {
               onClick={() => setActiveTool(tool.id)}
               aria-label={tool.name}
               className={`
-                text-left transition-all duration-200
-                hover:-translate-y-1 hover:shadow-lg
-                ${isActive ? 'ring-2 ring-primary' : ''}
+                group text-left transition-all duration-300 ease-out
+                hover:-translate-y-2 hover:shadow-xl
+                active:scale-[0.98] active:shadow-md
+                ${isActive ? 'ring-2 ring-primary shadow-lg' : ''}
               `}
             >
-              <Card className={`h-full ${isActive ? 'border-primary' : ''}`}>
+              <Card className={`h-full transition-all duration-300 ${isActive ? 'border-primary bg-primary/5' : 'group-hover:border-primary/50'}`}>
                 <CardHeader>
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-primary/10">

@@ -88,12 +88,23 @@ describe('ToolGrid', () => {
   describe('Card Interactions', () => {
     it('should have hover effect with translate transform', () => {
       const card = screen.getByRole('button', { name: /json formatter/i });
-      expect(card.className).toContain('hover:-translate-y-1');
+      expect(card.className).toContain('hover:-translate-y-2');
     });
 
     it('should have hover effect with shadow', () => {
       const card = screen.getByRole('button', { name: /json formatter/i });
-      expect(card.className).toContain('hover:shadow-lg');
+      expect(card.className).toContain('hover:shadow-xl');
+    });
+
+    it('should have smooth transition with ease-out', () => {
+      const card = screen.getByRole('button', { name: /json formatter/i });
+      expect(card.className).toContain('duration-300');
+      expect(card.className).toContain('ease-out');
+    });
+
+    it('should have active state with scale effect', () => {
+      const card = screen.getByRole('button', { name: /json formatter/i });
+      expect(card.className).toContain('active:scale-[0.98]');
     });
 
     it('should call setActiveTool when card is clicked', () => {
