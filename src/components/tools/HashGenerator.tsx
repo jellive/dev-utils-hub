@@ -1,7 +1,17 @@
 import { useState } from 'react';
 import { generateHash } from '../../utils/hashUtils';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 type HashAlgorithm = 'md5' | 'sha256' | 'sha512';
+
+interface AlgorithmOption {
+  value: HashAlgorithm;
+  label: string;
+  bits: string;
+}
 
 export function HashGenerator() {
   const [input, setInput] = useState('');
@@ -9,6 +19,12 @@ export function HashGenerator() {
   const [hashResult, setHashResult] = useState('');
   const [error, setError] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+
+  const algorithms: AlgorithmOption[] = [
+    { value: 'md5', label: 'MD5', bits: '128-bit' },
+    { value: 'sha256', label: 'SHA-256', bits: '256-bit' },
+    { value: 'sha512', label: 'SHA-512', bits: '512-bit' },
+  ];
 
   const handleGenerate = async () => {
     setError('');
@@ -50,24 +66,50 @@ export function HashGenerator() {
       <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Hash Generator</h2>
 
       {/* Algorithm Selector */}
-      <div>
-        <label
-          htmlFor="hash-algorithm"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-        >
-          Hash Algorithm
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          Select Hash Algorithm
         </label>
-        <select
-          id="hash-algorithm"
-          value={algorithm}
-          onChange={(e) => setAlgorithm(e.target.value as HashAlgorithm)}
-          className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-        >
-          <option value="md5">MD5</option>
-          <option value="sha256">SHA-256</option>
-          <option value="sha512">SHA-512</option>
-        </select>
+        <div className="flex flex-wrap gap-2">
+          {algorithms.map((algo) => (
+            <Button
+              key={algo.value}
+              variant={algorithm === algo.value ? 'default' : 'outline'}
+              onClick={() => setAlgorithm(algo.value)}
+              data-state={algorithm === algo.value ? 'active' : 'inactive'}
+              className="flex items-center gap-2"
+            >
+              {algo.label}
+              <Badge variant="secondary" className="ml-1">
+                {algo.bits}
+              </Badge>
+            </Button>
+          ))}
+        </div>
       </div>
+
+      {/* Keep old select for backward compatibility (hidden) */}
+      <select
+        id="hash-algorithm"
+        value={algorithm}
+        onChange={(e) => setAlgorithm(e.target.value as HashAlgorithm)}
+        className="hidden"
+        aria-label="Hash Algorithm"
+      >
+        <option value="md5">MD5</option>
+        <option value="sha256">SHA-256</option>
+        <option value="sha512">SHA-512</option>
+      </select>
+
+      {/* MD5 Security Warning */}
+      {algorithm === 'md5' && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            <strong>Security Warning:</strong> MD5 is not cryptographically secure and should not be used for security-sensitive applications. Consider using SHA-256 or SHA-512 instead.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Input Section */}
       <div>

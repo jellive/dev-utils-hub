@@ -578,7 +578,7 @@
         "dependencies": [
           2
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": []
       },
       {
@@ -604,7 +604,7 @@
         "dependencies": [
           2
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": []
       },
       {
@@ -617,7 +617,7 @@
         "dependencies": [
           2
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -625,7 +625,7 @@
             "description": "Implement the main tabbed interface structure using shadcn/ui Tabs component with proper trigger buttons",
             "dependencies": [],
             "details": "Create Tabs component with TabsList containing two TabsTrigger elements - one for 'Encode' with ArrowUp icon and one for 'Decode' with ArrowDown icon from lucide-react. Set up TabsContent for each tab to hold the respective forms. Ensure proper ARIA labels and keyboard navigation support.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test tab switching functionality, keyboard navigation between tabs, and verify icons display correctly"
           },
           {
@@ -636,7 +636,7 @@
               1
             ],
             "details": "Add Textarea components for input and output in each tab content. Include proper Label components for accessibility. Implement copy buttons with clipboard functionality and visual feedback. Add placeholder text and proper styling consistent with shadcn/ui design system.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test copy button functionality, textarea input/output, and verify proper labeling for screen readers"
           },
           {
@@ -647,7 +647,7 @@
               2
             ],
             "details": "Add Switch component for URL-safe Base64 encoding option with proper label. Implement Select component for character encoding selection (UTF-8, ASCII) with appropriate options. Position these controls in a settings area above the textarea inputs with proper spacing and alignment.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test URL-safe Base64 encoding differences, character encoding selection functionality, and switch toggle behavior"
           },
           {
@@ -658,7 +658,7 @@
               3
             ],
             "details": "Create drag-and-drop zone overlay on textarea areas with visual feedback states (drag enter, drag over, drop). Handle file reading and automatic population of textarea content. Add file type validation and size limits. Implement visual indicators for drag states with proper styling and animations.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test drag-and-drop functionality with various file types, visual feedback states, file size validation, and error handling"
           },
           {
@@ -669,7 +669,7 @@
               4
             ],
             "details": "Add Progress component that shows during Base64 encoding/decoding operations, especially for large files. Display file size indicators and character count for both input and output. Implement loading states and processing feedback with appropriate animations and status messages.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test progress indicators with large files, file size display accuracy, and processing feedback during encoding/decoding operations"
           }
         ]
@@ -684,7 +684,7 @@
         "dependencies": [
           2
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -692,7 +692,7 @@
             "description": "Create the algorithm selection UI using Button group component with Badge indicators showing bit length for each algorithm",
             "dependencies": [],
             "details": "Build a Button group component that allows users to select between MD5 (128-bit), SHA-1 (160-bit), SHA-256 (256-bit), and SHA-512 (512-bit) algorithms. Each button should display the algorithm name with a Badge showing the bit length. Use shadcn/ui Button and Badge components with proper styling and active state management.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test algorithm selection functionality, verify Badge displays correct bit lengths, and ensure proper active state styling"
           },
           {
@@ -703,7 +703,7 @@
               1
             ],
             "details": "Create an Alert component using shadcn/ui that displays when MD5 is selected, warning users about its cryptographic vulnerabilities and recommending SHA-256 or SHA-512 for security-sensitive applications. Include appropriate warning icon and styling.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify alert appears only when MD5 is selected and disappears when other algorithms are chosen"
           },
           {
@@ -951,7 +951,7 @@
     ],
     "metadata": {
       "created": "2025-10-23T00:44:28.323Z",
-      "updated": "2025-10-23T02:44:26.542Z",
+      "updated": "2025-10-23T07:15:27.950Z",
       "description": "Tasks for shadcn-ui context"
     }
   }

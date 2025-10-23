@@ -33,18 +33,30 @@ const HashGenerator = lazy(() =>
 );
 
 function App() {
-  const { activeTool } = useAppStore();
+  const { activeTool, setActiveTool } = useAppStore();
   const [showToolGrid, setShowToolGrid] = useState(true);
-  const [previousTool, setPreviousTool] = useState(activeTool);
+  const [previousTool, setPreviousTool] = useState<string | null>(null);
   usePerformanceMonitor(`Tool view: ${showToolGrid ? 'grid' : activeTool}`);
 
   // Detect when tool changes and hide grid
   useEffect(() => {
+    // If previousTool is null, this is first render - just set it
+    if (previousTool === null) {
+      setPreviousTool(activeTool);
+      return;
+    }
+    // If tool changed, hide grid
     if (activeTool !== previousTool) {
       setShowToolGrid(false);
       setPreviousTool(activeTool);
     }
-  }, [activeTool, previousTool]);
+  }, [activeTool, previousTool, showToolGrid]);
+
+  // Reset to grid view on mount
+  useEffect(() => {
+    setActiveTool('json'); // Reset to default tool
+    setShowToolGrid(true);
+  }, []);
 
   const renderTool = () => {
     switch (activeTool) {

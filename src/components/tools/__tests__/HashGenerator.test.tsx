@@ -197,4 +197,140 @@ describe('HashGenerator', () => {
       expect(algorithmSelect.querySelector('option[value="sha512"]')).toBeInTheDocument();
     });
   });
+
+  describe('Algorithm Selection UI (Task 8.1)', () => {
+    it('should display algorithm buttons instead of select dropdown', () => {
+      // Check for button group instead of select
+      const md5Button = screen.getByRole('button', { name: /MD5/i });
+      const sha256Button = screen.getByRole('button', { name: /SHA-256/i });
+      const sha512Button = screen.getByRole('button', { name: /SHA-512/i });
+
+      expect(md5Button).toBeInTheDocument();
+      expect(sha256Button).toBeInTheDocument();
+      expect(sha512Button).toBeInTheDocument();
+    });
+
+    it('should display bit length badges for each algorithm', () => {
+      const md5Button = screen.getByRole('button', { name: /MD5/i });
+      const sha256Button = screen.getByRole('button', { name: /SHA-256/i });
+      const sha512Button = screen.getByRole('button', { name: /SHA-512/i });
+
+      // MD5 button should contain 128-bit badge
+      expect(md5Button.textContent).toContain('128-bit');
+
+      // SHA-256 button should contain 256-bit badge
+      expect(sha256Button.textContent).toContain('256-bit');
+
+      // SHA-512 button should contain 512-bit badge
+      expect(sha512Button.textContent).toContain('512-bit');
+    });
+
+    it('should highlight selected algorithm button', () => {
+      const md5Button = screen.getByRole('button', { name: /MD5/i });
+
+      // MD5 should be selected by default
+      expect(md5Button).toHaveAttribute('data-state', 'active');
+    });
+
+    it('should allow switching between algorithms by clicking buttons', async () => {
+      const md5Button = screen.getByRole('button', { name: /MD5/i });
+      const sha256Button = screen.getByRole('button', { name: /SHA-256/i });
+
+      // Initially MD5 is active
+      expect(md5Button).toHaveAttribute('data-state', 'active');
+
+      // Click SHA-256
+      fireEvent.click(sha256Button);
+
+      // SHA-256 should now be active
+      await waitFor(() => {
+        expect(sha256Button).toHaveAttribute('data-state', 'active');
+        expect(md5Button).toHaveAttribute('data-state', 'inactive');
+      });
+    });
+
+    it('should generate hash with selected algorithm from button', async () => {
+      const input = screen.getByPlaceholderText(/enter text to hash/i);
+      const sha256Button = screen.getByRole('button', { name: /SHA-256/i });
+      const generateButton = screen.getByRole('button', { name: /generate hash/i });
+
+      // Select SHA-256
+      fireEvent.click(sha256Button);
+
+      // Generate hash
+      fireEvent.change(input, { target: { value: 'hello' } });
+      fireEvent.click(generateButton);
+
+      await waitFor(() => {
+        const hashOutput = screen.getByTestId('hash-output');
+        expect(hashOutput.textContent).toBe('2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824');
+      });
+    });
+  });
+
+  describe('MD5 Security Warning (Task 8.2)', () => {
+    it('should display security warning alert when MD5 is selected', () => {
+      // MD5 is selected by default
+      const alert = screen.getByRole('alert');
+
+      expect(alert).toBeInTheDocument();
+      expect(alert).toHaveTextContent(/MD5.*not.*secure/i);
+    });
+
+    it('should hide security warning when SHA-256 is selected', async () => {
+      const sha256Button = screen.getByRole('button', { name: /SHA-256/i });
+
+      // Click SHA-256
+      fireEvent.click(sha256Button);
+
+      await waitFor(() => {
+        const alerts = screen.queryAllByRole('alert');
+        // Filter out any other alerts and check for MD5 warning specifically
+        const md5Alert = alerts.find(alert => alert.textContent?.includes('MD5'));
+        expect(md5Alert).toBeUndefined();
+      });
+    });
+
+    it('should hide security warning when SHA-512 is selected', async () => {
+      const sha512Button = screen.getByRole('button', { name: /SHA-512/i });
+
+      // Click SHA-512
+      fireEvent.click(sha512Button);
+
+      await waitFor(() => {
+        const alerts = screen.queryAllByRole('alert');
+        const md5Alert = alerts.find(alert => alert.textContent?.includes('MD5'));
+        expect(md5Alert).toBeUndefined();
+      });
+    });
+
+    it('should show security warning again when switching back to MD5', async () => {
+      const sha256Button = screen.getByRole('button', { name: /SHA-256/i });
+      const md5Button = screen.getByRole('button', { name: /MD5/i });
+
+      // Switch to SHA-256
+      fireEvent.click(sha256Button);
+
+      await waitFor(() => {
+        const alerts = screen.queryAllByRole('alert');
+        const md5Alert = alerts.find(alert => alert.textContent?.includes('MD5'));
+        expect(md5Alert).toBeUndefined();
+      });
+
+      // Switch back to MD5
+      fireEvent.click(md5Button);
+
+      await waitFor(() => {
+        const alert = screen.getByRole('alert');
+        expect(alert).toHaveTextContent(/MD5.*not.*secure/i);
+      });
+    });
+
+    it('should display warning with destructive styling', () => {
+      const alert = screen.getByRole('alert');
+
+      // Alert should have destructive variant styling
+      expect(alert.className).toContain('destructive');
+    });
+  });
 });
