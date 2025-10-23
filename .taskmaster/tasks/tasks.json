@@ -887,7 +887,7 @@
         "dependencies": [
           2
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": []
       },
       {
@@ -900,7 +900,7 @@
         "dependencies": [
           2
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": []
       },
       {
@@ -951,7 +951,7 @@
     ],
     "metadata": {
       "created": "2025-10-23T00:44:28.323Z",
-      "updated": "2025-10-23T08:14:51.360Z",
+      "updated": "2025-10-23T08:16:30.529Z",
       "description": "Tasks for shadcn-ui context"
     }
   }
