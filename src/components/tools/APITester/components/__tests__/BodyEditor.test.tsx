@@ -91,4 +91,103 @@ describe('BodyEditor', () => {
 
     expect(screen.getByPlaceholderText(/enter request body/i)).toBeInTheDocument();
   });
+
+  describe('Body Type Switching', () => {
+    it('should show body type selector', () => {
+      render(<BodyEditor value="" onChange={vi.fn()} />);
+
+      expect(screen.getByRole('combobox', { name: /body type/i })).toBeInTheDocument();
+    });
+
+    it('should default to JSON type', () => {
+      render(<BodyEditor value="" onChange={vi.fn()} />);
+
+      const selector = screen.getByRole('combobox', { name: /body type/i });
+      expect(selector).toHaveValue('json');
+    });
+
+    it('should switch to Text type', async () => {
+      const user = userEvent.setup();
+      const handleChange = vi.fn();
+      render(<BodyEditor value="" onChange={handleChange} />);
+
+      const selector = screen.getByRole('combobox', { name: /body type/i });
+      await user.selectOptions(selector, 'text');
+
+      expect(selector).toHaveValue('text');
+    });
+
+    it('should not show format button for Text type', async () => {
+      const user = userEvent.setup();
+      render(<BodyEditor value="" onChange={vi.fn()} />);
+
+      const selector = screen.getByRole('combobox', { name: /body type/i });
+      await user.selectOptions(selector, 'text');
+
+      expect(screen.queryByRole('button', { name: /format/i })).not.toBeInTheDocument();
+    });
+
+    it('should show format button for JSON type', () => {
+      render(<BodyEditor value="" onChange={vi.fn()} />);
+
+      expect(screen.getByRole('button', { name: /format/i })).toBeInTheDocument();
+    });
+  });
+
+  describe('JSON Templates', () => {
+    it('should show template selector for JSON type', () => {
+      render(<BodyEditor value="" onChange={vi.fn()} />);
+
+      expect(screen.getByRole('combobox', { name: /template/i })).toBeInTheDocument();
+    });
+
+    it('should not show template selector for Text type', async () => {
+      const user = userEvent.setup();
+      render(<BodyEditor value="" onChange={vi.fn()} />);
+
+      const typeSelector = screen.getByRole('combobox', { name: /body type/i });
+      await user.selectOptions(typeSelector, 'text');
+
+      expect(screen.queryByRole('combobox', { name: /template/i })).not.toBeInTheDocument();
+    });
+
+    it('should apply user object template', async () => {
+      const user = userEvent.setup();
+      const handleChange = vi.fn();
+      render(<BodyEditor value="" onChange={handleChange} />);
+
+      const templateSelector = screen.getByRole('combobox', { name: /template/i });
+      await user.selectOptions(templateSelector, 'user');
+
+      expect(handleChange).toHaveBeenCalledWith(expect.stringContaining('"name"'));
+      expect(handleChange).toHaveBeenCalledWith(expect.stringContaining('"email"'));
+    });
+
+    it('should apply array template', async () => {
+      const user = userEvent.setup();
+      const handleChange = vi.fn();
+      render(<BodyEditor value="" onChange={handleChange} />);
+
+      const templateSelector = screen.getByRole('combobox', { name: /template/i });
+      await user.selectOptions(templateSelector, 'array');
+
+      const call = handleChange.mock.calls[0][0];
+      expect(call).toMatch(/^\[/);
+      expect(call).toMatch(/\]$/);
+    });
+
+    it('should apply nested object template', async () => {
+      const user = userEvent.setup();
+      const handleChange = vi.fn();
+      render(<BodyEditor value="" onChange={handleChange} />);
+
+      const templateSelector = screen.getByRole('combobox', { name: /template/i });
+      await user.selectOptions(templateSelector, 'nested');
+
+      expect(handleChange).toHaveBeenCalledWith(expect.stringContaining('{'));
+      // Verify it's a valid JSON that can be parsed
+      const call = handleChange.mock.calls[0][0];
+      expect(() => JSON.parse(call)).not.toThrow();
+    });
+  });
 });
