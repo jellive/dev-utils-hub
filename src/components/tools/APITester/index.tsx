@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Send } from 'lucide-react';
@@ -13,7 +13,10 @@ import { ResponseTabs } from './components/ResponseTabs';
 import { HistoryPanel } from './components/HistoryPanel';
 import { HistoryList } from './components/HistoryList';
 import { SendButton } from './components/SendButton';
+import { ErrorMessage } from './components/ErrorMessage';
 import { useHistory } from './hooks/useHistory';
+import { useFormValidation } from './hooks/useFormValidation';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 
 export function APITester() {
   const [method, setMethod] = useState<HTTPMethod>('GET');
@@ -29,7 +32,30 @@ export function APITester() {
   const history = useHistory();
   const abortControllerRef = useRef<AbortController | null>(null);
 
+  // Form validation with debounce
+  const validation = useFormValidation({ debounceMs: 300 });
+
+  // Validate fields when they change
+  useEffect(() => {
+    validation.validateURL(url);
+  }, [url, validation.validateURL]);
+
+  useEffect(() => {
+    validation.validateBody(body);
+  }, [body, validation.validateBody]);
+
+  useEffect(() => {
+    validation.validateHeaders(headers);
+  }, [headers, validation.validateHeaders]);
+
   const handleSendRequest = useCallback(async () => {
+    // Validate all fields before sending
+    const isValid = validation.validateAll({ url, body, headers });
+    if (!isValid) {
+      setError('Please fix validation errors before sending');
+      return;
+    }
+
     if (!url) {
       setError('URL is required');
       return;
@@ -126,6 +152,24 @@ export function APITester() {
     }
   }, []);
 
+  const handleClearForm = useCallback(() => {
+    setUrl('');
+    setBody('');
+    setHeaders([]);
+    setQueryParams([]);
+    setResponse(null);
+    setError(null);
+    validation.clearAllErrors();
+  }, [validation]);
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    onSend: handleSendRequest,
+    onCancel: handleCancelRequest,
+    onClear: handleClearForm,
+    enabled: !loading,
+  });
+
   return (
     <div className="space-y-6">
       <Card>
@@ -141,15 +185,20 @@ export function APITester() {
         <CardContent className="space-y-4">
           {/* Request Builder */}
           <div className="space-y-4">
-            <div className="flex gap-2">
-              <MethodSelector value={method} onChange={setMethod} />
-              <URLInput value={url} onChange={setUrl} />
-              <SendButton
-                onSend={handleSendRequest}
-                onCancel={handleCancelRequest}
-                disabled={!url}
-                loading={loading}
-              />
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <MethodSelector value={method} onChange={setMethod} />
+                <div className="flex-1 space-y-1">
+                  <URLInput value={url} onChange={setUrl} />
+                  <ErrorMessage message={validation.errors.url} />
+                </div>
+                <SendButton
+                  onSend={handleSendRequest}
+                  onCancel={handleCancelRequest}
+                  disabled={!url || !validation.isValid}
+                  loading={loading}
+                />
+              </div>
             </div>
 
             <Tabs defaultValue="params" className="w-full">
@@ -164,9 +213,11 @@ export function APITester() {
               </TabsContent>
               <TabsContent value="headers" className="space-y-2">
                 <HeadersEditor headers={headers} onChange={setHeaders} />
+                <ErrorMessage message={validation.errors.headers} />
               </TabsContent>
               <TabsContent value="body" className="space-y-2">
                 <BodyEditor value={body} onChange={setBody} />
+                <ErrorMessage message={validation.errors.body} />
               </TabsContent>
               <TabsContent value="auth" className="space-y-2">
                 <AuthTab onAuthChange={setAuthConfig} />
