@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Send } from 'lucide-react';
+import { Send, AlertCircle } from 'lucide-react';
 import type { HTTPMethod, ResponseData, Header } from './types';
 import { MethodSelector } from './components/MethodSelector';
 import { URLInput } from './components/URLInput';
@@ -14,9 +14,11 @@ import { HistoryPanel } from './components/HistoryPanel';
 import { HistoryList } from './components/HistoryList';
 import { SendButton } from './components/SendButton';
 import { ErrorMessage } from './components/ErrorMessage';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { useHistory } from './hooks/useHistory';
 import { useFormValidation } from './hooks/useFormValidation';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
+import { getErrorMessage, getErrorSuggestion, getErrorType } from './utils/errorHandler';
 
 export function APITester() {
   const [method, setMethod] = useState<HTTPMethod>('GET');
@@ -128,8 +130,24 @@ export function APITester() {
         return;
       }
 
-      const errorMessage = err instanceof Error ? err.message : 'Request failed';
-      setError(errorMessage);
+      // Get user-friendly error message and suggestion
+      const errorMessage = getErrorMessage(err);
+      const errorSuggestion = getErrorSuggestion(err);
+      const errorType = getErrorType(err);
+
+      // Combine error message with suggestion
+      const fullErrorMessage = `${errorMessage}\n\n${errorSuggestion}`;
+      setError(fullErrorMessage);
+
+      // Log error in development
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[APITester] Request error:', {
+          type: errorType,
+          message: errorMessage,
+          suggestion: errorSuggestion,
+          originalError: err,
+        });
+      }
 
       // Save error to history
       history.saveToHistory({
@@ -137,7 +155,7 @@ export function APITester() {
         url,
         headers: {},
         body,
-        error: errorMessage,
+        error: fullErrorMessage,
       });
     } finally {
       setLoading(false);
@@ -171,8 +189,14 @@ export function APITester() {
   });
 
   return (
-    <div className="space-y-6">
-      <Card>
+    <ErrorBoundary
+      onError={(error, errorInfo) => {
+        // Log error for debugging
+        console.error('[APITester] Component error:', error, errorInfo);
+      }}
+    >
+      <div className="space-y-6">
+        <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Send className="h-5 w-5" />
@@ -227,8 +251,11 @@ export function APITester() {
 
           {/* Error Display */}
           {error && (
-            <div className="p-4 bg-destructive/10 text-destructive rounded-lg border border-destructive">
-              {error}
+            <div className="p-4 bg-destructive/10 text-destructive rounded-lg border border-destructive space-y-2">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                <div className="flex-1 whitespace-pre-wrap">{error}</div>
+              </div>
             </div>
           )}
 
@@ -249,6 +276,7 @@ export function APITester() {
           onDelete={history.deleteItem}
         />
       </HistoryPanel>
-    </div>
+      </div>
+    </ErrorBoundary>
   );
 }
