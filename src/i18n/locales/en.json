@@ -259,7 +259,131 @@
     },
     "api": {
       "name": "API Tester",
-      "description": "Test HTTP/REST APIs"
+      "description": "Test HTTP/REST APIs",
+      "title": "API Tester",
+      "subtitle": "Test HTTP/REST APIs with comprehensive request and response inspection",
+      "method": "Method",
+      "url": "URL",
+      "urlPlaceholder": "Enter request URL...",
+      "urlRequired": "URL is required",
+      "urlInvalid": "Please enter a valid URL",
+      "urlMustUseHttp": "URL must use HTTP or HTTPS protocol",
+      "send": "Send",
+      "sending": "Sending...",
+      "cancel": "Cancel",
+      "clear": "Clear",
+      "clearForm": "Clear Form",
+      "tabs": {
+        "params": "Query Params",
+        "headers": "Headers",
+        "body": "Body",
+        "auth": "Authorization"
+      },
+      "queryParams": {
+        "title": "Query Parameters",
+        "key": "Key",
+        "value": "Value",
+        "addParam": "Add Parameter",
+        "noParams": "No query parameters"
+      },
+      "headers": {
+        "title": "Headers",
+        "key": "Header Name",
+        "value": "Header Value",
+        "addHeader": "Add Header",
+        "noHeaders": "No headers",
+        "emptyKey": "Header has empty key",
+        "emptyValue": "Header has empty value",
+        "duplicateKeys": "Duplicate header keys found",
+        "invalidFormat": "Header key has invalid format"
+      },
+      "body": {
+        "title": "Request Body",
+        "placeholder": "Enter request body (JSON)...",
+        "invalidJson": "Invalid JSON format",
+        "formatJson": "Format JSON",
+        "minifyJson": "Minify JSON"
+      },
+      "auth": {
+        "title": "Authorization",
+        "type": "Auth Type",
+        "none": "None",
+        "bearer": "Bearer Token",
+        "basic": "Basic Auth",
+        "apiKey": "API Key",
+        "bearerToken": "Bearer Token",
+        "tokenPlaceholder": "Enter your bearer token...",
+        "username": "Username",
+        "password": "Password",
+        "usernamePlaceholder": "Enter username...",
+        "passwordPlaceholder": "Enter password...",
+        "apiKeyName": "Key Name",
+        "apiKeyValue": "Key Value",
+        "apiKeyPlaceholder": "e.g., X-API-Key",
+        "apiKeyValuePlaceholder": "Enter your API key...",
+        "placement": "Add to",
+        "header": "Header",
+        "queryParam": "Query Parameter"
+      },
+      "response": {
+        "title": "Response",
+        "noResponse": "No response yet. Send a request to see the response.",
+        "status": "Status",
+        "time": "Time",
+        "size": "Size",
+        "tabs": {
+          "body": "Body",
+          "headers": "Headers",
+          "raw": "Raw"
+        },
+        "copyResponse": "Copy Response",
+        "downloadResponse": "Download",
+        "formatResponse": "Format",
+        "rawView": "Raw View",
+        "prettyView": "Pretty View"
+      },
+      "history": {
+        "title": "History",
+        "noHistory": "No request history",
+        "clearHistory": "Clear History",
+        "delete": "Delete",
+        "restore": "Restore",
+        "request": "Request",
+        "response": "Response",
+        "error": "Error",
+        "count": "{{count}} requests"
+      },
+      "shortcuts": {
+        "send": "Ctrl+Enter to send",
+        "cancel": "Escape to cancel",
+        "clear": "Ctrl+L to clear"
+      },
+      "errors": {
+        "requestFailed": "Request failed",
+        "network": "Network error occurred",
+        "networkSuggestion": "Please check your internet connection and try again.",
+        "cors": "CORS policy error",
+        "corsSuggestion": "This request is being blocked by CORS policy. The server needs to allow cross-origin requests from this domain.",
+        "timeout": "Request timeout",
+        "timeoutSuggestion": "The request took too long to complete. Try increasing the timeout or check if the server is responding.",
+        "auth": "Authentication failed",
+        "authSuggestion": "Please check your credentials or authorization tokens.",
+        "parse": "Parse error",
+        "parseSuggestion": "Failed to parse the response. Please check if the response format is correct.",
+        "abort": "Request cancelled",
+        "abortSuggestion": "The request was cancelled.",
+        "unknown": "An error occurred",
+        "unknownSuggestion": "An error occurred. Please try again or check the error details.",
+        "validationFailed": "Please fix validation errors before sending",
+        "componentError": "Something went wrong",
+        "componentErrorDesc": "An error occurred while rendering this component. Please try again.",
+        "tryAgain": "Try Again"
+      },
+      "status": {
+        "success": "Success",
+        "error": "Error",
+        "loading": "Loading..."
+      }
     }
   },
   "common": {

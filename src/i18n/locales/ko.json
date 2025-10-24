@@ -258,7 +258,131 @@
     },
     "api": {
       "name": "API 테스터",
-      "description": "HTTP/REST API 테스트"
+      "description": "HTTP/REST API 테스트",
+      "title": "API 테스터",
+      "subtitle": "포괄적인 요청 및 응답 검사를 통한 HTTP/REST API 테스트",
+      "method": "메서드",
+      "url": "URL",
+      "urlPlaceholder": "요청 URL을 입력하세요...",
+      "urlRequired": "URL은 필수입니다",
+      "urlInvalid": "유효한 URL을 입력하세요",
+      "urlMustUseHttp": "URL은 HTTP 또는 HTTPS 프로토콜을 사용해야 합니다",
+      "send": "전송",
+      "sending": "전송 중...",
+      "cancel": "취소",
+      "clear": "지우기",
+      "clearForm": "양식 지우기",
+      "tabs": {
+        "params": "쿼리 매개변수",
+        "headers": "헤더",
+        "body": "본문",
+        "auth": "인증"
+      },
+      "queryParams": {
+        "title": "쿼리 매개변수",
+        "key": "키",
+        "value": "값",
+        "addParam": "매개변수 추가",
+        "noParams": "쿼리 매개변수 없음"
+      },
+      "headers": {
+        "title": "헤더",
+        "key": "헤더 이름",
+        "value": "헤더 값",
+        "addHeader": "헤더 추가",
+        "noHeaders": "헤더 없음",
+        "emptyKey": "헤더 키가 비어있습니다",
+        "emptyValue": "헤더 값이 비어있습니다",
+        "duplicateKeys": "중복된 헤더 키가 발견되었습니다",
+        "invalidFormat": "헤더 키 형식이 올바르지 않습니다"
+      },
+      "body": {
+        "title": "요청 본문",
+        "placeholder": "요청 본문을 입력하세요 (JSON)...",
+        "invalidJson": "잘못된 JSON 형식",
+        "formatJson": "JSON 포맷",
+        "minifyJson": "JSON 최소화"
+      },
+      "auth": {
+        "title": "인증",
+        "type": "인증 유형",
+        "none": "없음",
+        "bearer": "Bearer 토큰",
+        "basic": "기본 인증",
+        "apiKey": "API 키",
+        "bearerToken": "Bearer 토큰",
+        "tokenPlaceholder": "Bearer 토큰을 입력하세요...",
+        "username": "사용자명",
+        "password": "비밀번호",
+        "usernamePlaceholder": "사용자명을 입력하세요...",
+        "passwordPlaceholder": "비밀번호를 입력하세요...",
+        "apiKeyName": "키 이름",
+        "apiKeyValue": "키 값",
+        "apiKeyPlaceholder": "예: X-API-Key",
+        "apiKeyValuePlaceholder": "API 키를 입력하세요...",
+        "placement": "추가 위치",
+        "header": "헤더",
+        "queryParam": "쿼리 매개변수"
+      },
+      "response": {
+        "title": "응답",
+        "noResponse": "아직 응답이 없습니다. 요청을 전송하여 응답을 확인하세요.",
+        "status": "상태",
+        "time": "시간",
+        "size": "크기",
+        "tabs": {
+          "body": "본문",
+          "headers": "헤더",
+          "raw": "원본"
+        },
+        "copyResponse": "응답 복사",
+        "downloadResponse": "다운로드",
+        "formatResponse": "포맷",
+        "rawView": "원본 보기",
+        "prettyView": "보기 좋게"
+      },
+      "history": {
+        "title": "기록",
+        "noHistory": "요청 기록 없음",
+        "clearHistory": "기록 지우기",
+        "delete": "삭제",
+        "restore": "복원",
+        "request": "요청",
+        "response": "응답",
+        "error": "오류",
+        "count": "{{count}}개 요청"
+      },
+      "shortcuts": {
+        "send": "Ctrl+Enter로 전송",
+        "cancel": "ESC로 취소",
+        "clear": "Ctrl+L로 지우기"
+      },
+      "errors": {
+        "requestFailed": "요청 실패",
+        "network": "네트워크 오류 발생",
+        "networkSuggestion": "인터넷 연결을 확인한 후 다시 시도하세요.",
+        "cors": "CORS 정책 오류",
+        "corsSuggestion": "이 요청은 CORS 정책에 의해 차단되었습니다. 서버에서 이 도메인의 교차 출처 요청을 허용해야 합니다.",
+        "timeout": "요청 시간 초과",
+        "timeoutSuggestion": "요청을 완료하는 데 너무 오래 걸렸습니다. 시간 제한을 늘리거나 서버가 응답하는지 확인하세요.",
+        "auth": "인증 실패",
+        "authSuggestion": "자격 증명 또는 인증 토큰을 확인하세요.",
+        "parse": "파싱 오류",
+        "parseSuggestion": "응답을 파싱하지 못했습니다. 응답 형식이 올바른지 확인하세요.",
+        "abort": "요청 취소됨",
+        "abortSuggestion": "요청이 취소되었습니다.",
+        "unknown": "오류 발생",
+        "unknownSuggestion": "오류가 발생했습니다. 다시 시도하거나 오류 세부 정보를 확인하세요.",
+        "validationFailed": "전송하기 전에 유효성 검사 오류를 수정하세요",
+        "componentError": "문제가 발생했습니다",
+        "componentErrorDesc": "이 컴포넌트를 렌더링하는 중 오류가 발생했습니다. 다시 시도하세요.",
+        "tryAgain": "다시 시도"
+      },
+      "status": {
+        "success": "성공",
+        "error": "오류",
+        "loading": "로딩 중..."
+      }
     }
   },
   "common": {

@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Send, AlertCircle } from 'lucide-react';
@@ -21,6 +22,7 @@ import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { getErrorMessage, getErrorSuggestion, getErrorType } from './utils/errorHandler';
 
 export function APITester() {
+  const { t } = useTranslation();
   const [method, setMethod] = useState<HTTPMethod>('GET');
   const [url, setUrl] = useState('');
   const [queryParams, setQueryParams] = useState<QueryParam[]>([]);
@@ -200,10 +202,10 @@ export function APITester() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Send className="h-5 w-5" />
-            API Tester
+            {t('tools.api.title')}
           </CardTitle>
           <CardDescription>
-            Test HTTP/REST APIs with comprehensive request and response inspection
+            {t('tools.api.subtitle')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -227,10 +229,10 @@ export function APITester() {
 
             <Tabs defaultValue="params" className="w-full">
               <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="params">Query Params</TabsTrigger>
-                <TabsTrigger value="headers">Headers</TabsTrigger>
-                <TabsTrigger value="body">Body</TabsTrigger>
-                <TabsTrigger value="auth">Authorization</TabsTrigger>
+                <TabsTrigger value="params">{t('tools.api.tabs.params')}</TabsTrigger>
+                <TabsTrigger value="headers">{t('tools.api.tabs.headers')}</TabsTrigger>
+                <TabsTrigger value="body">{t('tools.api.tabs.body')}</TabsTrigger>
+                <TabsTrigger value="auth">{t('tools.api.tabs.auth')}</TabsTrigger>
               </TabsList>
               <TabsContent value="params" className="space-y-2">
                 <QueryParamsEditor params={queryParams} onChange={setQueryParams} />

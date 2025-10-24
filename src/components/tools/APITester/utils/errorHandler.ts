@@ -1,12 +1,16 @@
-export enum ErrorType {
-  NETWORK = 'NETWORK',
-  CORS = 'CORS',
-  TIMEOUT = 'TIMEOUT',
-  AUTH = 'AUTH',
-  PARSE = 'PARSE',
-  ABORT = 'ABORT',
-  UNKNOWN = 'UNKNOWN',
-}
+import i18n from '@/i18n/config';
+
+export const ErrorType = {
+  NETWORK: 'NETWORK',
+  CORS: 'CORS',
+  TIMEOUT: 'TIMEOUT',
+  AUTH: 'AUTH',
+  PARSE: 'PARSE',
+  ABORT: 'ABORT',
+  UNKNOWN: 'UNKNOWN',
+} as const;
+
+export type ErrorType = (typeof ErrorType)[keyof typeof ErrorType];
 
 export function isNetworkError(error: unknown): boolean {
   if (error instanceof Error) {
@@ -109,25 +113,25 @@ export function getErrorSuggestion(error: unknown): string {
 
   switch (errorType) {
     case ErrorType.NETWORK:
-      return 'Please check your internet connection and try again.';
+      return i18n.t('tools.api.errors.networkSuggestion');
 
     case ErrorType.CORS:
-      return 'This request is being blocked by CORS policy. The server needs to allow cross-origin requests from this domain.';
+      return i18n.t('tools.api.errors.corsSuggestion');
 
     case ErrorType.TIMEOUT:
-      return 'The request took too long to complete. Try increasing the timeout or check if the server is responding.';
+      return i18n.t('tools.api.errors.timeoutSuggestion');
 
     case ErrorType.AUTH:
-      return 'Authentication failed. Please check your credentials or authorization tokens.';
+      return i18n.t('tools.api.errors.authSuggestion');
 
     case ErrorType.PARSE:
-      return 'Failed to parse the response. Please check if the response format is correct.';
+      return i18n.t('tools.api.errors.parseSuggestion');
 
     case ErrorType.ABORT:
-      return 'The request was cancelled.';
+      return i18n.t('tools.api.errors.abortSuggestion');
 
     case ErrorType.UNKNOWN:
     default:
-      return 'An error occurred. Please try again or check the error details.';
+      return i18n.t('tools.api.errors.unknownSuggestion');
   }
 }
