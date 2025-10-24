@@ -1,22 +1,22 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Send, History, Settings } from 'lucide-react';
-import type { HTTPMethod, RequestConfig, ResponseData, HistoryItem } from './types';
-
-const HTTP_METHODS: HTTPMethod[] = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'];
+import { Send } from 'lucide-react';
+import type { HTTPMethod, ResponseData, Header } from './types';
+import { MethodSelector } from './components/MethodSelector';
+import { URLInput } from './components/URLInput';
+import { HeadersEditor } from './components/HeadersEditor';
+import { AuthTab, type AuthConfig } from './components/AuthTab';
 
 export function APITester() {
-  const { t } = useTranslation();
   const [method, setMethod] = useState<HTTPMethod>('GET');
   const [url, setUrl] = useState('');
+  const [headers, setHeaders] = useState<Header[]>([]);
+  const [authConfig, setAuthConfig] = useState<AuthConfig | null>(null);
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<ResponseData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -32,11 +32,36 @@ export function APITester() {
     const startTime = performance.now();
 
     try {
+      // Build headers from HeadersEditor and AuthConfig
+      const requestHeaders: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+
+      // Add headers from HeadersEditor
+      headers.forEach((header) => {
+        if (header.enabled && header.key && header.value) {
+          requestHeaders[header.key] = header.value;
+        }
+      });
+
+      // Add auth header if configured
+      if (authConfig) {
+        if (authConfig.mode === 'bearer' && authConfig.bearerToken) {
+          requestHeaders['Authorization'] = `Bearer ${authConfig.bearerToken}`;
+        } else if (authConfig.mode === 'basic' && authConfig.basicAuth) {
+          const credentials = `${authConfig.basicAuth.username}:${authConfig.basicAuth.password}`;
+          const encoded = btoa(credentials);
+          requestHeaders['Authorization'] = `Basic ${encoded}`;
+        } else if (authConfig.mode === 'apikey' && authConfig.apiKey) {
+          if (authConfig.apiKey.placement === 'header') {
+            requestHeaders[authConfig.apiKey.keyName] = authConfig.apiKey.key;
+          }
+        }
+      }
+
       const fetchResponse = await fetch(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: requestHeaders,
       });
 
       const endTime = performance.now();
@@ -73,28 +98,8 @@ export function APITester() {
           {/* Request Builder */}
           <div className="space-y-4">
             <div className="flex gap-2">
-              <div className="w-32">
-                <Select value={method} onValueChange={(value) => setMethod(value as HTTPMethod)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {HTTP_METHODS.map((m) => (
-                      <SelectItem key={m} value={m}>
-                        <Badge variant={m === 'GET' ? 'default' : m === 'DELETE' ? 'destructive' : 'secondary'}>
-                          {m}
-                        </Badge>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <Input
-                placeholder="https://api.example.com/endpoint"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                className="flex-1"
-              />
+              <MethodSelector value={method} onChange={setMethod} />
+              <URLInput value={url} onChange={setUrl} />
               <Button onClick={handleSendRequest} disabled={loading}>
                 <Send className="h-4 w-4 mr-2" />
                 {loading ? 'Sending...' : 'Send'}
@@ -112,7 +117,7 @@ export function APITester() {
                 <p className="text-sm text-muted-foreground">Add query parameters to your request</p>
               </TabsContent>
               <TabsContent value="headers" className="space-y-2">
-                <p className="text-sm text-muted-foreground">Set custom headers for your request</p>
+                <HeadersEditor headers={headers} onChange={setHeaders} />
               </TabsContent>
               <TabsContent value="body" className="space-y-2">
                 <Label>Request Body</Label>
@@ -123,7 +128,7 @@ export function APITester() {
                 />
               </TabsContent>
               <TabsContent value="auth" className="space-y-2">
-                <p className="text-sm text-muted-foreground">Configure authentication settings</p>
+                <AuthTab onAuthChange={setAuthConfig} />
               </TabsContent>
             </Tabs>
           </div>

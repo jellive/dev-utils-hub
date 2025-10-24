@@ -10,6 +10,7 @@ import {
   Hash,
   Fingerprint,
   Calendar,
+  Send,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
@@ -31,6 +32,7 @@ const tools: ToolConfig[] = [
   { id: 'hash', icon: Hash },
   { id: 'uuid', icon: Fingerprint },
   { id: 'timestamp', icon: Calendar },
+  { id: 'api', icon: Send },
 ];
 
 export function ToolGrid() {

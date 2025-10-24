@@ -35,6 +35,9 @@ const TimestampConverter = lazy(() =>
 const ToolGrid = lazy(() =>
   import('./components/ToolGrid').then((module) => ({ default: module.ToolGrid }))
 );
+const APITester = lazy(() =>
+  import('./components/tools/APITester').then((module) => ({ default: module.APITester }))
+);
 
 // Helper components for Suspense with appropriate skeletons
 const SingleColumnTool = ({ children }: { children: React.ReactNode }) => (
@@ -89,6 +92,10 @@ export const router = createBrowserRouter([
       {
         path: 'timestamp',
         element: <TwoColumnTool><TimestampConverter /></TwoColumnTool>,
+      },
+      {
+        path: 'api',
+        element: <SingleColumnTool><APITester /></SingleColumnTool>,
       },
       {
         path: '*',

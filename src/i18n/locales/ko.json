@@ -255,6 +255,10 @@
       "weeksAgo": "{{count}}주 전",
       "monthsAgo": "{{count}}개월 전",
       "yearsAgo": "{{count}}년 전"
+    },
+    "api": {
+      "name": "API 테스터",
+      "description": "HTTP/REST API 테스트"
     }
   },
   "common": {
