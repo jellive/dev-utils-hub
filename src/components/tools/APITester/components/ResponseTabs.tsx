@@ -2,17 +2,17 @@ import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { FileText, List } from 'lucide-react';
+import type { ResponseData } from '../types';
 
 interface ResponseTabsProps {
-  body: string;
-  headers: Record<string, string>;
+  response: ResponseData;
   onTabChange?: (tab: string) => void;
 }
 
-export function ResponseTabs({ body, headers, onTabChange }: ResponseTabsProps) {
+export function ResponseTabs({ response, onTabChange }: ResponseTabsProps) {
   const [activeTab, setActiveTab] = useState('body');
 
-  const headerCount = Object.keys(headers).length;
+  const headerCount = Object.keys(response.headers).length;
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -43,7 +43,7 @@ export function ResponseTabs({ body, headers, onTabChange }: ResponseTabsProps) 
 
       <TabsContent value="body" className="p-4">
         <pre className="text-sm font-mono whitespace-pre-wrap break-all">
-          {body || <span className="text-muted-foreground">No body content</span>}
+          {response.body || <span className="text-muted-foreground">No body content</span>}
         </pre>
       </TabsContent>
 
@@ -52,7 +52,7 @@ export function ResponseTabs({ body, headers, onTabChange }: ResponseTabsProps) 
           <div className="text-sm text-muted-foreground">No headers</div>
         ) : (
           <div className="space-y-2">
-            {Object.entries(headers).map(([key, value]) => (
+            {Object.entries(response.headers).map(([key, value]) => (
               <div key={key} className="flex gap-2 text-sm">
                 <span className="font-semibold min-w-[200px]">{key}:</span>
                 <span className="font-mono text-muted-foreground break-all">{value}</span>

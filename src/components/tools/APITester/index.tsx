@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -28,7 +28,7 @@ export function APITester() {
 
   const history = useHistory();
 
-  const handleSendRequest = async () => {
+  const handleSendRequest = useCallback(async () => {
     if (!url) {
       setError('URL is required');
       return;
@@ -106,7 +106,7 @@ export function APITester() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [url, method, headers, body, authConfig, history]);
 
   return (
     <div className="space-y-6">
