@@ -85,6 +85,7 @@ export function URLInput({ value, onChange }: URLInputProps) {
           onBlur={handleBlur}
           placeholder="Enter API endpoint (e.g., https://api.example.com/users)"
           className={error ? 'border-red-500 pr-10' : 'pr-10'}
+          aria-label="API URL"
         />
         {localValue && (
           <Button

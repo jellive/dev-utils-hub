@@ -17,7 +17,7 @@ interface MethodSelectorProps {
 export function MethodSelector({ value, onChange }: MethodSelectorProps) {
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className="w-[140px]">
+      <SelectTrigger className="w-[140px]" aria-label="HTTP Method">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
