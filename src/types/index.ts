@@ -23,7 +23,8 @@ export type ToolType =
   | 'diff'
   | 'hash'
   | 'uuid'
-  | 'timestamp';
+  | 'timestamp'
+  | 'api-tester';
 
 export interface Tool {
   id: ToolType;

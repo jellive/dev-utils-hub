@@ -23,16 +23,16 @@ interface ToolConfig {
 }
 
 const tools: ToolConfig[] = [
-  { id: 'json', icon: FileJson },
-  { id: 'jwt', icon: Key },
-  { id: 'base64', icon: FileCode },
-  { id: 'url', icon: Link },
-  { id: 'regex', icon: Regex },
-  { id: 'diff', icon: FileDiff },
-  { id: 'hash', icon: Hash },
-  { id: 'uuid', icon: Fingerprint },
-  { id: 'timestamp', icon: Calendar },
-  { id: 'api', icon: Send },
+  { id: 'json' as ToolType, icon: FileJson },
+  { id: 'jwt' as ToolType, icon: Key },
+  { id: 'base64' as ToolType, icon: FileCode },
+  { id: 'url' as ToolType, icon: Link },
+  { id: 'regex' as ToolType, icon: Regex },
+  { id: 'diff' as ToolType, icon: FileDiff },
+  { id: 'hash' as ToolType, icon: Hash },
+  { id: 'uuid' as ToolType, icon: Fingerprint },
+  { id: 'timestamp' as ToolType, icon: Calendar },
+  { id: 'api-tester' as ToolType, icon: Send },
 ];
 
 export function ToolGrid() {

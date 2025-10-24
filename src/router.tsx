@@ -94,7 +94,7 @@ export const router = createBrowserRouter([
         element: <TwoColumnTool><TimestampConverter /></TwoColumnTool>,
       },
       {
-        path: 'api',
+        path: 'api-tester',
         element: <SingleColumnTool><APITester /></SingleColumnTool>,
       },
       {
