@@ -1,0 +1,109 @@
+{
+	"meta": {
+		"generatedAt": "2025-10-24T07:25:52.025Z",
+		"tasksAnalyzed": 12,
+		"totalTasks": 12,
+		"analysisCount": 12,
+		"thresholdScore": 5,
+		"projectName": "Task Master",
+		"usedResearch": true
+	},
+	"complexityAnalysis": [
+		{
+			"taskId": 1,
+			"taskTitle": "Setup API Tester project structure and TypeScript types",
+			"complexityScore": 3,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Break down into: 1) Create folder structure (components/, hooks/, utils/, types/), 2) Define core TypeScript interfaces (HTTPMethod, Header, AuthConfig), 3) Define request/response types (APIRequest, APIResponse, RequestConfig), 4) Define history and state management types (HistoryItem, AppState)",
+			"reasoning": "This is primarily a setup and type definition task. The project already has an established structure with similar tools, making this straightforward. The complexity comes from ensuring comprehensive type coverage, but no actual logic implementation is required."
+		},
+		{
+			"taskId": 2,
+			"taskTitle": "Implement HTTP client utility with fetch wrapper",
+			"complexityScore": 6,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Break down into: 1) Implement core fetch wrapper with AbortController, 2) Add timeout handling and cancellation logic, 3) Implement content-type detection and response parsing, 4) Add comprehensive error handling (CORS, network, parsing), 5) Implement response metrics (time, size) and helper functions",
+			"reasoning": "This requires implementing robust error handling, multiple content type parsers, timeout management, and cancellation logic. The complexity lies in handling edge cases, different response types, and ensuring proper error propagation."
+		},
+		{
+			"taskId": 3,
+			"taskTitle": "Build request builder components (Method, URL, Headers)",
+			"complexityScore": 4,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Break down into: 1) Create MethodSelector component with HTTP method dropdown, 2) Implement URLInput with validation and auto-complete, 3) Build HeadersEditor with dynamic add/remove functionality, 4) Add keyboard shortcuts and accessibility features",
+			"reasoning": "These are standard form components using existing shadcn/ui components. The project already has similar dynamic form patterns. Main complexity is in the dynamic headers editor and ensuring good UX."
+		},
+		{
+			"taskId": 4,
+			"taskTitle": "Implement request body editor and query parameters",
+			"complexityScore": 5,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Break down into: 1) Create BodyEditor with JSON syntax validation, 2) Implement QueryParamsDisplay with URL parsing, 3) Add bidirectional sync between URL and params table, 4) Support multiple body types (JSON, text, form-data) with validation",
+			"reasoning": "Requires JSON validation, URL parsing, and bidirectional data synchronization. The complexity comes from maintaining sync between URL and params table, and supporting different body formats."
+		},
+		{
+			"taskId": 5,
+			"taskTitle": "Create authentication system with JWT, Basic Auth, and API Key support",
+			"complexityScore": 6,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Break down into: 1) Implement AuthTab UI with mode selection, 2) Create Bearer token support with JWT integration, 3) Add Basic Auth with Base64 encoding, 4) Implement API Key support (header/query), 5) Create useAuth hook for header generation and state management",
+			"reasoning": "Multiple authentication methods with different encoding requirements. Requires integration with existing tools (JWT Decoder, Base64 Converter) and automatic header generation. State management adds complexity."
+		},
+		{
+			"taskId": 6,
+			"taskTitle": "Build response viewer with status, headers, and body display",
+			"complexityScore": 5,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Break down into: 1) Create ResponseMetadata component with status badges, 2) Implement ResponseTabs for body/headers switching, 3) Build ResponseBody with syntax highlighting, 4) Add ResponseHeaders table display, 5) Implement ResponseActions (copy, download, tool integration)",
+			"reasoning": "Requires handling multiple content types, syntax highlighting, and file downloads. The existing project has similar viewers (JSON Formatter) that can be referenced, reducing complexity."
+		},
+		{
+			"taskId": 7,
+			"taskTitle": "Implement request history with LocalStorage persistence",
+			"complexityScore": 5,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Break down into: 1) Create useHistory hook with LocalStorage operations, 2) Build HistoryPanel with collapsible UI, 3) Implement HistoryList with search/filter, 4) Add history management features (restore, delete, bulk operations)",
+			"reasoning": "LocalStorage management with size limits, search functionality, and data integrity checks. The project already uses LocalStorage in other tools, providing patterns to follow."
+		},
+		{
+			"taskId": 8,
+			"taskTitle": "Create main API Tester interface with send functionality",
+			"complexityScore": 7,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Break down into: 1) Create main APITester container component, 2) Implement state management and component orchestration, 3) Add SendButton with loading/cancellation, 4) Implement keyboard shortcuts and form validation, 5) Add error boundaries and error handling",
+			"reasoning": "This is the main orchestration component requiring complex state management, coordination between all subcomponents, error handling, and user interaction management. Most complex due to integration requirements."
+		},
+		{
+			"taskId": 9,
+			"taskTitle": "Integrate with existing development tools ecosystem",
+			"complexityScore": 5,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Break down into: 1) Implement JWT Decoder integration for token verification, 2) Add JSON Formatter integration for response formatting, 3) Create Base64/Hash Generator integrations, 4) Update existing tools with 'Send to API Tester' functionality",
+			"reasoning": "Requires modifying existing tools and implementing bidirectional state passing through React Router. The existing router state passing patterns reduce complexity."
+		},
+		{
+			"taskId": 10,
+			"taskTitle": "Add internationalization (i18n) support for Korean and English",
+			"complexityScore": 3,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Break down into: 1) Add translation keys for all UI elements to ko.json/en.json, 2) Update all components with useTranslation hooks, 3) Test translations and ensure proper context",
+			"reasoning": "Straightforward i18n implementation using existing patterns. The project already has i18n setup and patterns established in other tools. Main work is adding translation keys."
+		},
+		{
+			"taskId": 11,
+			"taskTitle": "Update router and tool grid with API Tester integration",
+			"complexityScore": 2,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Break down into: 1) Add API Tester route to router.tsx with lazy loading, 2) Update ToolGrid.tsx to include API Tester card, 3) Update types/index.ts with 'api-tester' type",
+			"reasoning": "Simple integration task following existing patterns. The router and tool grid already have established patterns for adding new tools. Minimal code changes required."
+		},
+		{
+			"taskId": 12,
+			"taskTitle": "Implement comprehensive testing and quality assurance",
+			"complexityScore": 8,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "Break down into: 1) Write unit tests for utilities (httpClient, hooks), 2) Create component tests with React Testing Library, 3) Implement E2E tests with Playwright, 4) Add integration tests for tool connections, 5) Test accessibility compliance, 6) Performance testing and optimization",
+			"reasoning": "Most complex task requiring multiple testing strategies, different testing frameworks, and comprehensive coverage. Requires testing all components, integrations, edge cases, and performance scenarios."
+		}
+	]
+}

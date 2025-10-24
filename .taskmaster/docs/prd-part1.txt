@@ -1,0 +1,500 @@
+---
+title: Dev Utils Hub v2.1.0 - API Tester 기능 추가 기획서
+project: dev-utils-hub
+version: v2.1.0 → v2.2.0
+created: 2025-10-24
+status: Planning
+priority: High
+estimated_hours: 6-8
+---
+
+# 📡 Dev Utils Hub v2.1.0 - API Tester Feature Addition
+
+## Executive Summary
+
+**한 줄 요약**:
+Dev Utils Hub에 Postman 대체 가능한 가벼운 REST API 테스터를 추가하여, 기존 9개 도구와 완벽한 시너지를 만들어 개발자 필수 툴킷으로 진화
+
+**프로젝트 타입**: Feature Addition (기존 프로젝트 확장)
+**예상 개발 시간**: 6-8시간
+**예상 완료일**: 2025-10-25
+**타겟 버전**: v2.1.0 → v2.2.0
+
+## Current Project Status
+
+### Existing Infrastructure (활용 가능한 기존 자산)
+
+**Technology Stack** (100% 재사용):
+- React 19.0.0 ✅
+- TypeScript 5.9.x ✅
+- React Router 7.9.0 ✅ (라우팅 구조 확립됨)
+- Tailwind CSS 3.4.x ✅
+- shadcn/ui (모든 컴포넌트 사용 가능) ✅
+- Vite 6.3.x (빌드 시스템) ✅
+- i18next (한국어/영어 다국어 지원) ✅
+- PWA (오프라인 지원, LocalStorage 활용) ✅
+
+**Existing Tools** (9개 도구와 연동 가능):
+1. JSON Formatter - Response 포맷팅 연동
+2. JWT Decoder - Bearer Token 인증 연동
+3. Base64 Converter - Basic Auth 인코딩 연동
+4. URL Converter - URL 인코딩/디코딩
+5. Regex Tester - 패턴 매칭
+6. Text Diff - 응답 비교
+7. Hash Generator - API 서명 생성 연동
+8. UUID Generator - 요청 ID 생성
+9. Timestamp Converter - 타임스탬프 처리
+
+**Project Structure** (활용 가능):
+```
+dev-utils-hub/
+├── src/
+│   ├── components/
+│   │   ├── tools/          # 기존 9개 도구 위치 (여기에 추가)
+│   │   ├── ui/             # shadcn/ui 컴포넌트
+│   │   ├── Layout.tsx      # 레이아웃 (재사용)
+│   │   ├── Header.tsx      # 헤더 (재사용)
+│   │   └── ToolGrid.tsx    # 도구 그리드 (10번째 아이콘 추가)
+│   ├── i18n/
+│   │   └── locales/
+│   │       ├── en.json     # 영어 번역 (추가 필요)
+│   │       └── ko.json     # 한국어 번역 (추가 필요)
+│   ├── router.tsx          # 라우터 (API Tester 경로 추가)
+│   └── types/              # TypeScript 타입 정의
+└── public/                 # PWA 설정
+```
+
+---
+
+## 📋 Table of Contents
+
+1. [프로젝트 배경 (Background)](#1-프로젝트-배경)
+2. [목표 및 핵심 가치 (Goals & Value)](#2-목표-및-핵심-가치)
+3. [기능 명세 (Feature Specifications)](#3-기능-명세)
+4. [UI/UX 설계 (Design)](#4-uiux-설계)
+5. [기술 스택 및 아키텍처 (Architecture)](#5-기술-스택-및-아키텍처)
+6. [기존 도구와의 연동 (Integration)](#6-기존-도구와의-연동)
+7. [구현 세부사항 (Implementation Details)](#7-구현-세부사항)
+8. [개발 로드맵 (Roadmap)](#8-개발-로드맵)
+9. [테스트 전략 (Testing)](#9-테스트-전략)
+10. [성공 지표 (Success Metrics)](#10-성공-지표)
+
+---
+
+## 1. 프로젝트 배경
+
+### 1.1 문제 인식 (Problem Statement)
+
+**현재 API 테스트 도구의 문제점**:
+
+#### Postman
+- ❌ **무겁고 느림**: Electron 기반, 300MB+ 설치 용량
+- ❌ **로그인 강제**: 계정 없이 사용 불가 (2023년부터)
+- ❌ **오프라인 제한**: 동기화 기능에 의존
+- ❌ **과도한 기능**: 대부분 사용자는 10% 기능만 사용
+- ❌ **프라이버시 우려**: 모든 요청이 클라우드 동기화
+
+#### cURL
+- ❌ **CLI 기반**: GUI 없어 불편
+- ❌ **복잡한 문법**: Headers, Body 설정 어려움
+- ❌ **히스토리 없음**: 과거 요청 재실행 불가
+- ❌ **결과 가독성**: JSON 포맷팅 수동 처리
+
+#### 브라우저 DevTools
+- ❌ **GET만 가능**: POST, PUT 등 제한적
+- ❌ **Headers 설정 불편**: 복잡한 인증 어려움
+- ❌ **히스토리 없음**: 요청 재실행 불가
+
+### 1.2 기회 (Opportunity)
+
+**Dev Utils Hub의 강점 활용**:
+
+1. ✅ **이미 9개 도구 보유** → API Tester와 시너지 극대화
+   - JWT Decoder → Bearer Token 인증 완벽 지원
+   - JSON Formatter → Response 자동 포맷팅
+   - Base64 Converter → Basic Auth 인코딩
+   - Hash Generator → API 서명 생성
+
+2. ✅ **PWA 오프라인** → 히스토리 영구 보관 (LocalStorage)
+
+3. ✅ **shadcn/ui** → 아름다운 UI 빠르게 구현 (컴포넌트 재사용)
+
+4. ✅ **React Router** → `/api-tester` 경로 추가만으로 통합
+
+5. ✅ **i18next** → 한국어/영어 다국어 지원 이미 구축됨
+
+### 1.3 시장 분석 (Market Analysis)
+
+**경쟁 제품 비교**:
+
+| 제품 | 크기 | 로그인 | 오프라인 | 비용 | 우리의 차별점 |
+|------|------|--------|----------|------|---------------|
+| **Postman** | 300MB+ | 필수 | 제한적 | 무료/유료 | **가볍고 빠름 (웹 기반)** |
+| **Insomnia** | 200MB+ | 필수 | 제한적 | 무료/유료 | **완전 오프라인** |
+| **Thunder Client** | VS Code 확장 | 선택 | 완전 | 무료 | **독립 실행 가능** |
+| **httpie** | CLI | 불필요 | 완전 | 무료 | **GUI + 기존 도구 연동** |
+| **Bruno** | 100MB+ | 불필요 | 완전 | 무료 | **웹 기반, 설치 불필요** |
+
+**우리의 경쟁력** (Competitive Advantages):
+
+1. 🔥 **기존 9개 도구와 완벽한 연동** (Unique!)
+2. 🚀 **가볍고 빠른 웹 기반** (<50KB 추가, 즉시 로딩)
+3. 🔐 **완전한 오프라인 지원** (100% LocalStorage)
+4. 🎨 **아름다운 UI** (shadcn/ui 일관성)
+5. 🌍 **다국어 지원** (이미 구현됨)
+6. 💪 **무료, 로그인 불필요, 오픈소스**
+
+---
+
+## 2. 목표 및 핵심 가치
+
+### 2.1 프로젝트 목표 (Goals)
+
+**Primary Goal**:
+> Dev Utils Hub를 **"개발자 필수 툴킷"**으로 완성하여, Postman을 완전히 대체 가능한 가벼운 대안 제공
+
+**Secondary Goals**:
+1. 기존 9개 도구와의 완벽한 연동으로 시너지 극대화
+2. 6-8시간 내 빠른 개발로 v2.1.0 릴리즈 (MVP 우선)
+3. 포트폴리오 가치 향상 (API 통합 경험 증명)
+4. 10개 도구 달성 (심리적 마일스톤)
+
+### 2.2 핵심 가치 제안 (Value Proposition)
+
+**For Developers**:
+
+#### 1. 속도 (Speed) ⚡
+- Postman보다 3배 빠른 로딩 (웹 기반, 즉시 실행)
+- 로그인 불필요 (클릭 즉시 사용)
+- 번들 크기 최소화 (<50KB 추가)
+
+#### 2. 통합 (Integration) 🔗
+- **JWT 토큰** → 바로 인증 헤더로 (JWT Decoder 연동)
+- **JSON 응답** → 자동 포맷팅 (JSON Formatter 연동)
+- **Base64** → Basic Auth 즉시 변환 (Base64 Converter 연동)
+- **해시** → API 서명 생성 (Hash Generator 연동)
+
+#### 3. 보안 (Security) 🔐
+- 완전 오프라인 동작 (서버 전송 없음)
+- 민감한 API 키 로컬 저장만 (LocalStorage)
+- 클라우드 동기화 없음 (프라이버시 보호)
+
+#### 4. 편의성 (Convenience) 😊
+- 히스토리 자동 저장 (최근 20개)
+- 자주 쓰는 요청 즐겨찾기 (Phase 2)
+- cURL 변환 지원 (Export/Import)
+- 다국어 지원 (한국어/영어)
+
+### 2.3 성공 기준 (Success Criteria)
+
+**정량적 지표** (Quantitative):
+- [ ] 개발 시간 8시간 이내 완료
+- [ ] 기본 기능 100% 구현 (MVP 4가지)
+- [ ] 테스트 커버리지 80% 이상
+- [ ] Lighthouse 성능 점수 유지 (90+)
+- [ ] 번들 크기 증가 <50KB (gzipped)
+- [ ] 첫 로딩 시간 <2초
+
+**정성적 지표** (Qualitative):
+- [ ] 본인이 Postman 대신 사용 가능
+- [ ] 기존 도구와 자연스러운 연동
+- [ ] UI/UX 일관성 유지
+- [ ] 직관적인 사용성
+
+---
+
+## 3. 기능 명세
+
+### 3.1 MVP 기능 (Phase 1: 필수) - 6-8시간
+
+#### Feature 1: HTTP Request Builder
+
+**Method 선택** (Select):
+- HTTP 메서드: GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS
+- shadcn/ui Select 컴포넌트 사용
+- 기본값: GET
+
+**URL 입력** (Input):
+- URL 입력 필드 (shadcn/ui Input)
+- 자동완성 (히스토리 기반, 선택적)
+- URL 검증 (기본 유효성)
+- Query Params 자동 파싱 표시
+
+**Headers 관리** (Table):
+- Key-Value 쌍 입력
+- 추가/삭제 버튼
+- 자주 쓰는 헤더 템플릿 (선택적):
+  - `Content-Type: application/json`
+  - `Accept: application/json`
+  - `User-Agent: Dev-Utils-Hub/2.1.0`
+
+**Request Body** (Textarea):
+- JSON 입력 (기본, MVP)
+- Syntax highlighting (선택적, 시간되면)
+- Form Data (Phase 2)
+- Raw Text (Phase 2)
+
+#### Feature 2: Send Request & Response
+
+**Send 버튼**:
+- Loading 상태 표시 (Spinner)
+- Cancel 가능 (AbortController)
+- 에러 핸들링 (Toast 알림)
+- Timeout 처리 (30초 기본)
+
+**Response 표시**:
+- **Status Code** (Badge):
+  - 2xx: Green
+  - 3xx: Blue
+  - 4xx: Orange
+  - 5xx: Red
+- **Response Time** (ms 표시)
+- **Response Size** (KB 표시)
+- **Headers** (Tab 또는 Collapsible)
+- **Body** (JSON 자동 포맷팅)
+
+**Response 액션**:
+- Copy (전체 또는 Body만)
+- Download (JSON 파일로)
+- **JSON Formatter로 보내기** (기존 도구 연동!)
+- Pretty/Raw 토글
+
+#### Feature 3: Authentication
+
+**Bearer Token**:
+- 토큰 입력 필드
+- **"JWT 디코딩" 버튼** → JWT Decoder로 이동 (상태 전달)
+- 자동으로 `Authorization: Bearer {token}` 헤더 추가
+
+**Basic Auth**:
+- Username, Password 입력
+- 자동 Base64 인코딩 (`username:password`)
+- **"Base64 확인" 버튼** → Base64 Converter로 이동
+- 자동으로 `Authorization: Basic {encoded}` 헤더 추가
+
+**API Key**:
+- Key Name, Value 입력
+- 위치 선택: Header 또는 Query Param
+- 자동으로 해당 위치에 추가
+
+#### Feature 4: History
+
+**자동 저장**:
+- 최근 20개 요청 (FIFO)
+- LocalStorage 저장 (`api-tester-history`)
+- 저장 정보: Method, URL, Headers, Body, Timestamp, Response (Status, Time)
+
+**히스토리 UI**:
+- 사이드바 또는 하단 Collapsible
+- 리스트 형태 (Card)
+- 각 항목: Method Badge, URL, Timestamp (상대 시간)
+- 클릭 시 요청 복원 (모든 필드)
+- 개별 삭제 버튼
+- 전체 삭제 버튼
+
+### 3.2 추가 기능 (Phase 2: 선택) - +3-4시간
+
+#### Feature 5: Environment Variables
+- Development, Staging, Production 환경
+- 변수 정의: `{{baseUrl}}`, `{{apiKey}}` 등
+- URL, Headers, Body에서 사용 가능
+
+#### Feature 6: Collections (Favorites)
+- 자주 쓰는 요청 저장
+- 폴더 구조 (선택적)
+- 이름, 설명 추가
+- Export/Import (JSON)
+
+#### Feature 7: cURL Converter
+- **Import**: cURL 명령어 붙여넣기 → 자동 파싱
+- **Export**: 현재 요청 → cURL 변환 → 복사
+
+#### Feature 8: Query Params Builder
+- Key-Value UI로 쉽게 추가
+- 자동으로 URL에 반영
+- URL 인코딩 자동 처리
+
+### 3.3 고급 기능 (Future) - +10-15시간
+
+- Pre-request Script (JavaScript 실행)
+- Response Tests (Assertion)
+- File Upload (multipart/form-data)
+- GraphQL 지원
+- WebSocket 테스트
+
+---
+
+## 4. UI/UX 설계
+
+### 4.1 레이아웃 구조
+
+**Page Structure** (Single Column):
+
+```
+┌────────────────────────────────────────────────────────────┐
+│  📡 API Tester                                  [← 뒤로]   │
+├────────────────────────────────────────────────────────────┤
+│  ┌──────┐  ┌──────────────────────────────────────────┐   │
+│  │GET ▼│  │ https://api.example.com/users            │   │
+│  └──────┘  └──────────────────────────────────────────┘   │
+│  [Send] [Clear] [Save]                                     │
+├────────────────────────────────────────────────────────────┤
+│  ┌─────────────────────────────────────────────────────┐  │
+│  │ [Headers] [Body] [Auth] [Query Params]             │  │
+│  ├─────────────────────────────────────────────────────┤  │
+│  │ Content-Type  │  application/json        [X]        │  │
+│  │ Authorization │  Bearer eyJ...           [X]        │  │
+│  │ [+ Add Header]                                      │  │
+│  └─────────────────────────────────────────────────────┘  │
+├────────────────────────────────────────────────────────────┤
+│  Response                                                  │
+│  ┌─────────────────────────────────────────────────────┐  │
+│  │ 200 OK  │ 234ms │ 1.2KB                             │  │
+│  ├─────────────────────────────────────────────────────┤  │
+│  │ [Body] [Headers] [Cookies]                          │  │
+│  ├─────────────────────────────────────────────────────┤  │
+│  │ {                                                   │  │
+│  │   "users": [                                        │  │
+│  │     { "id": 1, "name": "John" }                     │  │
+│  │   ]                                                 │  │
+│  │ }                                                   │  │
+│  │                                                     │  │
+│  │ [Copy] [Download] [Format in JSON Tool →]          │  │
+│  └─────────────────────────────────────────────────────┘  │
+├────────────────────────────────────────────────────────────┤
+│  History (Recent 20)                         [Clear All]   │
+│  ┌─────────────────────────────────────────────────────┐  │
+│  │ [GET] /users                         2 min ago      │  │
+│  │ [POST] /auth/login                  10 min ago  [X] │  │
+│  └─────────────────────────────────────────────────────┘  │
+└────────────────────────────────────────────────────────────┘
+```
+
+### 4.2 컴포넌트 구조 (Component Tree)
+
+```
+src/components/tools/APITester/
+├── APITester.tsx                   # 메인 페이지 (래퍼)
+├── components/
+│   ├── RequestBuilder/
+│   │   ├── MethodSelector.tsx     # HTTP Method 선택 (Select)
+│   │   ├── URLInput.tsx           # URL 입력 (Input)
+│   │   ├── RequestTabs.tsx        # Headers/Body/Auth Tabs
+│   │   ├── HeadersEditor.tsx      # Headers 편집 (Table)
+│   │   ├── BodyEditor.tsx         # Body 편집 (Textarea)
+│   │   ├── AuthTab.tsx            # 인증 설정 (Card)
+│   │   └── QueryParamsDisplay.tsx # Query Params 표시 (선택)
+│   ├── Response/
+│   │   ├── ResponseViewer.tsx     # Response 메인
+│   │   ├── ResponseMetadata.tsx   # Status, Time, Size (Badge)
+│   │   ├── ResponseTabs.tsx       # Body/Headers Tabs
+│   │   ├── ResponseBody.tsx       # Response Body (pre/code)
+│   │   ├── ResponseHeaders.tsx    # Response Headers (Table)
+│   │   └── ResponseActions.tsx    # Copy, Download, 연동 버튼
+│   ├── History/
+│   │   ├── HistoryPanel.tsx       # 히스토리 패널 (Collapsible)
+│   │   ├── HistoryList.tsx        # 히스토리 목록
+│   │   └── HistoryItem.tsx        # 히스토리 항목 (Card)
+│   └── Toolbar/
+│       ├── SendButton.tsx         # Send 버튼 (Button + Loading)
+│       ├── ClearButton.tsx        # Clear 버튼
+│       └── SaveButton.tsx         # Save 버튼 (Phase 2)
+├── hooks/
+│   ├── useAPIRequest.ts           # API 요청 로직 (fetch wrapper)
+│   ├── useHistory.ts              # 히스토리 관리 (LocalStorage)
+│   └── useAuth.ts                 # 인증 헤더 생성
+├── types/
+│   └── api.types.ts               # TypeScript 타입 정의
+└── utils/
+    ├── httpClient.ts              # HTTP 클라이언트 (fetch wrapper)
+    ├── curlConverter.ts           # cURL 변환 (Phase 2)
+    └── requestSerializer.ts       # 요청 직렬화/역직렬화
+```
+
+### 4.3 UI 디테일 (Component Details)
+
+#### 4.3.1 Method Selector (shadcn/ui Select)
+
+```tsx
+<Select value={method} onValueChange={setMethod}>
+  <SelectTrigger className="w-[120px]">
+    <SelectValue placeholder="Method" />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="GET">GET</SelectItem>
+    <SelectItem value="POST">POST</SelectItem>
+    <SelectItem value="PUT">PUT</SelectItem>
+    <SelectItem value="DELETE">DELETE</SelectItem>
+    <SelectItem value="PATCH">PATCH</SelectItem>
+    <SelectItem value="HEAD">HEAD</SelectItem>
+    <SelectItem value="OPTIONS">OPTIONS</SelectItem>
+  </SelectContent>
+</Select>
+```
+
+#### 4.3.2 URL Input (shadcn/ui Input)
+
+```tsx
+<Input
+  type="url"
+  placeholder="https://api.example.com/endpoint"
+  value={url}
+  onChange={(e) => setUrl(e.target.value)}
+  className="flex-1 font-mono"
+/>
+```
+
+#### 4.3.3 Headers Editor (Table)
+
+```tsx
+<Table>
+  <TableHeader>
+    <TableRow>
+      <TableHead className="w-1/3">Key</TableHead>
+      <TableHead className="w-1/2">Value</TableHead>
+      <TableHead className="w-[50px]"></TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    {headers.map((header, index) => (
+      <TableRow key={index}>
+        <TableCell>
+          <Input
+            value={header.key}
+            onChange={(e) => updateHeader(index, 'key', e.target.value)}
+            placeholder="Content-Type"
+            className="font-mono"
+          />
+        </TableCell>
+        <TableCell>
+          <Input
+            value={header.value}
+            onChange={(e) => updateHeader(index, 'value', e.target.value)}
+            placeholder="application/json"
+            className="font-mono"
+          />
+        </TableCell>
+        <TableCell>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => removeHeader(index)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </TableCell>
+      </TableRow>
+    ))}
+  </TableBody>
+</Table>
+<Button onClick={addHeader} variant="outline" className="w-full mt-2">
+  <Plus className="h-4 w-4 mr-2" />
+  Add Header
+</Button>
+```
+
+#### 4.3.4 Response Viewer (Card + Tabs)
+
+```tsx
+<Card>
+  <CardHeader>

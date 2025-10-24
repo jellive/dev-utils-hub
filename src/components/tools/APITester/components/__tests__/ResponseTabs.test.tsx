@@ -2,37 +2,44 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ResponseTabs } from '../ResponseTabs';
+import type { ResponseData } from '../../types';
 
 describe('ResponseTabs', () => {
-  const mockBody = '{"message": "success"}';
-  const mockHeaders = {
-    'content-type': 'application/json',
-    'content-length': '25',
+  const mockResponse: ResponseData = {
+    status: 200,
+    statusText: 'OK',
+    body: '{"message": "success"}',
+    headers: {
+      'content-type': 'application/json',
+      'content-length': '25',
+    },
+    time: 150,
+    size: 25,
   };
 
   it('should render Body and Headers tabs', () => {
-    render(<ResponseTabs body={mockBody} headers={mockHeaders} />);
+    render(<ResponseTabs response={mockResponse} />);
 
     expect(screen.getByRole('tab', { name: /body/i })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /headers/i })).toBeInTheDocument();
   });
 
   it('should show Body tab as default active', () => {
-    render(<ResponseTabs body={mockBody} headers={mockHeaders} />);
+    render(<ResponseTabs response={mockResponse} />);
 
     const bodyTab = screen.getByRole('tab', { name: /body/i });
     expect(bodyTab).toHaveAttribute('aria-selected', 'true');
   });
 
   it('should display body content when Body tab is active', () => {
-    render(<ResponseTabs body={mockBody} headers={mockHeaders} />);
+    render(<ResponseTabs response={mockResponse} />);
 
     expect(screen.getByText(/success/i)).toBeInTheDocument();
   });
 
   it('should switch to Headers tab when clicked', async () => {
     const user = userEvent.setup();
-    render(<ResponseTabs body={mockBody} headers={mockHeaders} />);
+    render(<ResponseTabs response={mockResponse} />);
 
     const headersTab = screen.getByRole('tab', { name: /headers/i });
     await user.click(headersTab);
@@ -42,7 +49,7 @@ describe('ResponseTabs', () => {
 
   it('should display headers content when Headers tab is active', async () => {
     const user = userEvent.setup();
-    render(<ResponseTabs body={mockBody} headers={mockHeaders} />);
+    render(<ResponseTabs response={mockResponse} />);
 
     const headersTab = screen.getByRole('tab', { name: /headers/i });
     await user.click(headersTab);
@@ -52,26 +59,28 @@ describe('ResponseTabs', () => {
   });
 
   it('should show header count badge', () => {
-    render(<ResponseTabs body={mockBody} headers={mockHeaders} />);
+    render(<ResponseTabs response={mockResponse} />);
 
     expect(screen.getByText('2')).toBeInTheDocument();
   });
 
   it('should handle empty body', () => {
-    render(<ResponseTabs body="" headers={mockHeaders} />);
+    const emptyBodyResponse: ResponseData = { ...mockResponse, body: '' };
+    render(<ResponseTabs response={emptyBodyResponse} />);
 
     expect(screen.getByRole('tab', { name: /body/i })).toBeInTheDocument();
   });
 
   it('should handle empty headers', () => {
-    render(<ResponseTabs body={mockBody} headers={{}} />);
+    const emptyHeadersResponse: ResponseData = { ...mockResponse, headers: {} };
+    render(<ResponseTabs response={emptyHeadersResponse} />);
 
     expect(screen.getByText('0')).toBeInTheDocument();
   });
 
   it('should support keyboard navigation', async () => {
     const user = userEvent.setup();
-    render(<ResponseTabs body={mockBody} headers={mockHeaders} />);
+    render(<ResponseTabs response={mockResponse} />);
 
     const bodyTab = screen.getByRole('tab', { name: /body/i });
     bodyTab.focus();
@@ -85,7 +94,7 @@ describe('ResponseTabs', () => {
   it('should call onTabChange when tab switches', async () => {
     const user = userEvent.setup();
     const handleTabChange = vi.fn();
-    render(<ResponseTabs body={mockBody} headers={mockHeaders} onTabChange={handleTabChange} />);
+    render(<ResponseTabs response={mockResponse} onTabChange={handleTabChange} />);
 
     const headersTab = screen.getByRole('tab', { name: /headers/i });
     await user.click(headersTab);
@@ -95,7 +104,7 @@ describe('ResponseTabs', () => {
 
   it('should maintain tab state when switching between tabs multiple times', async () => {
     const user = userEvent.setup();
-    render(<ResponseTabs body={mockBody} headers={mockHeaders} />);
+    render(<ResponseTabs response={mockResponse} />);
 
     const bodyTab = screen.getByRole('tab', { name: /body/i });
     const headersTab = screen.getByRole('tab', { name: /headers/i });

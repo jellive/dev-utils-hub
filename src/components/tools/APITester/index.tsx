@@ -1,6 +1,5 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Send } from 'lucide-react';
 import type { HTTPMethod, ResponseData, Header } from './types';
@@ -13,6 +12,7 @@ import { BodyEditor } from './components/BodyEditor';
 import { ResponseTabs } from './components/ResponseTabs';
 import { HistoryPanel } from './components/HistoryPanel';
 import { HistoryList } from './components/HistoryList';
+import { SendButton } from './components/SendButton';
 import { useHistory } from './hooks/useHistory';
 
 export function APITester() {
@@ -27,12 +27,16 @@ export function APITester() {
   const [error, setError] = useState<string | null>(null);
 
   const history = useHistory();
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const handleSendRequest = useCallback(async () => {
     if (!url) {
       setError('URL is required');
       return;
     }
+
+    // Create new AbortController for this request
+    abortControllerRef.current = new AbortController();
 
     setLoading(true);
     setError(null);
@@ -67,6 +71,7 @@ export function APITester() {
         method,
         headers: requestHeaders,
         body: method !== 'GET' && body ? body : undefined,
+        signal: abortControllerRef.current.signal,
       });
 
       const endTime = performance.now();
@@ -92,6 +97,11 @@ export function APITester() {
         response: responseData,
       });
     } catch (err) {
+      // Don't handle aborted requests as errors
+      if (err instanceof Error && err.name === 'AbortError') {
+        return;
+      }
+
       const errorMessage = err instanceof Error ? err.message : 'Request failed';
       setError(errorMessage);
 
@@ -107,6 +117,14 @@ export function APITester() {
       setLoading(false);
     }
   }, [url, method, headers, body, authConfig, history]);
+
+  const handleCancelRequest = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+      setLoading(false);
+    }
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -126,10 +144,12 @@ export function APITester() {
             <div className="flex gap-2">
               <MethodSelector value={method} onChange={setMethod} />
               <URLInput value={url} onChange={setUrl} />
-              <Button onClick={handleSendRequest} disabled={loading || !url}>
-                <Send className="h-4 w-4 mr-2" />
-                {loading ? 'Sending...' : 'Send'}
-              </Button>
+              <SendButton
+                onSend={handleSendRequest}
+                onCancel={handleCancelRequest}
+                disabled={!url}
+                loading={loading}
+              />
             </div>
 
             <Tabs defaultValue="params" className="w-full">
