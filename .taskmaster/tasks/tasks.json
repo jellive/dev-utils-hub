@@ -1478,7 +1478,7 @@
           6,
           8
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -1486,7 +1486,7 @@
             "description": "Create integration between JWT Decoder tool and API Tester for seamless Bearer token handling, allowing users to decode tokens and send them directly to API Tester headers",
             "dependencies": [],
             "details": "Modify JWT Decoder component to accept router state, add 'Send to API Tester' button that passes decoded token to Bearer auth field. Implement state passing through React Router navigation with token data preservation. Update APITester to receive and populate Bearer token from JWT Decoder state. Create helper functions in utils/ for token formatting and validation before passing between tools.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test token passing from JWT Decoder to API Tester, verify Bearer token population in auth headers, test state preservation during navigation, validate token format handling"
           },
           {
@@ -1495,7 +1495,7 @@
             "description": "Enable bidirectional data flow between JSON Formatter and API Tester for response beautification and request body formatting",
             "dependencies": [],
             "details": "Update JSON Formatter to accept API response data via router state, implement 'Format in JSON Formatter' button in API Tester response viewer. Add 'Send to API Tester' button in JSON Formatter to pass formatted JSON as request body. Create state management hooks for passing JSON data between tools while preserving formatting preferences. Ensure proper error handling for invalid JSON during transfer.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify JSON data transfer between tools, test formatting preservation, validate error handling for malformed JSON, check state persistence across navigation"
           },
           {
@@ -1504,7 +1504,7 @@
             "description": "Implement integrations with Base64 Converter for Basic Auth encoding and Hash Generator for API signature generation",
             "dependencies": [],
             "details": "Modify Base64 Converter to encode Basic Auth credentials and send to API Tester auth configuration. Update Hash Generator to create API signatures (HMAC, SHA) and pass to custom headers. Add 'Generate Basic Auth' button that opens Base64 tool with username:password format. Implement 'Generate API Signature' flow that uses Hash Generator for request signing. Create utility functions for proper auth header formatting.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test Basic Auth credential encoding and header generation, verify API signature creation and header injection, validate auth format compliance with standards"
           },
           {
@@ -1517,7 +1517,7 @@
               3
             ],
             "details": "Add 'Send to API Tester' button component to JWT Decoder, JSON Formatter, Base64 Converter, and Hash Generator tools. Implement consistent UI/UX with icon and tooltip. Create shared navigation helper functions in utils/navigation.ts for state passing. Update tool components to detect when opened from API Tester and show return navigation. Ensure backward compatibility by making integration features optional. Document integration points in each tool.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test all 'Send to API Tester' buttons across tools, verify state passing consistency, validate backward compatibility, test round-trip navigation flows"
           }
         ]
@@ -1704,7 +1704,7 @@
     ],
     "metadata": {
       "created": "2025-10-24T07:00:19.010Z",
-      "updated": "2025-10-24T15:25:00.744Z",
+      "updated": "2025-10-25T05:36:41.578Z",
       "description": "Tasks for api-tester context"
     }
   }
