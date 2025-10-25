@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import {
   Select,
   SelectContent,
@@ -15,9 +16,11 @@ interface MethodSelectorProps {
 }
 
 export function MethodSelector({ value, onChange }: MethodSelectorProps) {
+  const { t } = useTranslation();
+
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className="w-[140px]" aria-label="HTTP Method">
+      <SelectTrigger className="w-[140px]" aria-label={t('tools.api.method')}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

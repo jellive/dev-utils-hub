@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
@@ -9,6 +10,7 @@ interface URLInputProps {
 }
 
 export function URLInput({ value, onChange }: URLInputProps) {
+  const { t } = useTranslation();
   const [error, setError] = useState<string>('');
   const [localValue, setLocalValue] = useState(value);
 
@@ -26,7 +28,7 @@ export function URLInput({ value, onChange }: URLInputProps) {
     const hasProtocol = /^https?:\/\//i.test(url);
 
     if (!hasProtocol) {
-      setError('Invalid URL: must start with http:// or https://');
+      setError(t('tools.api.urlMustUseHttp'));
       return false;
     }
 
@@ -36,7 +38,7 @@ export function URLInput({ value, onChange }: URLInputProps) {
       setError('');
       return true;
     } catch {
-      setError('Invalid URL format');
+      setError(t('tools.api.urlInvalid'));
       return false;
     }
   };
@@ -83,9 +85,9 @@ export function URLInput({ value, onChange }: URLInputProps) {
           value={localValue}
           onChange={handleChange}
           onBlur={handleBlur}
-          placeholder="Enter API endpoint (e.g., https://api.example.com/users)"
+          placeholder={t('tools.api.urlPlaceholder')}
           className={error ? 'border-red-500 pr-10' : 'pr-10'}
-          aria-label="API URL"
+          aria-label={t('tools.api.url')}
         />
         {localValue && (
           <Button
@@ -94,7 +96,7 @@ export function URLInput({ value, onChange }: URLInputProps) {
             size="sm"
             className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
             onClick={handleClear}
-            aria-label="Clear URL"
+            aria-label={t('tools.api.clear')}
           >
             <X className="h-4 w-4" />
           </Button>

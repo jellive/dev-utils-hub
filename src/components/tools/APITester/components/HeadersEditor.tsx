@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -18,6 +19,7 @@ interface HeadersEditorProps {
 }
 
 export function HeadersEditor({ headers, onChange }: HeadersEditorProps) {
+  const { t } = useTranslation();
   const handleAddHeader = () => {
     onChange([...headers, { key: '', value: '', enabled: true }]);
   };
@@ -52,11 +54,11 @@ export function HeadersEditor({ headers, onChange }: HeadersEditorProps) {
     return (
       <div className="space-y-4">
         <div className="text-center py-8 text-muted-foreground">
-          <p>No headers added yet</p>
+          <p>{t('tools.api.headers.noHeaders')}</p>
         </div>
         <Button onClick={handleAddHeader} className="w-full">
           <Plus className="mr-2 h-4 w-4" />
-          Add Header
+          {t('tools.api.headers.addHeader')}
         </Button>
       </div>
     );
@@ -68,8 +70,8 @@ export function HeadersEditor({ headers, onChange }: HeadersEditorProps) {
         <TableHeader>
           <TableRow>
             <TableHead className="w-12">Enabled</TableHead>
-            <TableHead>Key</TableHead>
-            <TableHead>Value</TableHead>
+            <TableHead>{t('tools.api.headers.key')}</TableHead>
+            <TableHead>{t('tools.api.headers.value')}</TableHead>
             <TableHead className="w-20">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -87,7 +89,7 @@ export function HeadersEditor({ headers, onChange }: HeadersEditorProps) {
                 <Input
                   value={header.key}
                   onChange={(e) => handleUpdateKey(index, e.target.value)}
-                  placeholder="Header name"
+                  placeholder={t('tools.api.headers.key')}
                   className="h-8"
                 />
               </TableCell>
@@ -95,7 +97,7 @@ export function HeadersEditor({ headers, onChange }: HeadersEditorProps) {
                 <Input
                   value={header.value}
                   onChange={(e) => handleUpdateValue(index, e.target.value)}
-                  placeholder="Header value"
+                  placeholder={t('tools.api.headers.value')}
                   className="h-8"
                 />
               </TableCell>
@@ -115,7 +117,7 @@ export function HeadersEditor({ headers, onChange }: HeadersEditorProps) {
       </Table>
       <Button onClick={handleAddHeader} className="w-full" variant="outline">
         <Plus className="mr-2 h-4 w-4" />
-        Add Header
+        {t('tools.api.headers.addHeader')}
       </Button>
     </div>
   );

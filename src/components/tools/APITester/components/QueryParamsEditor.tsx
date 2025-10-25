@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -14,6 +15,7 @@ interface QueryParamsEditorProps {
 }
 
 export function QueryParamsEditor({ params, onChange }: QueryParamsEditorProps) {
+  const { t } = useTranslation();
   const handleAdd = () => {
     onChange([...params, { key: '', value: '' }]);
   };
@@ -40,16 +42,16 @@ export function QueryParamsEditor({ params, onChange }: QueryParamsEditorProps) 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold">Query Parameters</span>
+            <span className="text-sm font-semibold">{t('tools.api.queryParams.title')}</span>
             <Badge variant="secondary">0</Badge>
           </div>
           <Button variant="outline" size="sm" onClick={handleAdd}>
             <Plus className="h-4 w-4 mr-1" />
-            Add Parameter
+            {t('tools.api.queryParams.addParam')}
           </Button>
         </div>
         <div className="p-8 text-center text-muted-foreground border rounded-md">
-          No query parameters
+          {t('tools.api.queryParams.noParams')}
         </div>
       </div>
     );
