@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
@@ -11,6 +12,7 @@ interface HistoryPanelProps {
 }
 
 export function HistoryPanel({ children, count = 0, onClear }: HistoryPanelProps) {
+  const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(true);
 
   const handleToggle = () => {
@@ -27,7 +29,7 @@ export function HistoryPanel({ children, count = 0, onClear }: HistoryPanelProps
             size="sm"
             onClick={handleToggle}
             className="h-6 w-6 p-0"
-            aria-label={isExpanded ? 'Collapse history' : 'Expand history'}
+            aria-label={isExpanded ? t('tools.api.history.collapse') : t('tools.api.history.expand')}
           >
             {isExpanded ? (
               <ChevronDown className="h-4 w-4" />
@@ -36,7 +38,7 @@ export function HistoryPanel({ children, count = 0, onClear }: HistoryPanelProps
             )}
           </Button>
 
-          <h3 className="text-sm font-semibold">History</h3>
+          <h3 className="text-sm font-semibold">{t('tools.api.history.title')}</h3>
 
           <Badge variant="secondary">{count}</Badge>
         </div>
@@ -47,10 +49,10 @@ export function HistoryPanel({ children, count = 0, onClear }: HistoryPanelProps
           onClick={onClear}
           disabled={count === 0}
           className="h-8"
-          aria-label="Clear history"
+          aria-label={t('tools.api.history.clear')}
         >
           <Trash2 className="h-4 w-4 mr-1" />
-          Clear
+          {t('tools.api.history.clear')}
         </Button>
       </div>
 

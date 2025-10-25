@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { FileText, List } from 'lucide-react';
@@ -10,6 +11,7 @@ interface ResponseTabsProps {
 }
 
 export function ResponseTabs({ response, onTabChange }: ResponseTabsProps) {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('body');
 
   const headerCount = Object.keys(response.headers).length;
@@ -27,14 +29,14 @@ export function ResponseTabs({ response, onTabChange }: ResponseTabsProps) {
           className="flex items-center gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary"
         >
           <FileText className="h-4 w-4" />
-          Body
+          {t('tools.api.response.body')}
         </TabsTrigger>
         <TabsTrigger
           value="headers"
           className="flex items-center gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary"
         >
           <List className="h-4 w-4" />
-          Headers
+          {t('tools.api.response.headers')}
           <Badge variant="secondary" className="ml-1">
             {headerCount}
           </Badge>
@@ -43,13 +45,13 @@ export function ResponseTabs({ response, onTabChange }: ResponseTabsProps) {
 
       <TabsContent value="body" className="p-4">
         <pre className="text-sm font-mono whitespace-pre-wrap break-all">
-          {response.body || <span className="text-muted-foreground">No body content</span>}
+          {response.body || <span className="text-muted-foreground">{t('tools.api.response.noBody')}</span>}
         </pre>
       </TabsContent>
 
       <TabsContent value="headers" className="p-4">
         {headerCount === 0 ? (
-          <div className="text-sm text-muted-foreground">No headers</div>
+          <div className="text-sm text-muted-foreground">{t('tools.api.response.noHeaders')}</div>
         ) : (
           <div className="space-y-2">
             {Object.entries(response.headers).map(([key, value]) => (

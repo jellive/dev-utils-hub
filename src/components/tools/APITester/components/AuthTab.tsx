@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,6 +25,7 @@ interface AuthTabProps {
 }
 
 export function AuthTab({ onAuthChange }: AuthTabProps) {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<AuthMode>('bearer');
   const [bearerToken, setBearerToken] = useState('');
   const [username, setUsername] = useState('');
@@ -77,18 +79,18 @@ export function AuthTab({ onAuthChange }: AuthTabProps) {
   return (
     <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as AuthMode)}>
       <TabsList className="grid w-full grid-cols-3">
-        <TabsTrigger value="bearer">Bearer Token</TabsTrigger>
-        <TabsTrigger value="basic">Basic Auth</TabsTrigger>
-        <TabsTrigger value="apikey">API Key</TabsTrigger>
+        <TabsTrigger value="bearer">{t('tools.api.auth.bearerToken')}</TabsTrigger>
+        <TabsTrigger value="basic">{t('tools.api.auth.basicAuth')}</TabsTrigger>
+        <TabsTrigger value="apikey">{t('tools.api.auth.apiKey')}</TabsTrigger>
       </TabsList>
 
       <TabsContent value="bearer" className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="bearer-token">Bearer Token</Label>
+          <Label htmlFor="bearer-token">{t('tools.api.auth.bearerToken')}</Label>
           <Input
             id="bearer-token"
             type="text"
-            placeholder="Enter bearer token (e.g., JWT)"
+            placeholder={t('tools.api.auth.bearerTokenPlaceholder')}
             value={bearerToken}
             onChange={(e) => handleBearerTokenChange(e.target.value)}
           />
@@ -97,21 +99,21 @@ export function AuthTab({ onAuthChange }: AuthTabProps) {
 
       <TabsContent value="basic" className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="username">Username</Label>
+          <Label htmlFor="username">{t('tools.api.auth.username')}</Label>
           <Input
             id="username"
             type="text"
-            placeholder="Username"
+            placeholder={t('tools.api.auth.username')}
             value={username}
             onChange={(e) => handleBasicAuthChange(e.target.value, password)}
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">{t('tools.api.auth.password')}</Label>
           <Input
             id="password"
             type="password"
-            placeholder="Password"
+            placeholder={t('tools.api.auth.password')}
             value={password}
             onChange={(e) => handleBasicAuthChange(username, e.target.value)}
           />
@@ -120,11 +122,11 @@ export function AuthTab({ onAuthChange }: AuthTabProps) {
 
       <TabsContent value="apikey" className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="api-key">API Key</Label>
+          <Label htmlFor="api-key">{t('tools.api.auth.apiKey')}</Label>
           <Input
             id="api-key"
             type="text"
-            placeholder="Enter API key"
+            placeholder={t('tools.api.auth.apiKeyPlaceholder')}
             value={apiKey}
             onChange={(e) => handleApiKeyChange(e.target.value)}
           />

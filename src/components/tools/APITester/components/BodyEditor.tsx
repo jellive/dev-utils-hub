@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -44,6 +45,7 @@ const JSON_TEMPLATES = {
 };
 
 export function BodyEditor({ value, onChange }: BodyEditorProps) {
+  const { t } = useTranslation();
   const [error, setError] = useState<string>('');
   const [bodyType, setBodyType] = useState<BodyType>('json');
 
@@ -68,7 +70,7 @@ export function BodyEditor({ value, onChange }: BodyEditorProps) {
       onChange(formatted);
       setError('');
     } catch (e) {
-      setError('Invalid JSON: Unable to parse');
+      setError(t('tools.api.body.invalidJson'));
     }
   };
 
@@ -96,17 +98,17 @@ export function BodyEditor({ value, onChange }: BodyEditorProps) {
     <div className="space-y-2">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <Label htmlFor="body-type">Body Type</Label>
+          <Label htmlFor="body-type">{t('tools.api.body.bodyType')}</Label>
           <select
             id="body-type"
             value={bodyType}
             onChange={handleBodyTypeChange}
             className="h-8 rounded-md border border-input bg-background px-3 text-sm"
-            aria-label="Body Type"
+            aria-label={t('tools.api.body.bodyType')}
           >
-            <option value="json">JSON</option>
-            <option value="text">Text</option>
-            <option value="form-data">Form Data</option>
+            <option value="json">{t('tools.api.body.json')}</option>
+            <option value="text">{t('tools.api.body.text')}</option>
+            <option value="form-data">{t('tools.api.body.formData')}</option>
           </select>
         </div>
 
@@ -116,10 +118,10 @@ export function BodyEditor({ value, onChange }: BodyEditorProps) {
               <select
                 onChange={handleTemplateChange}
                 className="h-8 rounded-md border border-input bg-background px-3 text-sm"
-                aria-label="Template"
+                aria-label={t('tools.api.body.template')}
                 defaultValue=""
               >
-                <option value="">Select template...</option>
+                <option value="">{t('tools.api.body.selectTemplate')}</option>
                 {Object.entries(JSON_TEMPLATES).map(([key, { name }]) => (
                   <option key={key} value={key}>
                     {name}
@@ -133,7 +135,7 @@ export function BodyEditor({ value, onChange }: BodyEditorProps) {
                 onClick={handleFormat}
                 type="button"
               >
-                Format
+                {t('tools.api.body.format')}
               </Button>
             </>
           )}
@@ -146,10 +148,10 @@ export function BodyEditor({ value, onChange }: BodyEditorProps) {
         onChange={handleChange}
         placeholder={
           bodyType === 'json'
-            ? 'Enter request body (JSON)'
+            ? t('tools.api.body.jsonPlaceholder')
             : bodyType === 'text'
-            ? 'Enter plain text body'
-            : 'Enter form data'
+            ? t('tools.api.body.textPlaceholder')
+            : t('tools.api.body.formDataPlaceholder')
         }
         className="font-mono min-h-[200px]"
       />

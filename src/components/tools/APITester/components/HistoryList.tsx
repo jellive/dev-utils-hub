@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -13,6 +14,7 @@ interface HistoryListProps {
 }
 
 export function HistoryList({ items, onRestore, onDelete }: HistoryListProps) {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [methodFilter, setMethodFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -92,8 +94,8 @@ export function HistoryList({ items, onRestore, onDelete }: HistoryListProps) {
   if (items.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
-        <p>No history items yet</p>
-        <p className="text-sm mt-1">Requests you make will appear here</p>
+        <p>{t('tools.api.history.noHistory')}</p>
+        <p className="text-sm mt-1">{t('tools.api.history.requestsWillAppear')}</p>
       </div>
     );
   }
@@ -108,7 +110,7 @@ export function HistoryList({ items, onRestore, onDelete }: HistoryListProps) {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Search history..."
+              placeholder={t('tools.api.history.searchHistory')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
@@ -117,15 +119,15 @@ export function HistoryList({ items, onRestore, onDelete }: HistoryListProps) {
 
           <div className="flex gap-2">
             <div className="flex-1">
-              <Label htmlFor="method-filter" className="sr-only">Method</Label>
+              <Label htmlFor="method-filter" className="sr-only">{t('tools.api.method')}</Label>
               <select
                 id="method-filter"
                 value={methodFilter}
                 onChange={(e) => setMethodFilter(e.target.value)}
                 className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
-                aria-label="Method filter"
+                aria-label={t('tools.api.history.methodFilter')}
               >
-                <option value="all">All Methods</option>
+                <option value="all">{t('tools.api.history.allMethods')}</option>
                 <option value="GET">GET</option>
                 <option value="POST">POST</option>
                 <option value="PUT">PUT</option>
@@ -135,25 +137,25 @@ export function HistoryList({ items, onRestore, onDelete }: HistoryListProps) {
             </div>
 
             <div className="flex-1">
-              <Label htmlFor="status-filter" className="sr-only">Status</Label>
+              <Label htmlFor="status-filter" className="sr-only">{t('tools.api.status')}</Label>
               <select
                 id="status-filter"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
                 className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
-                aria-label="Status filter"
+                aria-label={t('tools.api.history.statusFilter')}
               >
-                <option value="all">All Status</option>
-                <option value="success">Success</option>
-                <option value="error">Error</option>
+                <option value="all">{t('tools.api.history.allStatus')}</option>
+                <option value="success">{t('tools.api.history.success')}</option>
+                <option value="error">{t('tools.api.history.error')}</option>
               </select>
             </div>
           </div>
         </div>
 
         <div className="text-center py-8 text-muted-foreground">
-          <p>No results found</p>
-          <p className="text-sm mt-1">Try adjusting your search or filters</p>
+          <p>{t('tools.api.history.noResults')}</p>
+          <p className="text-sm mt-1">{t('tools.api.history.tryAdjusting')}</p>
         </div>
       </div>
     );
@@ -167,7 +169,7 @@ export function HistoryList({ items, onRestore, onDelete }: HistoryListProps) {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Search history..."
+            placeholder={t('tools.api.history.searchHistory')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
@@ -176,15 +178,15 @@ export function HistoryList({ items, onRestore, onDelete }: HistoryListProps) {
 
         <div className="flex gap-2">
           <div className="flex-1">
-            <Label htmlFor="method-filter" className="sr-only">Method</Label>
+            <Label htmlFor="method-filter" className="sr-only">{t('tools.api.method')}</Label>
             <select
               id="method-filter"
               value={methodFilter}
               onChange={(e) => setMethodFilter(e.target.value)}
               className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
-              aria-label="Method filter"
+              aria-label={t('tools.api.history.methodFilter')}
             >
-              <option value="all">All Methods</option>
+              <option value="all">{t('tools.api.history.allMethods')}</option>
               <option value="GET">GET</option>
               <option value="POST">POST</option>
               <option value="PUT">PUT</option>
@@ -194,17 +196,17 @@ export function HistoryList({ items, onRestore, onDelete }: HistoryListProps) {
           </div>
 
           <div className="flex-1">
-            <Label htmlFor="status-filter" className="sr-only">Status</Label>
+            <Label htmlFor="status-filter" className="sr-only">{t('tools.api.status')}</Label>
             <select
               id="status-filter"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
-              aria-label="Status filter"
+              aria-label={t('tools.api.history.statusFilter')}
             >
-              <option value="all">All Status</option>
-              <option value="success">Success</option>
-              <option value="error">Error</option>
+              <option value="all">{t('tools.api.history.allStatus')}</option>
+              <option value="success">{t('tools.api.history.success')}</option>
+              <option value="error">{t('tools.api.history.error')}</option>
             </select>
           </div>
         </div>
@@ -243,7 +245,7 @@ export function HistoryList({ items, onRestore, onDelete }: HistoryListProps) {
                     )}
                     {item.error && (
                       <Badge variant="outline" className="bg-red-100 text-red-800">
-                        Error
+                        {t('tools.api.history.error')}
                       </Badge>
                     )}
                     <span>{formatRelativeTime(item.timestamp)}</span>
@@ -259,7 +261,7 @@ export function HistoryList({ items, onRestore, onDelete }: HistoryListProps) {
                 size="icon"
                 className="opacity-0 group-hover:opacity-100 transition-opacity"
                 onClick={() => onDelete?.(item.id)}
-                aria-label="Delete"
+                aria-label={t('tools.api.history.delete')}
               >
                 <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
               </Button>
