@@ -1532,7 +1532,7 @@
         "dependencies": [
           8
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -1540,7 +1540,7 @@
             "description": "Create and add all necessary translation keys for the API Tester component to both ko.json and en.json files, covering all UI elements and user-facing text",
             "dependencies": [],
             "details": "Add 50+ translation keys to src/locales/ko.json and src/locales/en.json for the API Tester tool. Include keys for: tool name and description, HTTP method labels, URL input placeholder, headers section, authentication types and labels, request/response tabs, body editor placeholders, query parameter labels, status messages (success, error, loading), button texts (Send, Clear, Copy, Delete, Save), history panel labels, error messages for various scenarios, tooltips and help text, and technical terms with proper context. Ensure Korean translations are culturally appropriate and technical terms are properly localized.",
-            "status": "in-progress",
+            "status": "done",
             "testStrategy": "Verify all translation keys are present in both language files, check for missing keys, validate JSON syntax, and ensure no duplicate keys exist"
           },
           {
@@ -1551,7 +1551,7 @@
               1
             ],
             "details": "Import and implement useTranslation hook in all API Tester components including APITester.tsx, URLInput.tsx, MethodSelector.tsx, HeadersEditor.tsx, AuthConfig.tsx, BodyEditor.tsx, ResponseDisplay.tsx, HistoryPanel.tsx, and all sub-components. Replace all hardcoded strings with t() function calls using the translation keys added in subtask 1. Ensure proper namespace is used for the API Tester translations. Handle dynamic content translation including status messages, error messages, and pluralization where needed. Update any utility functions that return user-facing text to accept translation function as parameter.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test that all components render translated text correctly, verify no hardcoded strings remain, check dynamic translations work properly"
           },
           {
@@ -1562,7 +1562,7 @@
               2
             ],
             "details": "Test language switching functionality between Korean and English in the API Tester. Verify all UI elements display correct translations without any missing keys or fallback text. Check that technical terms are properly translated with appropriate context. Test dynamic content translation including error messages, status updates, and API responses. Validate UI layout adapts correctly to different text lengths in both languages. Ensure proper text direction and formatting for both languages. Test edge cases like very long translations and special characters. Verify localStorage and other persistent data handle language changes correctly. Document any layout adjustments needed for Korean text.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Manual testing of language switching, automated tests for translation key coverage, visual regression tests for UI layout in both languages"
           }
         ]
@@ -1646,7 +1646,7 @@
             "description": "Implement unit tests for useHistory.ts, useAuth.ts hooks and all utility functions ensuring proper state management and LocalStorage interactions",
             "dependencies": [],
             "details": "Test useHistory hook for LocalStorage operations including saving history items, loading saved history, managing maximum history limit (20 items), searching and filtering functionality, deletion of individual and bulk items. Test useAuth hook for authentication state management, token storage and retrieval, auth header generation for different auth types. Test utility functions like getStatusVariant, formatTimestamp, parseQueryParams, and any data transformation utilities. Use @testing-library/react-hooks for hook testing and mock LocalStorage.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Use @testing-library/react-hooks and Jest to test hook lifecycle, state changes, and side effects"
           },
           {
@@ -1658,7 +1658,7 @@
               2
             ],
             "details": "Write component tests for RequestBuilder testing URL input validation, method selection, header management, and body editor functionality. Test ResponseViewer for different response types rendering, status code display, response time and size display, error state handling. Test HistoryPanel for history item rendering, search functionality, restore action, delete operations. Test AuthSelector for different auth type configurations, credential management, and validation. Use React Testing Library with user-event for simulating user interactions, test accessibility with @testing-library/jest-dom matchers.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Use React Testing Library with user-event to test component behavior, interactions, and accessibility"
           },
           {
@@ -1669,7 +1669,7 @@
               3
             ],
             "details": "Implement E2E tests for complete API testing workflow: creating and sending requests with different methods, adding headers and authentication, handling various response types, saving to and restoring from history. Test error scenarios like network failures, timeouts, and invalid responses. Test integration with other Dev Utils tools ensuring smooth navigation and data sharing. Validate request cancellation functionality, history persistence across page reloads, and proper error recovery. Configure Playwright for multiple browsers (Chrome, Firefox, Safari) and different viewport sizes for responsive testing.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Use Playwright with multiple browser configurations to test real user workflows and cross-browser compatibility"
           },
           {
@@ -1704,7 +1704,7 @@
     ],
     "metadata": {
       "created": "2025-10-24T07:00:19.010Z",
-      "updated": "2025-10-25T05:36:41.578Z",
+      "updated": "2025-10-25T06:22:27.776Z",
       "description": "Tasks for api-tester context"
     }
   }
