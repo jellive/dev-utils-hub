@@ -156,7 +156,7 @@ describe('testDSNConnection', () => {
       ok: true,
       status: 200,
     })
-    global.fetch = mockFetch
+    globalThis.fetch = mockFetch
 
     const dsn = {
       protocol: 'https' as const,
@@ -188,7 +188,7 @@ describe('testDSNConnection', () => {
       ok: false,
       status: 405,
     })
-    global.fetch = mockFetch
+    globalThis.fetch = mockFetch
 
     const dsn = {
       protocol: 'https' as const,
@@ -207,7 +207,7 @@ describe('testDSNConnection', () => {
 
   it('should handle network error', async () => {
     const mockFetch = vi.fn().mockRejectedValue(new Error('Failed to fetch'))
-    global.fetch = mockFetch
+    globalThis.fetch = mockFetch
 
     const dsn = {
       protocol: 'https' as const,
@@ -229,7 +229,7 @@ describe('testDSNConnection', () => {
     const timeoutError = new Error('Timeout')
     timeoutError.name = 'AbortError'
     const mockFetch = vi.fn().mockRejectedValue(timeoutError)
-    global.fetch = mockFetch
+    globalThis.fetch = mockFetch
 
     const dsn = {
       protocol: 'https' as const,
@@ -251,7 +251,7 @@ describe('testDSNConnection', () => {
       ok: false,
       status: 404,
     })
-    global.fetch = mockFetch
+    globalThis.fetch = mockFetch
 
     const dsn = {
       protocol: 'https' as const,

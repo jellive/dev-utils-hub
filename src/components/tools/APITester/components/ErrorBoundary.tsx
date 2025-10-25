@@ -40,7 +40,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     // Log error to console in development
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       console.error('ErrorBoundary caught an error:', error, errorInfo);
     }
 
@@ -95,7 +95,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           <CardContent className="space-y-4">
             <div className="rounded-lg bg-destructive/10 p-4">
               <p className="text-sm font-medium text-destructive">Error: {error.message}</p>
-              {process.env.NODE_ENV === 'development' && errorInfo && (
+              {import.meta.env.DEV && errorInfo && (
                 <details className="mt-2">
                   <summary className="cursor-pointer text-xs text-muted-foreground">
                     Stack trace

@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { APITester } from '../index';
 
 // Mock fetch
-global.fetch = vi.fn();
+globalThis.fetch = vi.fn();
 
 describe('APITester - State Management Integration', () => {
   beforeEach(() => {
@@ -52,7 +52,7 @@ describe('APITester - State Management Integration', () => {
       const user = userEvent.setup();
 
       // Mock delayed response to catch loading state
-      (global.fetch as any).mockImplementationOnce(
+      (globalThis.fetch as any).mockImplementationOnce(
         () => new Promise(resolve => {
           setTimeout(() => {
             resolve({
@@ -126,7 +126,7 @@ describe('APITester - State Management Integration', () => {
         text: async () => '{"data": "test"}',
       };
 
-      (global.fetch as any).mockResolvedValueOnce(mockResponse);
+      (globalThis.fetch as any).mockResolvedValueOnce(mockResponse);
 
       render(<APITester />);
 
@@ -145,7 +145,7 @@ describe('APITester - State Management Integration', () => {
     it('should update error state on request failure', async () => {
       const user = userEvent.setup();
 
-      (global.fetch as any).mockRejectedValueOnce(new Error('Network error'));
+      (globalThis.fetch as any).mockRejectedValueOnce(new Error('Network error'));
 
       render(<APITester />);
 
@@ -180,7 +180,7 @@ describe('APITester - State Management Integration', () => {
         text: async () => '{"data": "second"}',
       };
 
-      (global.fetch as any)
+      (globalThis.fetch as any)
         .mockResolvedValueOnce(mockResponse1)
         .mockResolvedValueOnce(mockResponse2);
 
@@ -221,7 +221,7 @@ describe('APITester - State Management Integration', () => {
         text: async () => '{"success": true}',
       };
 
-      (global.fetch as any).mockResolvedValueOnce(mockResponse);
+      (globalThis.fetch as any).mockResolvedValueOnce(mockResponse);
 
       render(<APITester />);
 
@@ -244,7 +244,7 @@ describe('APITester - State Management Integration', () => {
     it('should save request to history on error', async () => {
       const user = userEvent.setup();
 
-      (global.fetch as any).mockRejectedValueOnce(new Error('Request failed'));
+      (globalThis.fetch as any).mockRejectedValueOnce(new Error('Request failed'));
 
       render(<APITester />);
 
@@ -272,7 +272,7 @@ describe('APITester - State Management Integration', () => {
         text: async () => '{"data": "test"}',
       };
 
-      (global.fetch as any).mockResolvedValueOnce(mockResponse);
+      (globalThis.fetch as any).mockResolvedValueOnce(mockResponse);
 
       render(<APITester />);
 
@@ -322,7 +322,7 @@ describe('APITester - State Management Integration', () => {
         text: async () => '{"id": 1, "name": "Test"}',
       };
 
-      (global.fetch as any).mockResolvedValueOnce(mockResponse);
+      (globalThis.fetch as any).mockResolvedValueOnce(mockResponse);
 
       render(<APITester />);
 

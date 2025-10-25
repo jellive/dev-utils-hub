@@ -21,7 +21,7 @@ describe('httpClient', () => {
         .mockReturnValueOnce(100); // endTime
 
       const mockResponse = { data: 'test' };
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
         statusText: 'OK',
@@ -49,7 +49,7 @@ describe('httpClient', () => {
     });
 
     it('should handle POST request with body', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 201,
         statusText: 'Created',
@@ -69,7 +69,7 @@ describe('httpClient', () => {
 
       const result = await sendRequest(config);
 
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(globalThis.fetch).toHaveBeenCalledWith(
         'https://api.example.com/users',
         expect.objectContaining({
           method: 'POST',
@@ -83,7 +83,7 @@ describe('httpClient', () => {
       // TODO: Fix fake timers integration with AbortController
       vi.useFakeTimers();
 
-      global.fetch = vi.fn().mockImplementation(
+      globalThis.fetch = vi.fn().mockImplementation(
         () => new Promise(() => {
           // Never resolves - simulating slow request
         })
@@ -108,7 +108,7 @@ describe('httpClient', () => {
     });
 
     it('should have cancel method', () => {
-      global.fetch = vi.fn().mockImplementation(
+      globalThis.fetch = vi.fn().mockImplementation(
         () => new Promise(() => {})
       );
 
@@ -130,7 +130,7 @@ describe('httpClient', () => {
     });
 
     it('should handle network errors', async () => {
-      global.fetch = vi.fn().mockRejectedValue(new Error('Network error'));
+      globalThis.fetch = vi.fn().mockRejectedValue(new Error('Network error'));
 
       const config: RequestConfig = {
         method: 'GET',
@@ -146,7 +146,7 @@ describe('httpClient', () => {
     });
 
     it('should add Bearer token to headers', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
         statusText: 'OK',
@@ -166,7 +166,7 @@ describe('httpClient', () => {
 
       await sendRequest(config);
 
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(globalThis.fetch).toHaveBeenCalledWith(
         'https://api.example.com/protected',
         expect.objectContaining({
           headers: expect.objectContaining({
@@ -177,7 +177,7 @@ describe('httpClient', () => {
     });
 
     it('should add Basic Auth to headers', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
         statusText: 'OK',
@@ -198,7 +198,7 @@ describe('httpClient', () => {
       await sendRequest(config);
 
       const expectedAuth = 'Basic ' + btoa('user:pass');
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(globalThis.fetch).toHaveBeenCalledWith(
         'https://api.example.com/protected',
         expect.objectContaining({
           headers: expect.objectContaining({
@@ -209,7 +209,7 @@ describe('httpClient', () => {
     });
 
     it('should add API key to headers', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
         statusText: 'OK',
@@ -229,7 +229,7 @@ describe('httpClient', () => {
 
       await sendRequest(config);
 
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(globalThis.fetch).toHaveBeenCalledWith(
         'https://api.example.com/protected',
         expect.objectContaining({
           headers: expect.objectContaining({
@@ -240,7 +240,7 @@ describe('httpClient', () => {
     });
 
     it('should add API key to query params', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
         statusText: 'OK',
@@ -260,14 +260,14 @@ describe('httpClient', () => {
 
       await sendRequest(config);
 
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(globalThis.fetch).toHaveBeenCalledWith(
         'https://api.example.com/protected?apikey=secret-key',
         expect.any(Object)
       );
     });
 
     it('should handle enabled/disabled headers', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
         statusText: 'OK',
@@ -290,7 +290,7 @@ describe('httpClient', () => {
 
       await sendRequest(config);
 
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(globalThis.fetch).toHaveBeenCalledWith(
         'https://api.example.com/test',
         expect.objectContaining({
           headers: expect.objectContaining({
@@ -299,12 +299,12 @@ describe('httpClient', () => {
         })
       );
 
-      const callArgs = (global.fetch as any).mock.calls[0][1];
+      const callArgs = (globalThis.fetch as any).mock.calls[0][1];
       expect(callArgs.headers).not.toHaveProperty('X-Disabled');
     });
 
     it('should handle enabled/disabled query params', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
         statusText: 'OK',
@@ -327,14 +327,14 @@ describe('httpClient', () => {
 
       await sendRequest(config);
 
-      const calledUrl = (global.fetch as any).mock.calls[0][0];
+      const calledUrl = (globalThis.fetch as any).mock.calls[0][0];
       expect(calledUrl).toContain('enabled=yes');
       expect(calledUrl).not.toContain('disabled=no');
     });
 
     // RED Phase - Testing PUT, DELETE, PATCH methods
     it('should send PUT request', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
         statusText: 'OK',
@@ -354,7 +354,7 @@ describe('httpClient', () => {
 
       const result = await sendRequest(config);
 
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(globalThis.fetch).toHaveBeenCalledWith(
         'https://api.example.com/users/1',
         expect.objectContaining({
           method: 'PUT',
@@ -365,7 +365,7 @@ describe('httpClient', () => {
     });
 
     it('should send DELETE request', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 204,
         statusText: 'No Content',
@@ -385,7 +385,7 @@ describe('httpClient', () => {
 
       const result = await sendRequest(config);
 
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(globalThis.fetch).toHaveBeenCalledWith(
         'https://api.example.com/users/1',
         expect.objectContaining({
           method: 'DELETE',
@@ -395,7 +395,7 @@ describe('httpClient', () => {
     });
 
     it('should send PATCH request', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
         statusText: 'OK',
@@ -415,7 +415,7 @@ describe('httpClient', () => {
 
       const result = await sendRequest(config);
 
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(globalThis.fetch).toHaveBeenCalledWith(
         'https://api.example.com/users/1',
         expect.objectContaining({
           method: 'PATCH',
@@ -427,7 +427,7 @@ describe('httpClient', () => {
 
     // Testing HTTP error status codes
     it('should handle 4xx client errors', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: false,
         status: 404,
         statusText: 'Not Found',
@@ -453,7 +453,7 @@ describe('httpClient', () => {
     });
 
     it('should handle 5xx server errors', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: false,
         status: 500,
         statusText: 'Internal Server Error',
@@ -485,7 +485,7 @@ describe('httpClient', () => {
         .mockReturnValueOnce(startTime)
         .mockReturnValueOnce(endTime);
 
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
         statusText: 'OK',
@@ -510,7 +510,7 @@ describe('httpClient', () => {
 
     it('should calculate response size', async () => {
       const responseBody = '{"test": "data", "number": 123}';
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
         statusText: 'OK',
@@ -535,7 +535,7 @@ describe('httpClient', () => {
 
     // Testing edge cases
     it('should handle empty response body', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 204,
         statusText: 'No Content',
@@ -561,7 +561,7 @@ describe('httpClient', () => {
 
     it('should handle large response payloads', async () => {
       const largeBody = 'x'.repeat(1000000); // 1MB
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
         statusText: 'OK',
@@ -588,7 +588,7 @@ describe('httpClient', () => {
     it('should handle AbortError as cancellation', async () => {
       const abortError = new Error('The operation was aborted');
       abortError.name = 'AbortError';
-      global.fetch = vi.fn().mockRejectedValue(abortError);
+      globalThis.fetch = vi.fn().mockRejectedValue(abortError);
 
       const config: RequestConfig = {
         method: 'GET',
@@ -606,7 +606,7 @@ describe('httpClient', () => {
     it('should clear timeout on successful response', async () => {
       const clearTimeoutSpy = vi.spyOn(global, 'clearTimeout');
 
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
         statusText: 'OK',
@@ -632,7 +632,7 @@ describe('httpClient', () => {
     it('should clear timeout on error', async () => {
       const clearTimeoutSpy = vi.spyOn(global, 'clearTimeout');
 
-      global.fetch = vi.fn().mockRejectedValue(new Error('Network error'));
+      globalThis.fetch = vi.fn().mockRejectedValue(new Error('Network error'));
 
       const config: RequestConfig = {
         method: 'GET',
@@ -650,7 +650,7 @@ describe('httpClient', () => {
     });
 
     it('should handle special characters in query params', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
         statusText: 'OK',
@@ -673,7 +673,7 @@ describe('httpClient', () => {
 
       await sendRequest(config);
 
-      const calledUrl = (global.fetch as any).mock.calls[0][0];
+      const calledUrl = (globalThis.fetch as any).mock.calls[0][0];
       // URL encoding should handle special characters
       expect(calledUrl).toContain('q=');
       expect(calledUrl).toContain('filter=');

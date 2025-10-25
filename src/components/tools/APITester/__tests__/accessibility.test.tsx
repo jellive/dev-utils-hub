@@ -57,7 +57,8 @@ describe('API Tester - Accessibility Tests', () => {
     it('should have no accessibility violations', async () => {
       const { container } = render(
         <SendButton
-          onClick={vi.fn()}
+          onSend={vi.fn()}
+          onCancel={vi.fn()}
           disabled={false}
           loading={false}
         />
@@ -69,7 +70,8 @@ describe('API Tester - Accessibility Tests', () => {
     it('should be keyboard accessible', () => {
       const { getByRole } = render(
         <SendButton
-          onClick={vi.fn()}
+          onSend={vi.fn()}
+          onCancel={vi.fn()}
           disabled={false}
           loading={false}
         />
@@ -111,7 +113,7 @@ describe('API Tester - Accessibility Tests', () => {
         <BodyEditor
           value=""
           onChange={vi.fn()}
-          contentType="application/json"
+          
         />
       );
       const results = await axe(container);
@@ -124,7 +126,6 @@ describe('API Tester - Accessibility Tests', () => {
       const { container} = render(
         <ResponseMetadata
           status={200}
-          statusText="OK"
           time={123}
           size={1024}
         />
@@ -138,7 +139,7 @@ describe('API Tester - Accessibility Tests', () => {
     it('should have no accessibility violations', async () => {
       const { container } = render(
         <ResponseBody
-          data='{"message": "success"}'
+          body='{"message": "success"}'
           contentType="application/json"
         />
       );
@@ -178,16 +179,17 @@ describe('API Tester - Accessibility Tests', () => {
       const mockItems = [
         {
           id: '1',
-          method: 'GET' as const,
+          method: 'GET',
           url: 'https://api.example.com',
           timestamp: Date.now(),
+          headers: {},
+          body: '',
           response: {
             status: 200,
             statusText: 'OK',
-            data: '{}',
+            body: '{}',
             headers: {},
             time: 123,
-            size: 100,
           },
         },
       ];
@@ -201,10 +203,10 @@ describe('API Tester - Accessibility Tests', () => {
 
   describe('Keyboard Navigation', () => {
     it('should support tab navigation between interactive elements', () => {
-      const { getByRole, getAllByRole } = render(
+      const { getAllByRole } = render(
         <div>
           <URLInput value="" onChange={vi.fn()} />
-          <SendButton onClick={vi.fn()} disabled={false} loading={false} />
+          <SendButton onSend={vi.fn()} onCancel={vi.fn()} disabled={false} loading={false} />
         </div>
       );
 
@@ -243,7 +245,7 @@ describe('API Tester - Accessibility Tests', () => {
 
     it('should announce button states properly', () => {
       const { getByRole } = render(
-        <SendButton onClick={vi.fn()} disabled={true} loading={false} />
+        <SendButton onSend={vi.fn()} onCancel={vi.fn()} disabled={true} loading={false} />
       );
       const button = getByRole('button');
 
@@ -254,7 +256,7 @@ describe('API Tester - Accessibility Tests', () => {
   describe('Color Contrast', () => {
     it('should use semantic HTML elements for better structure', () => {
       const { getByRole } = render(
-        <SendButton onClick={vi.fn()} disabled={false} loading={false} />
+        <SendButton onSend={vi.fn()} onCancel={vi.fn()} disabled={false} loading={false} />
       );
 
       const button = getByRole('button');
@@ -265,7 +267,7 @@ describe('API Tester - Accessibility Tests', () => {
   describe('Focus Management', () => {
     it('should have visible focus indicators', async () => {
       const { getByRole } = render(
-        <SendButton onClick={vi.fn()} disabled={false} loading={false} />
+        <SendButton onSend={vi.fn()} onCancel={vi.fn()} disabled={false} loading={false} />
       );
 
       const button = getByRole('button');

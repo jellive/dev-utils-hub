@@ -1,9 +1,13 @@
-import { afterEach, vi } from 'vitest';
+import { afterEach, vi, expect } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
+import { toHaveNoViolations } from 'jest-axe';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import en from '../i18n/locales/en.json';
+
+// Add jest-axe matchers to vitest
+expect.extend(toHaveNoViolations);
 
 // Initialize i18n for tests
 i18n.use(initReactI18next).init({

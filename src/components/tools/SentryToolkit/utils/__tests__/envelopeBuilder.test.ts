@@ -114,7 +114,7 @@ describe('sendEnvelope', () => {
       ok: true,
       status: 200,
     })
-    global.fetch = mockFetch
+    globalThis.fetch = mockFetch
 
     const dsn: ParsedDSN = {
       protocol: 'https',
@@ -150,7 +150,7 @@ describe('sendEnvelope', () => {
       ok: true,
       status: 200,
     })
-    global.fetch = mockFetch
+    globalThis.fetch = mockFetch
 
     const dsn: ParsedDSN = {
       protocol: 'https',
@@ -180,7 +180,7 @@ describe('sendEnvelope', () => {
       ok: true,
       status: 200,
     })
-    global.fetch = mockFetch
+    globalThis.fetch = mockFetch
 
     const dsn: ParsedDSN = {
       protocol: 'https',
@@ -200,7 +200,7 @@ describe('sendEnvelope', () => {
 
   it('should handle network errors', async () => {
     const mockFetch = vi.fn().mockRejectedValue(new Error('Network error'))
-    global.fetch = mockFetch
+    globalThis.fetch = mockFetch
 
     const dsn: ParsedDSN = {
       protocol: 'https',
@@ -224,7 +224,7 @@ describe('sendEnvelope', () => {
       status: 400,
       statusText: 'Bad Request',
     })
-    global.fetch = mockFetch
+    globalThis.fetch = mockFetch
 
     const dsn: ParsedDSN = {
       protocol: 'https',
@@ -246,7 +246,7 @@ describe('sendEnvelope', () => {
     const timeoutError = new Error('Timeout')
     timeoutError.name = 'AbortError'
     const mockFetch = vi.fn().mockRejectedValue(timeoutError)
-    global.fetch = mockFetch
+    globalThis.fetch = mockFetch
 
     const dsn: ParsedDSN = {
       protocol: 'https',
@@ -269,7 +269,7 @@ describe('sendEnvelope', () => {
       ok: true,
       status: 200,
     })
-    global.fetch = mockFetch
+    globalThis.fetch = mockFetch
 
     const dsn: ParsedDSN = {
       protocol: 'https',

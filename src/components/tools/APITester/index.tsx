@@ -198,7 +198,7 @@ export function APITester() {
       setError(fullErrorMessage);
 
       // Log error in development
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         console.error('[APITester] Request error:', {
           type: errorType,
           message: errorMessage,
