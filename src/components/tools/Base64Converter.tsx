@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,11 +12,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowUp, ArrowDown, Send } from 'lucide-react';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 
 export function Base64Converter() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
   const [error, setError] = useState('');
@@ -120,6 +123,33 @@ export function Base64Converter() {
     if (output) {
       navigator.clipboard.writeText(output);
       toast.success(t('common.copied'));
+    }
+  };
+
+  const sendToAPITester = () => {
+    if (!output) {
+      toast.error('No encoded value to send');
+      return;
+    }
+
+    // If encoding, send as Basic Auth header
+    // Format should be "username:password" before encoding
+    if (activeTab === 'encode') {
+      navigate('/api-tester', {
+        state: {
+          authType: 'basic',
+          basicAuthEncoded: output,
+        },
+      });
+      toast.success('Base64 sent to API Tester for Basic Auth');
+    } else {
+      // If decoding, just send the decoded value
+      navigate('/api-tester', {
+        state: {
+          body: output,
+        },
+      });
+      toast.success('Decoded value sent to API Tester');
     }
   };
 
@@ -230,6 +260,12 @@ export function Base64Converter() {
             >
               {t('common.copy')}
             </button>
+            {output && (
+              <Button onClick={sendToAPITester} variant="secondary" className="gap-2">
+                <Send className="h-4 w-4" />
+                Send to API Tester
+              </Button>
+            )}
           </div>
         </TabsContent>
 
@@ -273,6 +309,12 @@ export function Base64Converter() {
             >
               {t('common.copy')}
             </button>
+            {output && (
+              <Button onClick={sendToAPITester} variant="secondary" className="gap-2">
+                <Send className="h-4 w-4" />
+                Send to API Tester
+              </Button>
+            )}
           </div>
         </TabsContent>
       </Tabs>

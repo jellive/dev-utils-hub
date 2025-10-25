@@ -1,11 +1,12 @@
 import { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { generateHash, generateHMAC } from '../../utils/hashUtils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { AlertCircle, Upload, X, HelpCircle, Check, X as XCircle } from 'lucide-react';
+import { AlertCircle, Upload, X, HelpCircle, Check, X as XCircle, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 
@@ -19,6 +20,7 @@ interface AlgorithmOption {
 
 export function HashGenerator() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [input, setInput] = useState('');
   const [algorithm, setAlgorithm] = useState<HashAlgorithm>('md5');
   const [hashResult, setHashResult] = useState('');
@@ -155,6 +157,26 @@ export function HashGenerator() {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+  };
+
+  const sendToAPITester = () => {
+    if (!hashResult) {
+      toast.error('No hash to send');
+      return;
+    }
+
+    // Send the hash as a custom header value for API signature
+    navigate('/api-tester', {
+      state: {
+        body: JSON.stringify({
+          hash: hashResult,
+          algorithm: algorithm,
+          hmacMode: isHmacMode,
+          message: input,
+        }, null, 2),
+      },
+    });
+    toast.success('Hash sent to API Tester');
   };
 
   return (
@@ -382,12 +404,18 @@ export function HashGenerator() {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               {isHmacMode ? t('tools.hash.hmacResult') : t('tools.hash.hashResult')}
             </label>
-            <button
-              onClick={handleCopy}
-              className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm font-medium transition-colors"
-            >
-              {t('common.copy')}
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={handleCopy}
+                className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm font-medium transition-colors"
+              >
+                {t('common.copy')}
+              </button>
+              <Button onClick={sendToAPITester} variant="secondary" size="sm">
+                <Send className="h-4 w-4 mr-2" />
+                Send to API Tester
+              </Button>
+            </div>
           </div>
           <div className="p-4 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg">
             <code

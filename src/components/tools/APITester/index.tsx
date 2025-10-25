@@ -59,6 +59,7 @@ export function APITester() {
     const state = location.state as {
       authType?: string;
       bearerToken?: string;
+      basicAuthEncoded?: string;
       body?: string;
       url?: string;
     } | null;
@@ -73,7 +74,26 @@ export function APITester() {
         setAuthConfig(bearerConfig);
       }
 
-      // Set body from JSON Formatter
+      // Set Basic Auth from Base64 Converter
+      if (state.authType === 'basic' && state.basicAuthEncoded) {
+        // Decode the base64 to get username:password
+        try {
+          const decoded = atob(state.basicAuthEncoded);
+          const [username, password] = decoded.split(':');
+          if (username && password) {
+            const basicConfig: AuthConfig = {
+              type: 'basic',
+              username,
+              password,
+            };
+            setAuthConfig(basicConfig);
+          }
+        } catch (err) {
+          console.error('Failed to decode Basic Auth:', err);
+        }
+      }
+
+      // Set body from JSON Formatter or Base64 Converter
       if (state.body) {
         setBody(state.body);
       }
@@ -120,15 +140,15 @@ export function APITester() {
 
       // Add auth header
       if (authConfig) {
-        if (authConfig.mode === 'bearer' && authConfig.bearerToken) {
-          requestHeaders['Authorization'] = `Bearer ${authConfig.bearerToken}`;
-        } else if (authConfig.mode === 'basic' && authConfig.basicAuth) {
-          const credentials = `${authConfig.basicAuth.username}:${authConfig.basicAuth.password}`;
+        if (authConfig.type === 'bearer') {
+          requestHeaders['Authorization'] = `Bearer ${authConfig.token}`;
+        } else if (authConfig.type === 'basic') {
+          const credentials = `${authConfig.username}:${authConfig.password}`;
           const encoded = btoa(credentials);
           requestHeaders['Authorization'] = `Basic ${encoded}`;
-        } else if (authConfig.mode === 'apikey' && authConfig.apiKey) {
-          if (authConfig.apiKey.placement === 'header') {
-            requestHeaders[authConfig.apiKey.keyName] = authConfig.apiKey.key;
+        } else if (authConfig.type === 'apiKey') {
+          if (authConfig.addTo === 'header') {
+            requestHeaders[authConfig.key] = authConfig.value;
           }
         }
       }
