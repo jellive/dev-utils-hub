@@ -40,4 +40,25 @@ node_modules/
 
 # Task files
 # tasks.json
-# tasks/ 
+# tasks/
+
+# Lighthouse CI
+.lighthouseci/
+lighthouseci/
+
+# Documentation and project management
+docs/
+.taskmaster/
+.claude/
+
+# Test results and reports
+playwright-report/
+test-results/
+coverage/
+
+# Build outputs
+dev-dist/
+
+# Project documentation files
+SENTRY_SETUP.md
+BROWSER_SUPPORT.md
