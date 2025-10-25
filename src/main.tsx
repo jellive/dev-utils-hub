@@ -4,6 +4,7 @@ import * as Sentry from '@sentry/react';
 import './index.css';
 import App from './App.tsx';
 import { getSentryConfig } from './config/sentry';
+import { ErrorFallback } from './components/ErrorFallback';
 
 // Initialize Sentry for production error monitoring
 const sentryConfig = getSentryConfig();
@@ -27,6 +28,18 @@ if ('serviceWorker' in navigator) {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <Sentry.ErrorBoundary
+      fallback={({ error, resetError }) => (
+        <ErrorFallback error={error as Error} resetError={resetError} />
+      )}
+      showDialog
+      dialogOptions={{
+        title: 'It looks like we\'re having issues.',
+        subtitle: 'Our team has been notified.',
+        subtitle2: 'If you\'d like to help, tell us what happened below.',
+      }}
+    >
+      <App />
+    </Sentry.ErrorBoundary>
   </StrictMode>,
 );

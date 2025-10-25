@@ -604,7 +604,7 @@ describe('httpClient', () => {
     });
 
     it('should clear timeout on successful response', async () => {
-      const clearTimeoutSpy = vi.spyOn(global, 'clearTimeout');
+      const clearTimeoutSpy = vi.spyOn(globalThis, 'clearTimeout');
 
       globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
@@ -630,7 +630,7 @@ describe('httpClient', () => {
     });
 
     it('should clear timeout on error', async () => {
-      const clearTimeoutSpy = vi.spyOn(global, 'clearTimeout');
+      const clearTimeoutSpy = vi.spyOn(globalThis, 'clearTimeout');
 
       globalThis.fetch = vi.fn().mockRejectedValue(new Error('Network error'));
 

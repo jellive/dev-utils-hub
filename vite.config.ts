@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import { sentryVitePlugin } from '@sentry/vite-plugin';
 import path from 'path';
 import pkg from './package.json';
 
@@ -20,6 +21,7 @@ export default defineConfig({
     modulePreload: {
       polyfill: true,
     },
+    sourcemap: true, // Generate source maps for production
   },
   plugins: [
     react(),
@@ -110,6 +112,27 @@ export default defineConfig({
         enabled: true,
         type: 'module',
       },
+    }),
+    // Sentry plugin for source map upload (only in production builds)
+    sentryVitePlugin({
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      // Upload source maps to Sentry
+      sourcemaps: {
+        assets: './dist/**',
+        ignore: ['**/node_modules/**'],
+      },
+      // Create release and associate with commits
+      release: {
+        name: `dev-utils-hub@${pkg.version}`,
+        setCommits: {
+          auto: true,
+          ignoreMissing: true,
+        },
+      },
+      // Only upload in production builds
+      disable: process.env.NODE_ENV !== 'production',
     }),
   ],
 });

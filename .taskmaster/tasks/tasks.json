@@ -1702,7 +1702,7 @@
         ]
       },
       {
-        "id": "13",
+        "id": 13,
         "title": "Install Sentry Packages and Configure Environment",
         "description": "Install @sentry/react and @sentry/cli packages, configure environment variables for Sentry DSN and API tokens",
         "status": "done",
@@ -1713,7 +1713,7 @@
         "subtasks": []
       },
       {
-        "id": "14",
+        "id": 14,
         "title": "Initialize Sentry SDK in Application",
         "description": "Set up Sentry initialization in main.tsx with production-only configuration, release versioning, and environment detection",
         "status": "done",
@@ -1725,28 +1725,28 @@
         "testStrategy": "Test initialization only runs in production build, verify Sentry dashboard receives test error, check release and environment tags",
         "subtasks": [
           {
-            "id": "14.1",
+            "id": 1,
             "title": "Create Sentry configuration module",
             "description": "Create src/config/sentry.ts with type-safe Sentry configuration",
             "status": "done",
             "details": "Create configuration module with proper TypeScript types, environment variable validation, and export sentryConfig object"
           },
           {
-            "id": "14.2",
+            "id": 2,
             "title": "Implement Sentry.init in main.tsx",
             "description": "Add Sentry initialization logic to main.tsx with production guard",
             "status": "done",
             "details": "Import Sentry and config, add if (import.meta.env.PROD) check, initialize with DSN, release, environment, and tracesSampleRate"
           },
           {
-            "id": "14.3",
+            "id": 3,
             "title": "Set up release versioning system",
             "description": "Configure automatic release version generation from package.json",
             "status": "done",
             "details": "Use package.json version for release tag, create vite plugin or build script to inject __APP_VERSION__, configure release format"
           },
           {
-            "id": "14.4",
+            "id": 4,
             "title": "Test Sentry initialization",
             "description": "Verify Sentry initializes correctly in production build",
             "status": "done",
@@ -1755,10 +1755,10 @@
         ]
       },
       {
-        "id": "15",
+        "id": 15,
         "title": "Integrate Sentry ErrorBoundary Component",
         "description": "Wrap application with Sentry ErrorBoundary, create fallback UI component, configure error dialog and recovery",
-        "status": "pending",
+        "status": "done",
         "priority": "high",
         "dependencies": [
           "14"
@@ -1767,40 +1767,40 @@
         "testStrategy": "Trigger test error to verify ErrorBoundary catches errors, fallback UI displays correctly, error sent to Sentry, recovery button works",
         "subtasks": [
           {
-            "id": "15.1",
+            "id": 1,
             "title": "Create ErrorFallback component",
             "description": "Design and implement user-friendly error fallback UI",
-            "status": "pending",
+            "status": "done",
             "details": "Create ErrorFallback.tsx with error icon, user message, action buttons (reload, go home), responsive design"
           },
           {
-            "id": "15.2",
+            "id": 2,
             "title": "Wrap App with Sentry ErrorBoundary",
             "description": "Integrate Sentry.ErrorBoundary in main.tsx",
-            "status": "pending",
+            "status": "done",
             "details": "Wrap <App /> with <Sentry.ErrorBoundary>, pass fallback component, configure showDialog and dialogOptions"
           },
           {
-            "id": "15.3",
+            "id": 3,
             "title": "Implement error recovery mechanism",
             "description": "Add resetError functionality and recovery logic",
-            "status": "pending",
+            "status": "done",
             "details": "Use ErrorBoundary resetError prop, implement reload and navigation recovery, handle component state reset"
           },
           {
-            "id": "15.4",
+            "id": 4,
             "title": "Test ErrorBoundary behavior",
             "description": "Create test scenarios for error catching and recovery",
-            "status": "pending",
+            "status": "done",
             "details": "Add error trigger button in dev mode, test various error types, verify fallback UI, test recovery actions"
           }
         ]
       },
       {
-        "id": "16",
+        "id": 16,
         "title": "Configure Source Map Generation and Upload",
         "description": "Set up build process to generate source maps, configure automatic upload to Sentry for proper error stack trace resolution",
-        "status": "pending",
+        "status": "done",
         "priority": "high",
         "dependencies": [
           "14"
@@ -1809,37 +1809,37 @@
         "testStrategy": "Build production bundle with source maps, verify source maps uploaded to Sentry, test error in production shows original source code locations",
         "subtasks": [
           {
-            "id": "16.1",
+            "id": 1,
             "title": "Configure source map generation in Vite",
             "description": "Update vite.config.ts to generate source maps for production",
-            "status": "pending",
+            "status": "done",
             "details": "Set build.sourcemap to true or \"hidden\", configure source map options, test source map generation"
           },
           {
-            "id": "16.2",
+            "id": 2,
             "title": "Set up Sentry CLI configuration",
             "description": "Configure .sentryclirc with auth token and project details",
-            "status": "pending",
+            "status": "done",
             "details": "Create .sentryclirc with org, project, auth token from env, add to .gitignore, document setup"
           },
           {
-            "id": "16.3",
+            "id": 3,
             "title": "Create release and upload script",
             "description": "Add build script for Sentry release creation and source map upload",
-            "status": "pending",
+            "status": "done",
             "details": "Create scripts/sentry-release.sh, implement release creation, source map upload, release finalization, integrate with package.json build"
           },
           {
-            "id": "16.4",
+            "id": 4,
             "title": "Test source map resolution",
             "description": "Verify error stack traces resolve to original source code",
-            "status": "pending",
+            "status": "done",
             "details": "Trigger production error, check Sentry dashboard, verify file names and line numbers match original source"
           }
         ]
       },
       {
-        "id": "17",
+        "id": 17,
         "title": "Implement Privacy and Security Data Filtering",
         "description": "Configure beforeSend hook to filter sensitive data (passwords, tokens, API keys, PII) from error reports",
         "status": "pending",
@@ -1851,28 +1851,28 @@
         "testStrategy": "Test error with sensitive data in context, verify filtered in Sentry dashboard, test various PII patterns, ensure functional data preserved",
         "subtasks": [
           {
-            "id": "17.1",
+            "id": 1,
             "title": "Implement sensitive data patterns",
             "description": "Define regex patterns for detecting sensitive data",
             "status": "pending",
             "details": "Create patterns for passwords, tokens, API keys, emails, phone numbers, credit cards, SSN"
           },
           {
-            "id": "17.2",
+            "id": 2,
             "title": "Create beforeSend data scrubber",
             "description": "Implement comprehensive data filtering in beforeSend hook",
             "status": "pending",
             "details": "Filter event.request, event.contexts, event.breadcrumbs, event.extra, recursively scrub objects and arrays"
           },
           {
-            "id": "17.3",
+            "id": 3,
             "title": "Add PII detection and removal",
             "description": "Implement automatic PII detection and sanitization",
             "status": "pending",
             "details": "Detect and redact personal information, user data, form inputs, local storage data"
           },
           {
-            "id": "17.4",
+            "id": 4,
             "title": "Test data filtering",
             "description": "Comprehensive testing of sensitive data filtering",
             "status": "pending",
@@ -1881,7 +1881,7 @@
         ]
       },
       {
-        "id": "18",
+        "id": 18,
         "title": "Add Custom Error Context and Breadcrumbs",
         "description": "Enhance error reports with custom tags (tool, feature, user_type), breadcrumbs for user actions, and performance data",
         "status": "pending",
@@ -1893,28 +1893,28 @@
         "testStrategy": "Trigger errors in different tools, verify custom tags present, check breadcrumbs show user journey, validate performance data captured",
         "subtasks": [
           {
-            "id": "18.1",
+            "id": 1,
             "title": "Configure custom tags",
             "description": "Set up tags for tool, feature, and user type categorization",
             "status": "pending",
             "details": "Add Sentry.setTag() calls for current tool, feature area, user type, configure dynamic tag updates"
           },
           {
-            "id": "18.2",
+            "id": 2,
             "title": "Implement breadcrumb tracking",
             "description": "Set up breadcrumbs for user navigation and actions",
             "status": "pending",
             "details": "Integrate with React Router, track navigation, user clicks, form submissions, API calls"
           },
           {
-            "id": "18.3",
+            "id": 3,
             "title": "Add custom context data",
             "description": "Enhance errors with browser, OS, screen size, and performance data",
             "status": "pending",
             "details": "Use Sentry.setContext() for device info, browser capabilities, screen dimensions, performance metrics"
           },
           {
-            "id": "18.4",
+            "id": 4,
             "title": "Test context enrichment",
             "description": "Verify custom tags and context appear in error reports",
             "status": "pending",
@@ -1923,7 +1923,7 @@
         ]
       },
       {
-        "id": "19",
+        "id": 19,
         "title": "Testing, Validation, and Documentation",
         "description": "Comprehensive testing of Sentry integration, validate all requirements, document setup and usage",
         "status": "pending",
@@ -1938,28 +1938,28 @@
         "testStrategy": "Full integration test suite, production environment testing, verify all acceptance criteria met, documentation reviewed",
         "subtasks": [
           {
-            "id": "19.1",
+            "id": 1,
             "title": "End-to-end integration testing",
             "description": "Comprehensive testing of entire Sentry integration",
             "status": "pending",
             "details": "Test error capture, ErrorBoundary, source maps, filtering, context, verify all features work together"
           },
           {
-            "id": "19.2",
+            "id": 2,
             "title": "Production environment validation",
             "description": "Test Sentry in production-like environment",
             "status": "pending",
             "details": "Deploy to staging, test real-world scenarios, verify performance impact, check error delivery latency"
           },
           {
-            "id": "19.3",
+            "id": 3,
             "title": "Validate acceptance criteria",
             "description": "Check all PRD acceptance criteria are met",
             "status": "pending",
             "details": "Go through each acceptance criterion, collect evidence, document results, address any gaps"
           },
           {
-            "id": "19.4",
+            "id": 4,
             "title": "Write documentation",
             "description": "Document setup, configuration, and troubleshooting",
             "status": "pending",
@@ -1970,7 +1970,7 @@
     ],
     "metadata": {
       "created": "2025-10-24T07:00:19.010Z",
-      "updated": "2025-10-25T06:22:27.776Z",
+      "updated": "2025-10-25T12:47:06.180Z",
       "description": "Tasks for api-tester context"
     }
   }

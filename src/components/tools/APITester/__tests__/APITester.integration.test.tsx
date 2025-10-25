@@ -18,7 +18,6 @@ describe('APITester - State Management Integration', () => {
 
   describe('Request State Management', () => {
     it('should update method state and reflect in UI', async () => {
-      const user = userEvent.setup();
       render(<APITester />);
 
       const methodSelector = screen.getByRole('combobox', { name: /method/i });
@@ -90,10 +89,8 @@ describe('APITester - State Management Integration', () => {
     });
 
     it('should handle error state when URL is empty', async () => {
-      const user = userEvent.setup();
       render(<APITester />);
 
-      const urlInput = screen.getByLabelText(/api url/i);
       const sendButton = screen.getByRole('button', { name: /send/i });
 
       // Send button should be disabled when URL is empty

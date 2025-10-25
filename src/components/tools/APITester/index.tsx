@@ -302,7 +302,31 @@ export function APITester() {
                 <ErrorMessage message={validation.errors.body} />
               </TabsContent>
               <TabsContent value="auth" className="space-y-2">
-                <AuthTab onAuthChange={setAuthConfig} />
+                <AuthTab onAuthChange={(config) => {
+                  if (!config) {
+                    setAuthConfig(null);
+                    return;
+                  }
+                  // Convert AuthTab's AuthConfig to types.ts AuthConfig
+                  if (config.mode === 'bearer' && config.bearerToken) {
+                    setAuthConfig({ type: 'bearer', token: config.bearerToken });
+                  } else if (config.mode === 'basic' && config.basicAuth) {
+                    setAuthConfig({
+                      type: 'basic',
+                      username: config.basicAuth.username,
+                      password: config.basicAuth.password,
+                    });
+                  } else if (config.mode === 'apikey' && config.apiKey) {
+                    setAuthConfig({
+                      type: 'apiKey',
+                      key: config.apiKey.keyName,
+                      value: config.apiKey.key,
+                      addTo: config.apiKey.placement,
+                    });
+                  } else {
+                    setAuthConfig(null);
+                  }
+                }} />
               </TabsContent>
             </Tabs>
           </div>

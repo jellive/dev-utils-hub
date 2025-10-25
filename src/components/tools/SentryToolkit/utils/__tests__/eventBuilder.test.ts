@@ -225,8 +225,9 @@ describe('generateMockStacktrace', () => {
     const stacktrace = generateMockStacktrace()
 
     expect(stacktrace.frames).toBeDefined()
-    expect(stacktrace.frames.length).toBeGreaterThan(0)
-    expect(stacktrace.frames.length).toBeLessThanOrEqual(5) // default depth
+    expect(stacktrace.frames).not.toBeUndefined()
+    expect(stacktrace.frames!.length).toBeGreaterThan(0)
+    expect(stacktrace.frames!.length).toBeLessThanOrEqual(5) // default depth
   })
 
   it('should generate stack trace with custom depth', () => {
@@ -237,7 +238,8 @@ describe('generateMockStacktrace', () => {
 
   it('should have valid frame structure', () => {
     const stacktrace = generateMockStacktrace(1)
-    const frame = stacktrace.frames[0]
+    expect(stacktrace.frames).toBeDefined()
+    const frame = stacktrace.frames![0]
 
     expect(frame.filename).toBeDefined()
     expect(frame.function).toBeDefined()
@@ -248,8 +250,9 @@ describe('generateMockStacktrace', () => {
 
   it('should include realistic filenames', () => {
     const stacktrace = generateMockStacktrace(5)
+    expect(stacktrace.frames).toBeDefined()
 
-    stacktrace.frames.forEach((frame) => {
+    stacktrace.frames!.forEach((frame) => {
       expect(frame.filename).toMatch(/\.(js|ts|tsx|jsx)$/)
     })
   })
@@ -259,19 +262,21 @@ describe('generateMockStacktrace', () => {
 
     // Check that frames are ordered correctly
     expect(stacktrace.frames).toHaveLength(3)
-    expect(stacktrace.frames[0].function).toBeDefined()
+    expect(stacktrace.frames![0].function).toBeDefined()
   })
 
   it('should mark some frames as in_app', () => {
     const stacktrace = generateMockStacktrace(10)
+    expect(stacktrace.frames).toBeDefined()
 
-    const inAppFrames = stacktrace.frames.filter((frame) => frame.in_app)
+    const inAppFrames = stacktrace.frames!.filter((frame) => frame.in_app)
     expect(inAppFrames.length).toBeGreaterThan(0)
   })
 
   it('should include context lines for frames', () => {
     const stacktrace = generateMockStacktrace(1)
-    const frame = stacktrace.frames[0]
+    expect(stacktrace.frames).toBeDefined()
+    const frame = stacktrace.frames![0]
 
     if (frame.context_line) {
       expect(typeof frame.context_line).toBe('string')

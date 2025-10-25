@@ -75,7 +75,6 @@ describe('SendButton', () => {
     });
 
     it('should not allow sending while loading', async () => {
-      const user = userEvent.setup();
       const handleSend = vi.fn();
 
       render(<SendButton onSend={handleSend} onCancel={vi.fn()} disabled={false} loading={true} />);

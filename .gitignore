@@ -33,6 +33,9 @@ node_modules/
 # Environment variables
 .env
 .vscode
+
+# Sentry
+.sentryclirc
 # OS specific
 
 # Task files
