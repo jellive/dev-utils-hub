@@ -76,7 +76,7 @@ export function QueryParamsEditor({ params, onChange }: QueryParamsEditorProps) 
             <tr>
               <th className="text-left p-3 text-sm font-semibold">Key</th>
               <th className="text-left p-3 text-sm font-semibold">Value</th>
-              <th className="w-16"></th>
+              <th className="w-16 text-center p-3 text-sm font-semibold">Actions</th>
             </tr>
           </thead>
           <tbody>
