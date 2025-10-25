@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
-import { Copy, AlertTriangle, CheckCircle2, Shield } from 'lucide-react';
+import { Copy, AlertTriangle, CheckCircle2, Shield, Send } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface DecodedJWT {
@@ -19,6 +20,7 @@ interface DecodedJWT {
 
 export function JwtDecoder() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [input, setInput] = useState('');
   const [decoded, setDecoded] = useState<DecodedJWT>({
     header: '',
@@ -93,6 +95,22 @@ export function JwtDecoder() {
     toast.success(t('common.copied'));
   };
 
+  const sendToAPITester = () => {
+    if (!input.trim()) {
+      toast.error('No JWT token to send');
+      return;
+    }
+
+    // Navigate to API Tester with Bearer token
+    navigate('/api-tester', {
+      state: {
+        authType: 'bearer',
+        bearerToken: input.trim(),
+      },
+    });
+    toast.success('JWT token sent to API Tester');
+  };
+
   return (
     <div className="space-y-6">
       {/* Input Section */}
@@ -119,6 +137,12 @@ export function JwtDecoder() {
             <Button onClick={handleClear} variant="outline">
               {t('common.clear')}
             </Button>
+            {input.trim() && (
+              <Button onClick={sendToAPITester} variant="secondary">
+                <Send className="mr-2 h-4 w-4" />
+                Send to API Tester
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>

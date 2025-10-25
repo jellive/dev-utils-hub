@@ -1,13 +1,14 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Send, AlertCircle } from 'lucide-react';
-import type { HTTPMethod, ResponseData, Header } from './types';
+import type { HTTPMethod, ResponseData, Header, AuthConfig } from './types';
 import { MethodSelector } from './components/MethodSelector';
 import { URLInput } from './components/URLInput';
 import { HeadersEditor } from './components/HeadersEditor';
-import { AuthTab, type AuthConfig } from './components/AuthTab';
+import { AuthTab } from './components/AuthTab';
 import { QueryParamsEditor, type QueryParam } from './components/QueryParamsEditor';
 import { BodyEditor } from './components/BodyEditor';
 import { ResponseTabs } from './components/ResponseTabs';
@@ -23,6 +24,7 @@ import { getErrorMessage, getErrorSuggestion, getErrorType } from './utils/error
 
 export function APITester() {
   const { t } = useTranslation();
+  const location = useLocation();
   const [method, setMethod] = useState<HTTPMethod>('GET');
   const [url, setUrl] = useState('');
   const [queryParams, setQueryParams] = useState<QueryParam[]>([]);
@@ -51,6 +53,40 @@ export function APITester() {
   useEffect(() => {
     validation.validateHeaders(headers);
   }, [headers, validation.validateHeaders]);
+
+  // Handle incoming data from other tools via router state
+  useEffect(() => {
+    const state = location.state as {
+      authType?: string;
+      bearerToken?: string;
+      body?: string;
+      url?: string;
+    } | null;
+
+    if (state) {
+      // Set Bearer token from JWT Decoder
+      if (state.authType === 'bearer' && state.bearerToken) {
+        const bearerConfig: AuthConfig = {
+          type: 'bearer',
+          token: state.bearerToken,
+        };
+        setAuthConfig(bearerConfig);
+      }
+
+      // Set body from JSON Formatter
+      if (state.body) {
+        setBody(state.body);
+      }
+
+      // Set URL if provided
+      if (state.url) {
+        setUrl(state.url);
+      }
+
+      // Clear the location state to avoid re-applying on re-render
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   const handleSendRequest = useCallback(async () => {
     // Validate all fields before sending
