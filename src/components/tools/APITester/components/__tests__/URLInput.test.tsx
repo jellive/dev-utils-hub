@@ -1,13 +1,32 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { URLInput } from '../URLInput';
 
+// Mock react-i18next
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        'tools.api.urlPlaceholder': 'Enter request URL...',
+        'tools.api.url': 'URL',
+        'tools.api.clear': 'Clear',
+        'tools.api.urlInvalid': 'Please enter a valid URL',
+      };
+      return translations[key] || key;
+    },
+  }),
+}));
+
 describe('URLInput', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('should render input field with placeholder', () => {
     render(<URLInput value="" onChange={vi.fn()} />);
 
-    const input = screen.getByPlaceholderText(/enter api endpoint/i);
+    const input = screen.getByPlaceholderText(/Enter request URL/i);
     expect(input).toBeInTheDocument();
   });
 

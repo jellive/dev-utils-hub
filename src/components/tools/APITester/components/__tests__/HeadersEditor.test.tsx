@@ -1,10 +1,29 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HeadersEditor } from '../HeadersEditor';
 import type { Header } from '../../types';
 
+// Mock react-i18next
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        'tools.api.headers.title': 'Headers',
+        'tools.api.headers.key': 'Header Name',
+        'tools.api.headers.value': 'Header Value',
+        'tools.api.headers.addHeader': 'Add Header',
+        'tools.api.headers.noHeaders': 'No headers',
+      };
+      return translations[key] || key;
+    },
+  }),
+}));
+
 describe('HeadersEditor', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
   const mockHeaders: Header[] = [
     { key: 'Content-Type', value: 'application/json', enabled: true },
     { key: 'Authorization', value: 'Bearer token', enabled: false },
@@ -109,7 +128,7 @@ describe('HeadersEditor', () => {
   it('should show empty state when no headers', () => {
     render(<HeadersEditor headers={[]} onChange={vi.fn()} />);
 
-    expect(screen.getByText(/no headers added/i)).toBeInTheDocument();
+    expect(screen.getByText(/no headers/i)).toBeInTheDocument();
   });
 
   it('should render common header presets dropdown', () => {
