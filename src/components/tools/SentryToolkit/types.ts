@@ -49,6 +49,13 @@ export interface EventSendResult {
   responseTime?: number
 }
 
+export interface EnvelopeSendResult {
+  success: boolean
+  eventId?: string
+  statusCode?: number
+  error?: string
+}
+
 // 이벤트 파서 관련
 export interface ParsedEvent {
   valid: boolean
