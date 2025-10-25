@@ -1,0 +1,220 @@
+{
+  "sentryToolkit": {
+    "title": "Sentry 툴킷",
+    "tabs": {
+      "dsnValidator": "DSN 검증",
+      "eventSender": "이벤트 전송",
+      "eventAnalyzer": "이벤트 분석",
+      "sourceMapValidator": "소스맵 검증",
+      "releaseHelper": "릴리스 도우미"
+    },
+
+    "dsnValidator": {
+      "title": "DSN 검증 및 테스트",
+      "inputLabel": "Sentry DSN",
+      "inputPlaceholder": "https://public_key@host/project_id",
+      "testConnection": "연결 테스트",
+      "parsing": {
+        "title": "파싱 결과",
+        "protocol": "프로토콜",
+        "publicKey": "Public Key",
+        "host": "호스트",
+        "projectId": "프로젝트 ID",
+        "storeEndpoint": "Store 엔드포인트",
+        "envelopeEndpoint": "Envelope 엔드포인트"
+      },
+      "connection": {
+        "testing": "연결 테스트 중...",
+        "success": "연결 성공",
+        "error": "연결 실패",
+        "responseTime": "응답 시간: {{time}}ms"
+      },
+      "history": {
+        "title": "최근 DSN",
+        "clear": "히스토리 삭제",
+        "empty": "저장된 DSN이 없습니다"
+      },
+      "errors": {
+        "invalidFormat": "잘못된 DSN 형식입니다",
+        "connectionFailed": "연결에 실패했습니다: {{error}}"
+      }
+    },
+
+    "eventSender": {
+      "title": "테스트 이벤트 전송",
+      "basicInfo": {
+        "title": "기본 정보",
+        "eventType": "이벤트 타입",
+        "level": "레벨",
+        "environment": "환경",
+        "release": "릴리스",
+        "message": "메시지"
+      },
+      "tags": {
+        "title": "태그",
+        "addTag": "태그 추가",
+        "key": "키",
+        "value": "값",
+        "remove": "삭제"
+      },
+      "context": {
+        "title": "컨텍스트",
+        "user": "사용자 정보",
+        "browser": "브라우저",
+        "os": "운영체제",
+        "device": "기기"
+      },
+      "breadcrumbs": {
+        "title": "Breadcrumbs",
+        "add": "Breadcrumb 추가",
+        "timestamp": "타임스탬프",
+        "type": "타입",
+        "category": "카테고리",
+        "message": "메시지"
+      },
+      "actions": {
+        "send": "이벤트 전송",
+        "preview": "JSON 미리보기",
+        "saveTemplate": "템플릿 저장",
+        "loadTemplate": "템플릿 불러오기"
+      },
+      "result": {
+        "sending": "전송 중...",
+        "success": "이벤트가 성공적으로 전송되었습니다",
+        "eventId": "이벤트 ID: {{id}}",
+        "error": "전송 실패: {{error}}"
+      }
+    },
+
+    "eventAnalyzer": {
+      "title": "이벤트 JSON 분석",
+      "input": {
+        "title": "이벤트 JSON 입력",
+        "placeholder": "Sentry 이벤트 JSON을 붙여넣으세요...",
+        "loadFromFile": "파일에서 불러오기",
+        "paste": "클립보드에서 붙여넣기",
+        "sample": "샘플 이벤트"
+      },
+      "display": {
+        "mode": {
+          "tree": "트리 뷰",
+          "raw": "원본 JSON"
+        },
+        "sections": {
+          "eventInfo": "이벤트 정보",
+          "exception": "예외",
+          "breadcrumbs": "Breadcrumbs",
+          "contexts": "컨텍스트",
+          "tags": "태그",
+          "user": "사용자"
+        }
+      },
+      "tools": {
+        "search": "검색",
+        "filter": "필터",
+        "export": "내보내기",
+        "copyAll": "전체 복사",
+        "copySection": "섹션 복사",
+        "download": "JSON 다운로드"
+      },
+      "validation": {
+        "valid": "유효한 이벤트 JSON",
+        "invalid": "잘못된 형식",
+        "errors": "오류"
+      }
+    },
+
+    "sourceMapValidator": {
+      "title": "소스맵 검증",
+      "input": {
+        "upload": "파일 업로드",
+        "textInput": "텍스트 입력",
+        "urlInput": "URL에서 로드"
+      },
+      "validation": {
+        "valid": "유효한 소스맵",
+        "invalid": "잘못된 소스맵",
+        "errors": "오류",
+        "warnings": "경고"
+      },
+      "info": {
+        "version": "버전",
+        "sources": "소스 파일",
+        "sourceRoot": "소스 루트",
+        "file": "출력 파일",
+        "sourcesCount": "소스 개수",
+        "mappingsCount": "매핑 개수",
+        "fileSize": "파일 크기"
+      },
+      "mappings": {
+        "title": "매핑 정보",
+        "raw": "원본",
+        "decoded": "디코딩됨",
+        "generatedLine": "생성 라인",
+        "generatedColumn": "생성 컬럼",
+        "sourceIndex": "소스 인덱스",
+        "originalLine": "원본 라인",
+        "originalColumn": "원본 컬럼"
+      },
+      "lookup": {
+        "title": "위치 조회",
+        "generatedPosition": "생성 위치",
+        "line": "라인",
+        "column": "컬럼",
+        "find": "원본 위치 찾기",
+        "result": {
+          "source": "소스 파일",
+          "line": "라인",
+          "column": "컬럼",
+          "name": "이름"
+        }
+      }
+    },
+
+    "releaseHelper": {
+      "title": "릴리스 & 배포 도우미",
+      "releaseInfo": {
+        "title": "릴리스 정보",
+        "organization": "조직",
+        "project": "프로젝트",
+        "version": "버전",
+        "versionFormat": "버전 형식",
+        "environment": "환경",
+        "dateCreated": "생성 일시"
+      },
+      "git": {
+        "title": "Git 연동",
+        "repository": "저장소",
+        "commit": "커밋 해시",
+        "message": "커밋 메시지",
+        "author": "작성자",
+        "fetch": "Git에서 가져오기"
+      },
+      "sourceMap": {
+        "title": "소스맵 설정",
+        "distPath": "빌드 경로",
+        "urlPrefix": "URL 프리픽스",
+        "include": "포함 패턴",
+        "ignore": "제외 패턴"
+      },
+      "commands": {
+        "title": "CLI 명령어",
+        "createRelease": "릴리스 생성",
+        "uploadSourceMaps": "소스맵 업로드",
+        "finalizeRelease": "릴리스 완료",
+        "setCommits": "커밋 설정",
+        "deployNotification": "배포 알림"
+      },
+      "templates": {
+        "title": "템플릿",
+        "save": "템플릿 저장",
+        "load": "템플릿 불러오기",
+        "delete": "템플릿 삭제"
+      },
+      "preview": {
+        "title": "워크플로우 미리보기",
+        "export": "스크립트 내보내기"
+      }
+    }
+  }
+}
