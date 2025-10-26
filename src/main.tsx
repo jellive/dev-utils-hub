@@ -5,11 +5,15 @@ import './index.css';
 import App from './App.tsx';
 import { getSentryConfig } from './config/sentry';
 import { ErrorFallback } from './components/ErrorFallback';
+import { initializeSentryContext } from './utils/sentryContext';
 
 // Initialize Sentry for production error monitoring
 const sentryConfig = getSentryConfig();
 if (sentryConfig.enabled && sentryConfig.dsn) {
   Sentry.init(sentryConfig);
+
+  // Initialize Sentry context with device, browser, and performance data
+  initializeSentryContext();
 }
 
 // Register Service Worker

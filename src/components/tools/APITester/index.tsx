@@ -21,10 +21,23 @@ import { useHistory } from './hooks/useHistory';
 import { useFormValidation } from './hooks/useFormValidation';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { getErrorMessage, getErrorSuggestion, getErrorType } from './utils/errorHandler';
+import {
+  setCurrentFeature,
+  addInteractionBreadcrumb,
+  addAPIBreadcrumb,
+  addErrorBreadcrumb,
+  FEATURES,
+  INTERACTION_TYPES,
+} from '@/utils/sentryContext';
 
 export function APITester() {
   const { t } = useTranslation();
   const location = useLocation();
+
+  // Set feature context on mount
+  useEffect(() => {
+    setCurrentFeature(FEATURES.API_TESTING);
+  }, []);
   const [method, setMethod] = useState<HTTPMethod>('GET');
   const [url, setUrl] = useState('');
   const [queryParams, setQueryParams] = useState<QueryParam[]>([]);
@@ -109,6 +122,19 @@ export function APITester() {
   }, [location]);
 
   const handleSendRequest = useCallback(async () => {
+    // Track user interaction
+    addInteractionBreadcrumb(
+      INTERACTION_TYPES.CLICK,
+      'Send Request Button',
+      {
+        method,
+        url,
+        hasAuth: authConfig?.type !== undefined,
+        hasBody: !!body,
+        headerCount: headers.filter(h => h.enabled).length,
+      }
+    );
+
     // Validate all fields before sending
     const isValid = validation.validateAll({ url, body, headers });
     if (!isValid) {
@@ -162,15 +188,24 @@ export function APITester() {
 
       const endTime = performance.now();
       const responseText = await fetchResponse.text();
+      const duration = endTime - startTime;
 
       const responseData: ResponseData = {
         status: fetchResponse.status,
         statusText: fetchResponse.statusText,
         headers: Object.fromEntries(fetchResponse.headers.entries()),
         body: responseText,
-        time: endTime - startTime,
+        time: duration,
         size: new Blob([responseText]).size,
       };
+
+      // Track successful API call
+      addAPIBreadcrumb(
+        method,
+        url,
+        fetchResponse.status,
+        duration
+      );
 
       setResponse(responseData);
 
@@ -188,10 +223,27 @@ export function APITester() {
         return;
       }
 
+      const duration = performance.now() - startTime;
+
+      // Track failed API call
+      addAPIBreadcrumb(
+        method,
+        url,
+        undefined,
+        duration
+      );
+
       // Get user-friendly error message and suggestion
       const errorMessage = getErrorMessage(err);
       const errorSuggestion = getErrorSuggestion(err);
       const errorType = getErrorType(err);
+
+      // Add error context to Sentry
+      addErrorBreadcrumb(
+        'API Request Failed',
+        errorMessage,
+        `${method} ${url} - Type: ${errorType}`
+      );
 
       // Combine error message with suggestion
       const fullErrorMessage = `${errorMessage}\n\n${errorSuggestion}`;

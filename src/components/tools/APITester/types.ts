@@ -31,6 +31,7 @@ export interface RequestConfig {
   body: string;
   timeout: number;
   auth: AuthConfig;
+  signal?: AbortSignal;
 }
 
 /** API response data with metadata */

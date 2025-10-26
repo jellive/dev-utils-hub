@@ -14,6 +14,7 @@
 - [배포](#배포)
 - [성능 최적화](#성능-최적화)
 - [브라우저 지원](#브라우저-지원)
+- [에러 모니터링 (Sentry)](#에러-모니터링-sentry)
 - [기여하기](#기여하기)
 - [문제 해결](#문제-해결)
 
@@ -523,6 +524,133 @@ GitHub Actions를 통한 자동화:
 2. Lighthouse 감사 실행 (DevTools > Lighthouse)
 3. Service Worker 캐시 확인
 4. 브라우저 확장 프로그램 비활성화 후 테스트
+
+## 에러 모니터링 (Sentry)
+
+### 개요
+
+프로덕션 환경에서 오류를 실시간으로 추적하고 모니터링하기 위해 Sentry를 통합했습니다.
+
+### 주요 기능
+
+✅ **자동 오류 포착**: JavaScript 오류와 React 컴포넌트 에러 자동 캡처
+✅ **사용자 행동 추적**: 네비게이션, 클릭, API 호출, 변환 작업 등의 브레드크럼 기록
+✅ **개인정보 보호**: 민감한 데이터 자동 필터링 (토큰, 비밀번호, PII 등)
+✅ **상세한 컨텍스트**: 디바이스 정보, 성능 메트릭, 사용자 여정 포함
+✅ **도구별 태깅**: 각 도구와 기능 영역별로 오류 분류
+
+### 환경 설정
+
+Sentry를 사용하려면 `.env` 파일에 다음 환경 변수를 추가하세요:
+
+```bash
+# Sentry 설정 (선택사항 - 프로덕션 에러 모니터링용)
+VITE_SENTRY_DSN="https://...@...ingest.sentry.io/..."  # Sentry DSN
+SENTRY_AUTH_TOKEN="sntrys_..."                         # 선택: 소스맵 업로드용 인증 토큰
+SENTRY_ORG="your-org-slug"                             # 선택: Sentry 조직 슬러그
+SENTRY_PROJECT="your-project-name"                     # 선택: Sentry 프로젝트 이름
+```
+
+#### Sentry 설정 값 얻기
+
+1. **DSN (필수)**:
+   - [Sentry](https://sentry.io)에 로그인
+   - 프로젝트 선택 → Settings → Client Keys (DSN)
+   - DSN 복사 (`https://` 형식)
+
+2. **Auth Token (선택 - 소스맵용)**:
+   - Settings → Auth Tokens → Create New Token
+   - 권한: `project:releases` + `project:write`
+   - 토큰 복사 (`sntrys_` 형식)
+
+3. **Organization & Project (선택)**:
+   - URL에서 확인: `sentry.io/organizations/{org}/projects/{project}/`
+
+### Sentry 태그 구조
+
+오류는 다음 태그로 자동 분류됩니다:
+
+```javascript
+// 도구별 태그
+tool: "json-formatter" | "jwt-decoder" | "base64-converter" |
+      "hash-generator" | "uuid-generator" | "url-encoder" |
+      "timestamp-converter" | "api-tester"
+
+tool.category: "formatter" | "decoder" | "converter" |
+               "generator" | "encoder" | "tester"
+
+// 기능 영역 태그
+feature: "json-formatting" | "jwt-decoding" | "data-conversion" |
+         "hash-generation" | "uuid-generation" | "url-encoding" |
+         "timestamp-conversion" | "api-testing"
+
+// 환경 정보
+environment: "development" | "production"
+app.version: "0.0.0"
+```
+
+### 추적되는 사용자 행동
+
+#### 1. 네비게이션 (자동)
+- 도구 간 이동
+- 라우트 변경
+- 사용자 여정
+
+#### 2. 인터랙션 (수동)
+- 버튼 클릭
+- 복사 작업
+- 도구 사용
+
+#### 3. API 호출 (수동)
+- 요청 메서드와 URL
+- 응답 상태 코드
+- 소요 시간
+
+#### 4. 변환 작업 (수동)
+- 인코딩/디코딩 성공/실패
+- 입력/출력 크기
+- 작업 타입
+
+#### 5. 에러 (자동)
+- 오류 메시지
+- 스택 트레이스
+- 컨텍스트 정보
+
+### 개인정보 보호
+
+다음 민감한 데이터는 자동으로 필터링됩니다:
+
+- 🔒 Bearer 토큰 및 API 키
+- 🔒 비밀번호 및 시크릿
+- 🔒 이메일 주소
+- 🔒 신용카드 번호
+- 🔒 JWT 토큰
+- 🔒 IP 주소
+
+### 개발 환경 테스트
+
+개발 환경에서 Sentry를 테스트하려면:
+
+1. `.env` 파일에 `VITE_SENTRY_DSN` 설정
+2. 개발 서버 시작: `npm run dev`
+3. 우측 하단의 빨간색 에러 버튼 클릭
+4. 브라우저 콘솔에서 Sentry 전송 로그 확인
+
+### 상세 문서
+
+더 자세한 정보는 다음 문서를 참조하세요:
+
+- `docs/sentry-context-usage.md` - 사용 가이드 및 예제
+- `docs/sentry-integration-test.md` - 통합 테스트 결과
+- `docs/sentry-production-validation.md` - 프로덕션 검증
+- `docs/sentry-acceptance-criteria.md` - 검수 기준
+
+### 성능 영향
+
+- **번들 크기**: +40-50KB gzipped (전체의 ~8%)
+- **런타임 오버헤드**: 무시할 수 있는 수준
+- **에러 전송 시간**: 평균 <500ms
+- **비차단 작업**: 사용자 경험에 영향 없음
 
 ## 라이선스
 

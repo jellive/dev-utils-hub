@@ -3,6 +3,8 @@ import { Toaster } from 'sonner';
 import { Header } from './Header';
 import { OfflineIndicator } from './OfflineIndicator';
 import { InstallPWAButton } from './InstallPWAButton';
+import { SentryRouteTracker } from './SentryRouteTracker';
+import { ErrorTrigger } from './ErrorTrigger';
 import { Button } from './ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { usePerformanceMonitor } from '../hooks/usePerformanceMonitor';
@@ -22,6 +24,7 @@ export function Layout() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+      <SentryRouteTracker />
       <Header />
       <main className="container mx-auto px-4 py-8">
         {isHomePage ? (
@@ -44,6 +47,7 @@ export function Layout() {
       </main>
       <OfflineIndicator />
       <InstallPWAButton />
+      <ErrorTrigger />
       <Toaster />
     </div>
   );

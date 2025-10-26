@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -15,6 +15,15 @@ import {
 import { ArrowUp, ArrowDown, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import {
+  setCurrentFeature,
+  addInteractionBreadcrumb,
+  addConversionBreadcrumb,
+  addErrorBreadcrumb,
+  FEATURES,
+  INTERACTION_TYPES,
+  TOOLS,
+} from '@/utils/sentryContext';
 
 export function Base64Converter() {
   const { t } = useTranslation();
@@ -25,6 +34,11 @@ export function Base64Converter() {
   const [activeTab, setActiveTab] = useState('encode');
   const [urlSafe, setUrlSafe] = useState(false);
   const [encoding, setEncoding] = useState('utf-8');
+
+  // Set feature context on mount
+  useEffect(() => {
+    setCurrentFeature(FEATURES.DATA_CONVERSION);
+  }, []);
 
   // Calculate human-readable file size
   const formatFileSize = (text: string): string => {
@@ -82,6 +96,13 @@ export function Base64Converter() {
   const handleEncode = () => {
     setError('');
 
+    // Track user interaction
+    addInteractionBreadcrumb(
+      INTERACTION_TYPES.CLICK,
+      'Encode Button',
+      { inputLength: input.length, urlSafe, encoding }
+    );
+
     if (!input.trim()) {
       setError('Input is empty. Please enter text to encode.');
       return;
@@ -90,7 +111,30 @@ export function Base64Converter() {
     try {
       const encoded = encodeBase64(input);
       setOutput(encoded);
+
+      // Track successful conversion
+      addConversionBreadcrumb(
+        TOOLS.BASE64_CONVERTER,
+        input.length,
+        encoded.length,
+        true
+      );
     } catch (err) {
+      // Track failed conversion
+      addConversionBreadcrumb(
+        TOOLS.BASE64_CONVERTER,
+        input.length,
+        0,
+        false
+      );
+
+      // Add error breadcrumb
+      addErrorBreadcrumb(
+        'Base64 Encoding Error',
+        err instanceof Error ? err.message : 'Unknown error',
+        'User attempted to encode invalid input'
+      );
+
       setError('Failed to encode text. Please try again.');
       setOutput('');
     }
@@ -98,6 +142,13 @@ export function Base64Converter() {
 
   const handleDecode = () => {
     setError('');
+
+    // Track user interaction
+    addInteractionBreadcrumb(
+      INTERACTION_TYPES.CLICK,
+      'Decode Button',
+      { inputLength: input.length, urlSafe, encoding }
+    );
 
     if (!input.trim()) {
       setError('Input is empty. Please enter Base64 text to decode.');
@@ -107,7 +158,30 @@ export function Base64Converter() {
     try {
       const decoded = decodeBase64(input);
       setOutput(decoded);
+
+      // Track successful conversion
+      addConversionBreadcrumb(
+        TOOLS.BASE64_CONVERTER,
+        input.length,
+        decoded.length,
+        true
+      );
     } catch (err) {
+      // Track failed conversion
+      addConversionBreadcrumb(
+        TOOLS.BASE64_CONVERTER,
+        input.length,
+        0,
+        false
+      );
+
+      // Add error breadcrumb
+      addErrorBreadcrumb(
+        'Base64 Decoding Error',
+        err instanceof Error ? err.message : 'Unknown error',
+        'User attempted to decode invalid Base64'
+      );
+
       setError('Invalid Base64 format. Please check your input.');
       setOutput('');
     }
@@ -121,6 +195,13 @@ export function Base64Converter() {
 
   const copyToClipboard = () => {
     if (output) {
+      // Track copy action
+      addInteractionBreadcrumb(
+        INTERACTION_TYPES.COPY,
+        'Output Result',
+        { outputLength: output.length, mode: activeTab }
+      );
+
       navigator.clipboard.writeText(output);
       toast.success(t('common.copied'));
     }
