@@ -3,6 +3,7 @@ import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
 import Store from 'electron-store'
 import { setupSettingsHandlers } from './ipc/settings'
+import { setupHistoryHandlers } from './ipc/history'
 import { createApplicationMenu } from './menu'
 import { createTray, handleWindowClose, destroyTray } from './tray'
 import {
@@ -44,6 +45,9 @@ function setupIpcHandlers(): void {
 
   // Setup settings handlers
   setupSettingsHandlers()
+
+  // Setup history handlers
+  setupHistoryHandlers()
 }
 
 let mainWindow: BrowserWindow | null = null
