@@ -31,6 +31,36 @@ declare global {
         validate: (accelerator: string) => Promise<{ valid: boolean; conflicts: string[]; warnings: string[] }>
         getRegistered: () => Promise<Array<{ accelerator: string; scope: string; description: string }>>
       }
+      history: {
+        save: (tool: string, input: string, output?: string, metadata?: Record<string, any>) => Promise<number>
+        get: (tool?: string, limit?: number) => Promise<HistoryEntry[]>
+        search: (tool: string, query: string, limit?: number) => Promise<HistoryEntry[]>
+        getById: (id: number) => Promise<HistoryEntry | undefined>
+        delete: (id: number) => Promise<boolean>
+        toggleFavorite: (id: number) => Promise<boolean>
+        clear: (tool: string) => Promise<number>
+        clearAll: () => Promise<number>
+        autoCleanup: (daysOld?: number, keepFavorites?: boolean) => Promise<number>
+        stats: () => Promise<HistoryStats>
+      }
     }
   }
+}
+
+export interface HistoryEntry {
+  id?: number
+  tool: string
+  input: string
+  output?: string
+  metadata?: string
+  favorite?: number
+  created_at?: number
+}
+
+export interface HistoryStats {
+  total: number
+  byTool: Record<string, number>
+  favorites: number
+  oldestEntry: number | null
+  newestEntry: number | null
 }

@@ -52,6 +52,30 @@ const api = {
       ipcRenderer.invoke('shortcuts:validate', accelerator),
     getRegistered: (): Promise<Array<{ accelerator: string; scope: string; description: string }>> =>
       ipcRenderer.invoke('shortcuts:get-registered')
+  },
+
+  // History API
+  history: {
+    save: (tool: string, input: string, output?: string, metadata?: Record<string, any>): Promise<number> =>
+      ipcRenderer.invoke('history:save', tool, input, output, metadata),
+    get: (tool?: string, limit?: number): Promise<any[]> =>
+      ipcRenderer.invoke('history:get', tool, limit),
+    search: (tool: string, query: string, limit?: number): Promise<any[]> =>
+      ipcRenderer.invoke('history:search', tool, query, limit),
+    getById: (id: number): Promise<any | undefined> =>
+      ipcRenderer.invoke('history:get-by-id', id),
+    delete: (id: number): Promise<boolean> =>
+      ipcRenderer.invoke('history:delete', id),
+    toggleFavorite: (id: number): Promise<boolean> =>
+      ipcRenderer.invoke('history:toggle-favorite', id),
+    clear: (tool: string): Promise<number> =>
+      ipcRenderer.invoke('history:clear', tool),
+    clearAll: (): Promise<number> =>
+      ipcRenderer.invoke('history:clear-all'),
+    autoCleanup: (daysOld?: number, keepFavorites?: boolean): Promise<number> =>
+      ipcRenderer.invoke('history:auto-cleanup', daysOld, keepFavorites),
+    stats: (): Promise<any> =>
+      ipcRenderer.invoke('history:stats')
   }
 }
 
