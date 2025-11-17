@@ -9,7 +9,8 @@ import {
   registerGlobalShortcuts,
   registerWindowShortcuts,
   unregisterGlobalShortcuts,
-  unregisterWindowShortcuts
+  unregisterWindowShortcuts,
+  checkAndLogConflicts
 } from './shortcuts'
 
 // Initialize electron-store for persistent settings
@@ -112,6 +113,9 @@ function createWindow(): void {
     if (mainWindow) {
       registerGlobalShortcuts(mainWindow)
       registerWindowShortcuts(mainWindow)
+
+      // Check and log any shortcut conflicts
+      checkAndLogConflicts()
     }
 
     // Open DevTools in development
