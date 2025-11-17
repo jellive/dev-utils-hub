@@ -26,18 +26,18 @@ export default defineConfig({
     }
   },
   renderer: {
-    root: '.',
+    root: resolve(__dirname, 'src/renderer'),
     plugins: [react()],
     resolve: {
       alias: {
-        '@': resolve(__dirname, 'src')
+        '@': resolve(__dirname, 'src/renderer')
       }
     },
     build: {
       outDir: 'dist',
       rollupOptions: {
         input: {
-          index: resolve(__dirname, 'index.html')
+          index: resolve(__dirname, 'src/renderer/index.html')
         }
       }
     },
