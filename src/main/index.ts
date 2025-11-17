@@ -4,9 +4,13 @@ import { is } from '@electron-toolkit/utils'
 import Store from 'electron-store'
 import { setupSettingsHandlers } from './ipc/settings'
 import { createApplicationMenu } from './menu'
+import { createTray, handleWindowClose, destroyTray } from './tray'
 
 // Initialize electron-store for persistent settings
 const store = new Store()
+
+// Global flag to prevent minimize-to-tray on quit
+;(app as any).isQuitting = false
 
 // IPC Handlers
 function setupIpcHandlers(): void {
@@ -93,6 +97,11 @@ function createWindow(): void {
       createApplicationMenu(mainWindow)
     }
 
+    // Create system tray
+    if (mainWindow) {
+      createTray(mainWindow)
+    }
+
     // Open DevTools in development
     if (is.dev) {
       mainWindow?.webContents.openDevTools()
@@ -103,7 +112,14 @@ function createWindow(): void {
   mainWindow.on('resize', saveWindowBounds)
   mainWindow.on('move', saveWindowBounds)
 
-  // Handle window close
+  // Handle window close - minimize to tray instead of quit
+  mainWindow.on('close', (event) => {
+    if (mainWindow) {
+      handleWindowClose(mainWindow, event)
+    }
+  })
+
+  // Handle window closed
   mainWindow.on('closed', () => {
     mainWindow = null
   })
@@ -153,9 +169,11 @@ app.on('window-all-closed', () => {
   }
 })
 
-// Cleanup before quit
+// Set quitting flag before quit
 app.on('before-quit', () => {
+  ;(app as any).isQuitting = true
   if (mainWindow) {
     saveWindowBounds()
   }
+  destroyTray()
 })
