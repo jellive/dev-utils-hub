@@ -92,18 +92,21 @@ export function HistorySidebar({
 
   return (
     <>
-      {/* Backdrop overlay when sidebar is open */}
+      {/* Backdrop overlay when sidebar is open - only on mobile/tablet */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/20 z-40 lg:hidden"
           onClick={handleCloseSidebar}
+          aria-hidden="true"
         />
       )}
 
       {/* Sidebar */}
       <div
         className={cn(
-          'fixed top-0 right-0 h-full w-80 bg-white dark:bg-gray-800 shadow-lg z-50 transform transition-transform duration-300 ease-in-out',
+          'fixed top-0 right-0 h-full bg-white dark:bg-gray-800 shadow-lg z-50 transform transition-transform duration-300 ease-in-out',
+          // Responsive width: full on mobile, 320px on tablet, 400px on desktop
+          'w-full sm:w-80 lg:w-[400px]',
           isOpen ? 'translate-x-0' : 'translate-x-full'
         )}
       >
