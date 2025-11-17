@@ -1,4 +1,5 @@
 import { BrowserWindow, globalShortcut } from 'electron'
+import electronLocalShortcut from 'electron-localshortcut'
 import { toggleWindowVisibility } from './tray'
 import { settingsStore } from './ipc/settings'
 
@@ -90,4 +91,53 @@ export function unregisterGlobalShortcuts(): void {
  */
 export function isShortcutRegistered(accelerator: string): boolean {
   return globalShortcut.isRegistered(accelerator)
+}
+
+/**
+ * Register window-specific shortcuts
+ * @param window - The main browser window to register shortcuts for
+ */
+export function registerWindowShortcuts(window: BrowserWindow): void {
+  const isMac = process.platform === 'darwin'
+
+  // Settings shortcut (Command/Ctrl + ,)
+  electronLocalShortcut.register(window, isMac ? 'Command+,' : 'Ctrl+,', () => {
+    console.log('Settings shortcut triggered')
+    window.webContents.send('shortcut:open-settings')
+  })
+
+  // Toggle history panel (Command/Ctrl + H)
+  electronLocalShortcut.register(window, isMac ? 'Command+H' : 'Ctrl+H', () => {
+    console.log('Toggle history shortcut triggered')
+    window.webContents.send('shortcut:toggle-history')
+  })
+
+  // Minimize window (Command/Ctrl + M)
+  electronLocalShortcut.register(window, isMac ? 'Command+M' : 'Ctrl+M', () => {
+    console.log('Minimize window shortcut triggered')
+    window.minimize()
+  })
+
+  // Close/Hide window (Command/Ctrl + W)
+  electronLocalShortcut.register(window, isMac ? 'Command+W' : 'Ctrl+W', () => {
+    console.log('Close/Hide window shortcut triggered')
+    window.hide()
+  })
+
+  // Fullscreen toggle (Command/Ctrl + F)
+  electronLocalShortcut.register(window, isMac ? 'Command+F' : 'F11', () => {
+    console.log('Fullscreen toggle shortcut triggered')
+    window.setFullScreen(!window.isFullScreen())
+  })
+
+  console.log('✓ Window-specific shortcuts registered')
+}
+
+/**
+ * Unregister window-specific shortcuts
+ * @param window - The window to unregister shortcuts from
+ */
+export function unregisterWindowShortcuts(window: BrowserWindow): void {
+  electronLocalShortcut.unregisterAll(window)
+  console.log('✓ Window-specific shortcuts unregistered')
 }

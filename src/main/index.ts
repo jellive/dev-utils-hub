@@ -5,7 +5,12 @@ import Store from 'electron-store'
 import { setupSettingsHandlers } from './ipc/settings'
 import { createApplicationMenu } from './menu'
 import { createTray, handleWindowClose, destroyTray } from './tray'
-import { registerGlobalShortcuts, unregisterGlobalShortcuts } from './shortcuts'
+import {
+  registerGlobalShortcuts,
+  registerWindowShortcuts,
+  unregisterGlobalShortcuts,
+  unregisterWindowShortcuts
+} from './shortcuts'
 
 // Initialize electron-store for persistent settings
 const store = new Store()
@@ -106,6 +111,7 @@ function createWindow(): void {
     // Register global shortcuts
     if (mainWindow) {
       registerGlobalShortcuts(mainWindow)
+      registerWindowShortcuts(mainWindow)
     }
 
     // Open DevTools in development
@@ -127,6 +133,9 @@ function createWindow(): void {
 
   // Handle window closed
   mainWindow.on('closed', () => {
+    if (mainWindow) {
+      unregisterWindowShortcuts(mainWindow)
+    }
     mainWindow = null
   })
 
