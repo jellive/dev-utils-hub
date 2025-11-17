@@ -12,6 +12,13 @@ import {
   getHistoryStats,
   type HistoryEntry
 } from '../db/queries'
+import {
+  runCleanup,
+  createTimestampedBackup,
+  restoreFromBackup,
+  getMaintenanceStats,
+  listBackups
+} from '../db/maintenance'
 
 /**
  * Setup IPC handlers for history operations
@@ -128,6 +135,56 @@ export function setupHistoryHandlers(): void {
       return getHistoryStats()
     } catch (error) {
       console.error('Failed to get history stats:', error)
+      throw error
+    }
+  })
+
+  // Maintenance: Run cleanup
+  ipcMain.handle('maintenance:cleanup', (_event, dryRun?: boolean): number => {
+    try {
+      return runCleanup(dryRun)
+    } catch (error) {
+      console.error('Failed to run cleanup:', error)
+      throw error
+    }
+  })
+
+  // Maintenance: Create backup
+  ipcMain.handle('maintenance:backup', (): string => {
+    try {
+      return createTimestampedBackup()
+    } catch (error) {
+      console.error('Failed to create backup:', error)
+      throw error
+    }
+  })
+
+  // Maintenance: Restore backup
+  ipcMain.handle('maintenance:restore', (_event, backupPath: string): void => {
+    try {
+      restoreFromBackup(backupPath)
+    } catch (error) {
+      console.error('Failed to restore backup:', error)
+      throw error
+    }
+  })
+
+  // Maintenance: Get stats
+  ipcMain.handle('maintenance:stats', () => {
+    try {
+      return getMaintenanceStats()
+    } catch (error) {
+      console.error('Failed to get maintenance stats:', error)
+      throw error
+    }
+  })
+
+  // Maintenance: List backups
+  ipcMain.handle('maintenance:list-backups', () => {
+    try {
+      return listBackups()
+    } catch (error) {
+      console.error('Failed to list backups:', error)
       throw error
     }
   })

@@ -76,6 +76,20 @@ const api = {
       ipcRenderer.invoke('history:auto-cleanup', daysOld, keepFavorites),
     stats: (): Promise<any> =>
       ipcRenderer.invoke('history:stats')
+  },
+
+  // Maintenance API
+  maintenance: {
+    cleanup: (dryRun?: boolean): Promise<number> =>
+      ipcRenderer.invoke('maintenance:cleanup', dryRun),
+    backup: (): Promise<string> =>
+      ipcRenderer.invoke('maintenance:backup'),
+    restore: (backupPath: string): Promise<void> =>
+      ipcRenderer.invoke('maintenance:restore', backupPath),
+    stats: (): Promise<any> =>
+      ipcRenderer.invoke('maintenance:stats'),
+    listBackups: (): Promise<Array<{ name: string; path: string; size: number; date: Date }>> =>
+      ipcRenderer.invoke('maintenance:list-backups')
   }
 }
 

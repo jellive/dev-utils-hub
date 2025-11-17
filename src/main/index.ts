@@ -14,6 +14,7 @@ import {
   checkAndLogConflicts
 } from './shortcuts'
 import { initializeDatabase, closeDatabase } from './db'
+import { initializeMaintenance, stopMaintenance } from './db/maintenance'
 
 // Initialize electron-store for persistent settings
 const store = new Store()
@@ -175,6 +176,9 @@ app.whenReady().then(() => {
   // Initialize database
   initializeDatabase()
 
+  // Initialize maintenance system
+  initializeMaintenance()
+
   // Setup IPC handlers
   setupIpcHandlers()
 
@@ -204,5 +208,6 @@ app.on('before-quit', () => {
   }
   destroyTray()
   unregisterGlobalShortcuts()
+  stopMaintenance()
   closeDatabase()
 })

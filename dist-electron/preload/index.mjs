@@ -91,6 +91,48 @@ const api = {
     getAll: () => ipcRenderer.invoke("settings:get-all"),
     reset: () => ipcRenderer.invoke("settings:reset"),
     delete: (key) => ipcRenderer.invoke("settings:delete", key)
+  },
+  // Shortcut events API
+  shortcuts: {
+    onOpenSettings: (callback) => {
+      ipcRenderer.on("shortcut:open-settings", callback);
+      return () => ipcRenderer.removeListener("shortcut:open-settings", callback);
+    },
+    onToggleHistory: (callback) => {
+      ipcRenderer.on("shortcut:toggle-history", callback);
+      return () => ipcRenderer.removeListener("shortcut:toggle-history", callback);
+    },
+    onSwitchTool: (callback) => {
+      ipcRenderer.on("shortcut:switch-tool", (_event, route) => callback(route));
+      return () => ipcRenderer.removeAllListeners("shortcut:switch-tool");
+    },
+    // Shortcut management API
+    getAll: () => ipcRenderer.invoke("shortcuts:get-all"),
+    updateGlobal: (accelerator) => ipcRenderer.invoke("shortcuts:update-global", accelerator),
+    reset: () => ipcRenderer.invoke("shortcuts:reset"),
+    validate: (accelerator) => ipcRenderer.invoke("shortcuts:validate", accelerator),
+    getRegistered: () => ipcRenderer.invoke("shortcuts:get-registered")
+  },
+  // History API
+  history: {
+    save: (tool, input, output, metadata) => ipcRenderer.invoke("history:save", tool, input, output, metadata),
+    get: (tool, limit) => ipcRenderer.invoke("history:get", tool, limit),
+    search: (tool, query, limit) => ipcRenderer.invoke("history:search", tool, query, limit),
+    getById: (id) => ipcRenderer.invoke("history:get-by-id", id),
+    delete: (id) => ipcRenderer.invoke("history:delete", id),
+    toggleFavorite: (id) => ipcRenderer.invoke("history:toggle-favorite", id),
+    clear: (tool) => ipcRenderer.invoke("history:clear", tool),
+    clearAll: () => ipcRenderer.invoke("history:clear-all"),
+    autoCleanup: (daysOld, keepFavorites) => ipcRenderer.invoke("history:auto-cleanup", daysOld, keepFavorites),
+    stats: () => ipcRenderer.invoke("history:stats")
+  },
+  // Maintenance API
+  maintenance: {
+    cleanup: (dryRun) => ipcRenderer.invoke("maintenance:cleanup", dryRun),
+    backup: () => ipcRenderer.invoke("maintenance:backup"),
+    restore: (backupPath) => ipcRenderer.invoke("maintenance:restore", backupPath),
+    stats: () => ipcRenderer.invoke("maintenance:stats"),
+    listBackups: () => ipcRenderer.invoke("maintenance:list-backups")
   }
 };
 if (process.contextIsolated) {

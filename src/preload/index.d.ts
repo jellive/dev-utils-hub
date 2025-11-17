@@ -43,8 +43,29 @@ declare global {
         autoCleanup: (daysOld?: number, keepFavorites?: boolean) => Promise<number>
         stats: () => Promise<HistoryStats>
       }
+      maintenance: {
+        cleanup: (dryRun?: boolean) => Promise<number>
+        backup: () => Promise<string>
+        restore: (backupPath: string) => Promise<void>
+        stats: () => Promise<MaintenanceStats>
+        listBackups: () => Promise<Array<BackupInfo>>
+      }
     }
   }
+}
+
+export interface BackupInfo {
+  name: string
+  path: string
+  size: number
+  date: Date
+}
+
+export interface MaintenanceStats {
+  lastCleanup: number | null
+  lastBackup: number | null
+  recordsDeleted: number
+  backupsCreated: number
 }
 
 export interface HistoryEntry {
