@@ -12,6 +12,7 @@ import {
   unregisterWindowShortcuts,
   checkAndLogConflicts
 } from './shortcuts'
+import { initializeDatabase, closeDatabase } from './db'
 
 // Initialize electron-store for persistent settings
 const store = new Store()
@@ -167,6 +168,9 @@ app.whenReady().then(() => {
     app.setAppUserModelId('com.devutils.hub')
   }
 
+  // Initialize database
+  initializeDatabase()
+
   // Setup IPC handlers
   setupIpcHandlers()
 
@@ -196,4 +200,5 @@ app.on('before-quit', () => {
   }
   destroyTray()
   unregisterGlobalShortcuts()
+  closeDatabase()
 })
