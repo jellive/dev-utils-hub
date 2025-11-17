@@ -66,7 +66,8 @@ export function HistoryItem({ item, onToggleFavorite, onDelete, onClick, searchQ
       className={cn(
         'group flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-colors',
         'hover:bg-gray-100 dark:hover:bg-gray-700',
-        'border border-transparent hover:border-gray-200 dark:hover:border-gray-600'
+        'border border-transparent hover:border-gray-200 dark:hover:border-gray-600',
+        item.favorite && 'bg-yellow-50 dark:bg-yellow-900/10 border-yellow-200 dark:border-yellow-800'
       )}
       onClick={() => onClick(item)}
     >

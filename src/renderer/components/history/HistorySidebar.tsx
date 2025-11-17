@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { X, Search, Clock, XCircle } from 'lucide-react'
+import { X, Search, Clock, XCircle, Star } from 'lucide-react'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { ScrollArea } from '../ui/scroll-area'
@@ -26,6 +26,7 @@ export function HistorySidebar({
   onHistoryItemClick
 }: HistorySidebarProps) {
   const [searchQuery, setSearchQuery] = useState('')
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
   const {
     history,
     isLoading,
@@ -34,13 +35,31 @@ export function HistorySidebar({
     clearHistory
   } = useHistory({ tool, limit: 50, autoLoad: true })
 
-  // Filter history based on search query
+  // Filter and sort history based on search query and favorites filter
   const filteredHistory = useMemo(() => {
-    if (!searchQuery.trim()) return history
+    let filtered = history
 
-    const query = searchQuery.toLowerCase()
-    return history.filter((item) => item.input.toLowerCase().includes(query))
-  }, [history, searchQuery])
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
+      filtered = filtered.filter((item) => item.input.toLowerCase().includes(query))
+    }
+
+    // Apply favorites filter
+    if (showFavoritesOnly) {
+      filtered = filtered.filter((item) => item.favorite)
+    }
+
+    // Sort: favorites first, then by timestamp
+    return filtered.sort((a, b) => {
+      // Favorites go to top
+      if (a.favorite && !b.favorite) return -1
+      if (!a.favorite && b.favorite) return 1
+
+      // Then sort by timestamp (newest first)
+      return (b.created_at || 0) - (a.created_at || 0)
+    })
+  }, [history, searchQuery, showFavoritesOnly])
 
   // Listen for keyboard shortcut (Cmd/Ctrl+H)
   useEffect(() => {
@@ -98,7 +117,7 @@ export function HistorySidebar({
           </Button>
         </div>
 
-        {/* Search bar */}
+        {/* Search bar and filters */}
         <div className="p-4 border-b dark:border-gray-700 space-y-2">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -121,6 +140,18 @@ export function HistorySidebar({
               </Button>
             )}
           </div>
+
+          {/* Favorites filter toggle */}
+          <Button
+            variant={showFavoritesOnly ? 'default' : 'outline'}
+            size="sm"
+            className="w-full gap-2"
+            onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+          >
+            <Star className={cn('h-4 w-4', showFavoritesOnly && 'fill-current')} />
+            {showFavoritesOnly ? 'Show All' : 'Show Favorites Only'}
+          </Button>
+
           {searchQuery && (
             <p className="text-xs text-gray-500 dark:text-gray-400">
               {filteredHistory.length} of {history.length} results
