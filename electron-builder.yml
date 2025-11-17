@@ -1,0 +1,43 @@
+appId: com.devutils.hub
+productName: Dev Utils Hub
+directories:
+  buildResources: build
+  output: dist-release
+files:
+  - dist-electron
+  - dist
+  - package.json
+asarUnpack:
+  - resources/**
+afterSign: build/notarize.js
+mac:
+  category: public.app-category.developer-tools
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+    - target: zip
+      arch:
+        - x64
+        - arm64
+dmg:
+  artifactName: ${productName}-${version}-${arch}.${ext}
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+        - ia32
+linux:
+  target:
+    - AppImage
+    - deb
+  category: Development
+publish:
+  provider: github
+  releaseType: release
