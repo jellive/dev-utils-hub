@@ -130,6 +130,29 @@ export function registerWindowShortcuts(window: BrowserWindow): void {
     window.setFullScreen(!window.isFullScreen())
   })
 
+  // Tool switching shortcuts (Command/Ctrl + 1-9)
+  const toolRoutes = [
+    '/', // Command+1: Home
+    '/json', // Command+2: JSON Formatter
+    '/jwt', // Command+3: JWT Decoder
+    '/base64', // Command+4: Base64 Converter
+    '/url', // Command+5: URL Converter
+    '/regex', // Command+6: Regex Tester
+    '/diff', // Command+7: Text Diff
+    '/hash', // Command+8: Hash Generator
+    '/uuid' // Command+9: UUID Generator
+  ]
+
+  toolRoutes.forEach((route, index) => {
+    const number = index + 1
+    if (number <= 9) {
+      electronLocalShortcut.register(window, isMac ? `Command+${number}` : `Ctrl+${number}`, () => {
+        console.log(`Tool switch shortcut triggered: ${number} -> ${route}`)
+        window.webContents.send('shortcut:switch-tool', route)
+      })
+    }
+  })
+
   console.log('✓ Window-specific shortcuts registered')
 }
 

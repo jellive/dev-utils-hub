@@ -1,4 +1,5 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { Toaster } from 'sonner';
 import { Header } from './Header';
 import { OfflineIndicator } from './OfflineIndicator';
@@ -17,6 +18,20 @@ export function Layout() {
   const isHomePage = location.pathname === '/';
 
   usePerformanceMonitor(`Page: ${location.pathname}`);
+
+  // Register keyboard shortcut handlers
+  useEffect(() => {
+    // Only register shortcuts in Electron environment
+    if (!window.api?.shortcuts) return;
+
+    const unsubscribeSwitchTool = window.api.shortcuts.onSwitchTool((route: string) => {
+      navigate(route);
+    });
+
+    return () => {
+      unsubscribeSwitchTool();
+    };
+  }, [navigate]);
 
   const handleBackToGrid = () => {
     navigate('/');

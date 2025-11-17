@@ -21,6 +21,11 @@ declare global {
         reset: () => Promise<boolean>
         delete: (key: string) => Promise<boolean>
       }
+      shortcuts: {
+        onOpenSettings: (callback: () => void) => () => void
+        onToggleHistory: (callback: () => void) => () => void
+        onSwitchTool: (callback: (route: string) => void) => () => void
+      }
     }
   }
 }

@@ -27,6 +27,22 @@ const api = {
     getAll: (): Promise<Record<string, any>> => ipcRenderer.invoke('settings:get-all'),
     reset: (): Promise<boolean> => ipcRenderer.invoke('settings:reset'),
     delete: (key: string): Promise<boolean> => ipcRenderer.invoke('settings:delete', key)
+  },
+
+  // Shortcut events API
+  shortcuts: {
+    onOpenSettings: (callback: () => void) => {
+      ipcRenderer.on('shortcut:open-settings', callback)
+      return () => ipcRenderer.removeListener('shortcut:open-settings', callback)
+    },
+    onToggleHistory: (callback: () => void) => {
+      ipcRenderer.on('shortcut:toggle-history', callback)
+      return () => ipcRenderer.removeListener('shortcut:toggle-history', callback)
+    },
+    onSwitchTool: (callback: (route: string) => void) => {
+      ipcRenderer.on('shortcut:switch-tool', (_event, route: string) => callback(route))
+      return () => ipcRenderer.removeAllListeners('shortcut:switch-tool')
+    }
   }
 }
 
