@@ -27,8 +27,22 @@ export function initializeDatabase(): Database.Database {
     // Enable foreign keys
     db.pragma('foreign_keys = ON')
 
+    // Set busy timeout for automatic retry on SQLITE_BUSY
+    db.pragma('busy_timeout = 5000')
+
     // Create tables if they don't exist
     createTables()
+
+    // Check database integrity on startup
+    const integrityCheck = db.pragma('integrity_check') as Array<{ integrity_check: string }>
+    const isHealthy = integrityCheck.length === 1 && integrityCheck[0].integrity_check === 'ok'
+
+    if (!isHealthy) {
+      console.error('⚠️  Database integrity check failed:', integrityCheck)
+      console.error('⚠️  Database may be corrupted. Please check the database file.')
+    } else {
+      console.log('✓ Database integrity check passed')
+    }
 
     console.log('✓ Database initialized successfully')
     return db
