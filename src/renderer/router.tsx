@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createHashRouter, Navigate } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { SingleColumnSkeleton } from './components/SingleColumnSkeleton';
 import { TwoColumnSkeleton } from './components/TwoColumnSkeleton';
@@ -48,7 +48,7 @@ const TwoColumnTool = ({ children }: { children: React.ReactNode }) => (
   <Suspense fallback={<TwoColumnSkeleton />}>{children}</Suspense>
 );
 
-export const router = createBrowserRouter([
+export const router = createHashRouter([
   {
     path: '/',
     element: <Layout />,
