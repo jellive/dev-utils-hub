@@ -15,7 +15,8 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "erasableSyntaxOnly": false
   },
   "include": ["src/main/**/*"],
   "exclude": ["node_modules", "dist", "dist-electron"]
