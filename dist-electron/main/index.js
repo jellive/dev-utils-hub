@@ -22,6 +22,9 @@ const settingsStore = new Store({
     minimizeToTray: false,
     launchAtStartup: false,
     startMinimized: false,
+    shortcuts: {
+      toggleApp: process.platform === "darwin" ? "Command+Shift+Space" : "Control+Space"
+    },
     "app-state": {
       theme: "system",
       language: "en"
@@ -349,7 +352,8 @@ function destroyTray() {
 let mainWindow$1 = null;
 function registerGlobalShortcuts(window) {
   mainWindow$1 = window;
-  const toggleShortcut = process.platform === "darwin" ? "Command+Shift+Space" : "Control+Space";
+  const shortcuts = settingsStore.get("shortcuts");
+  const toggleShortcut = shortcuts?.toggleApp || (process.platform === "darwin" ? "Command+Shift+Space" : "Control+Space");
   const registered = globalShortcut.register(toggleShortcut, () => {
     console.log(`Global shortcut triggered: ${toggleShortcut}`);
     if (mainWindow$1) {

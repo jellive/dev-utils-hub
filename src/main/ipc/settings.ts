@@ -9,6 +9,10 @@ interface SettingsSchema {
   minimizeToTray: boolean
   launchAtStartup: boolean
   startMinimized: boolean
+  // Keyboard shortcuts
+  shortcuts: {
+    toggleApp: string // Global shortcut for show/hide app
+  }
   // App state (from useAppStore)
   'app-state': {
     theme: 'light' | 'dark' | 'system'
@@ -44,6 +48,9 @@ const settingsStore = new Store<SettingsSchema>({
     minimizeToTray: false,
     launchAtStartup: false,
     startMinimized: false,
+    shortcuts: {
+      toggleApp: process.platform === 'darwin' ? 'Command+Shift+Space' : 'Control+Space'
+    },
     'app-state': {
       theme: 'system',
       language: 'en'
@@ -51,6 +58,9 @@ const settingsStore = new Store<SettingsSchema>({
     'api-tester-history': []
   }
 })
+
+// Export the settings store for use in other modules
+export { settingsStore }
 
 export function setupSettingsHandlers(): void {
   // Get single setting
