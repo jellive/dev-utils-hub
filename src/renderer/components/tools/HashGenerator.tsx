@@ -1,5 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useHistoryAutoSave } from '../../hooks/useHistoryAutoSave';
 import { generateHash, generateHMAC } from '../../utils/hashUtils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -32,6 +33,16 @@ export function HashGenerator() {
   const [hmacKey, setHmacKey] = useState('');
   const [comparisonHash, setComparisonHash] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-save to history
+  const saveToHistory = useHistoryAutoSave({ tool: 'hash' });
+
+  // Save to history when hash result changes
+  useEffect(() => {
+    if (hashResult && !error) {
+      saveToHistory(input || selectedFile?.name || '', hashResult, { algorithm, isHmacMode });
+    }
+  }, [hashResult, error, input, selectedFile, algorithm, isHmacMode, saveToHistory]);
 
   const algorithms: AlgorithmOption[] = [
     { value: 'md5', label: 'MD5', bits: '128-bit' },

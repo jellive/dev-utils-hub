@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useHistoryAutoSave } from '../../hooks/useHistoryAutoSave';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -30,6 +31,19 @@ export function JwtDecoder() {
   const [error, setError] = useState('');
   const [isExpired, setIsExpired] = useState<boolean | null>(null);
   const [expirationDate, setExpirationDate] = useState<Date | null>(null);
+
+  // Auto-save to history
+  const saveToHistory = useHistoryAutoSave({ tool: 'jwt' });
+
+  // Save to history when decoded output changes
+  useEffect(() => {
+    if (decoded.payload && !error) {
+      saveToHistory(input, JSON.stringify({ header: decoded.header, payload: decoded.payload }, null, 2), {
+        isExpired,
+        expirationDate: expirationDate?.toISOString()
+      });
+    }
+  }, [decoded.payload, error, input, isExpired, expirationDate, saveToHistory]);
 
   const decodeJWT = () => {
     setError('');

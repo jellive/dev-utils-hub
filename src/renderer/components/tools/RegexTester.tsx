@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useHistoryAutoSave } from '../../hooks/useHistoryAutoSave';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -87,6 +88,16 @@ export function RegexTester() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [error, setError] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // Auto-save to history
+  const saveToHistory = useHistoryAutoSave({ tool: 'regex' });
+
+  // Save to history when matches change
+  useEffect(() => {
+    if (matches.length > 0 && !error) {
+      saveToHistory(pattern, JSON.stringify({ matches: matches.length, testString }, null, 2), { flags });
+    }
+  }, [matches, error, pattern, testString, flags, saveToHistory]);
 
   const handleTest = () => {
     setError('');

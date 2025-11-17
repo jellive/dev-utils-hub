@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useHistoryAutoSave } from '../../hooks/useHistoryAutoSave';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -35,6 +36,16 @@ export function URLConverter() {
   const [urlComponents, setUrlComponents] = useState<URLComponents | null>(null);
   const [queryParams, setQueryParams] = useState<QueryParam[]>([]);
   const [isValidUrl, setIsValidUrl] = useState<boolean | null>(null);
+
+  // Auto-save to history
+  const saveToHistory = useHistoryAutoSave({ tool: 'url' });
+
+  // Save to history when output changes
+  useEffect(() => {
+    if (output && isValidUrl) {
+      saveToHistory(input, output, { encodingMode, urlComponents });
+    }
+  }, [output, isValidUrl, input, encodingMode, urlComponents, saveToHistory]);
 
   const parseURL = (urlString: string): URLComponents | null => {
     try {

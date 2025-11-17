@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useHistoryAutoSave } from '../../hooks/useHistoryAutoSave';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,6 +25,17 @@ export function TextDiff() {
 
   const leftScrollRef = useRef<HTMLDivElement>(null);
   const rightScrollRef = useRef<HTMLDivElement>(null);
+
+  // Auto-save to history
+  const saveToHistory = useHistoryAutoSave({ tool: 'diff' });
+
+  // Save to history when diff results change
+  useEffect(() => {
+    if (diffResults.length > 0 && hasCompared) {
+      const summary = `${diffResults.filter(d => d.type === 'insert').length} additions, ${diffResults.filter(d => d.type === 'delete').length} deletions`;
+      saveToHistory(originalText, summary, { ignoreWhitespace, viewMode });
+    }
+  }, [diffResults, hasCompared, originalText, ignoreWhitespace, viewMode, saveToHistory]);
 
   const handleCompare = () => {
     try {

@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertCircle, Copy, Check, Send } from 'lucide-react';
+import { useHistoryAutoSave } from '../../hooks/useHistoryAutoSave';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
@@ -32,6 +33,16 @@ export function JsonFormatter() {
   const [indentLevel, setIndentLevel] = useState('2');
   const [isValid, setIsValid] = useState<boolean | null>(null);
   const [copied, setCopied] = useState(false);
+
+  // Auto-save to history
+  const saveToHistory = useHistoryAutoSave({ tool: 'json' });
+
+  // Save to history when output changes
+  useEffect(() => {
+    if (output && isValid) {
+      saveToHistory(input, output, { indentLevel });
+    }
+  }, [output, isValid, input, indentLevel, saveToHistory]);
 
   const handleFormat = () => {
     setError('');

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useHistoryAutoSave } from '../../hooks/useHistoryAutoSave';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -30,6 +31,9 @@ export function TimestampConverter() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [currentTime, setCurrentTime] = useState(new Date());
 
+  // Auto-save to history
+  const saveToHistory = useHistoryAutoSave({ tool: 'timestamp' });
+
   // Update current time every second
   useEffect(() => {
     const interval = setInterval(() => {
@@ -37,6 +41,14 @@ export function TimestampConverter() {
     }, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  // Save to history when timestamp or selectedDate changes
+  useEffect(() => {
+    if (timestamp) {
+      const formattedDate = selectedDate?.toLocaleString('en-US', { timeZone: timezone });
+      saveToHistory(timestamp, formattedDate || '', { unit, timezone });
+    }
+  }, [timestamp, selectedDate, unit, timezone, saveToHistory]);
 
   const handleCurrentTime = () => {
     const now = Date.now();

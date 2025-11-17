@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useHistoryAutoSave } from '../../hooks/useHistoryAutoSave';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -35,10 +36,20 @@ export function Base64Converter() {
   const [urlSafe, setUrlSafe] = useState(false);
   const [encoding, setEncoding] = useState('utf-8');
 
+  // Auto-save to history
+  const saveToHistory = useHistoryAutoSave({ tool: 'base64' });
+
   // Set feature context on mount
   useEffect(() => {
     setCurrentFeature(FEATURES.DATA_CONVERSION);
   }, []);
+
+  // Save to history when output changes
+  useEffect(() => {
+    if (output && !error) {
+      saveToHistory(input, output, { activeTab, urlSafe, encoding });
+    }
+  }, [output, error, input, activeTab, urlSafe, encoding, saveToHistory]);
 
   // Calculate human-readable file size
   const formatFileSize = (text: string): string => {
