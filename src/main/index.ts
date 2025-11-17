@@ -2,6 +2,7 @@ import { app, BrowserWindow, shell, ipcMain } from 'electron'
 import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
 import Store from 'electron-store'
+import { setupSettingsHandlers } from './ipc/settings'
 
 // Initialize electron-store for persistent settings
 const store = new Store()
@@ -27,6 +28,9 @@ function setupIpcHandlers(): void {
       versions: process.versions
     }
   })
+
+  // Setup settings handlers
+  setupSettingsHandlers()
 }
 
 let mainWindow: BrowserWindow | null = null

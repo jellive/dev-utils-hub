@@ -18,7 +18,16 @@ const api = {
   getAppVersion: (): Promise<string> => ipcRenderer.invoke('get-app-version'),
 
   // Get platform information
-  getPlatformInfo: (): Promise<PlatformInfo> => ipcRenderer.invoke('platform-info')
+  getPlatformInfo: (): Promise<PlatformInfo> => ipcRenderer.invoke('platform-info'),
+
+  // Settings API
+  settings: {
+    get: <T = any>(key: string): Promise<T> => ipcRenderer.invoke('settings:get', key),
+    set: (key: string, value: any): Promise<boolean> => ipcRenderer.invoke('settings:set', key, value),
+    getAll: (): Promise<Record<string, any>> => ipcRenderer.invoke('settings:get-all'),
+    reset: (): Promise<boolean> => ipcRenderer.invoke('settings:reset'),
+    delete: (key: string): Promise<boolean> => ipcRenderer.invoke('settings:delete', key)
+  }
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to
