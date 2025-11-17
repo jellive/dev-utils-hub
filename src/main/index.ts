@@ -3,6 +3,7 @@ import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
 import Store from 'electron-store'
 import { setupSettingsHandlers } from './ipc/settings'
+import { createApplicationMenu } from './menu'
 
 // Initialize electron-store for persistent settings
 const store = new Store()
@@ -86,6 +87,11 @@ function createWindow(): void {
   // Show window when ready
   mainWindow.on('ready-to-show', () => {
     mainWindow?.show()
+
+    // Create application menu
+    if (mainWindow) {
+      createApplicationMenu(mainWindow)
+    }
 
     // Open DevTools in development
     if (is.dev) {
