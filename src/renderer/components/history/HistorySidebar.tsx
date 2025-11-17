@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { X, Search, Clock } from 'lucide-react'
+import { X, Search, Clock, XCircle } from 'lucide-react'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { ScrollArea } from '../ui/scroll-area'
@@ -99,17 +99,33 @@ export function HistorySidebar({
         </div>
 
         {/* Search bar */}
-        <div className="p-4 border-b dark:border-gray-700">
+        <div className="p-4 border-b dark:border-gray-700 space-y-2">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               type="text"
               placeholder="Search history..."
-              className="pl-10"
+              className="pl-10 pr-10"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7"
+                onClick={() => setSearchQuery('')}
+                aria-label="Clear search"
+              >
+                <XCircle className="h-4 w-4" />
+              </Button>
+            )}
           </div>
+          {searchQuery && (
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              {filteredHistory.length} of {history.length} results
+            </p>
+          )}
         </div>
 
         {/* History list */}
@@ -141,6 +157,7 @@ export function HistorySidebar({
                     onToggleFavorite={toggleFavorite}
                     onDelete={deleteHistory}
                     onClick={handleItemClick}
+                    searchQuery={searchQuery}
                   />
                 ))}
               </div>

@@ -8,9 +8,10 @@ interface HistoryItemProps {
   onToggleFavorite: (id: number) => void
   onDelete: (id: number) => void
   onClick: (item: HistoryEntry) => void
+  searchQuery?: string
 }
 
-export function HistoryItem({ item, onToggleFavorite, onDelete, onClick }: HistoryItemProps) {
+export function HistoryItem({ item, onToggleFavorite, onDelete, onClick, searchQuery }: HistoryItemProps) {
   const formatTimestamp = (timestamp?: number): string => {
     if (!timestamp) return 'Unknown'
 
@@ -32,6 +33,22 @@ export function HistoryItem({ item, onToggleFavorite, onDelete, onClick }: Histo
   const truncateInput = (input: string, maxLength = 100): string => {
     if (input.length <= maxLength) return input
     return input.substring(0, maxLength) + '...'
+  }
+
+  const highlightText = (text: string, query: string): React.ReactNode => {
+    if (!query.trim()) return text
+
+    const parts = text.split(new RegExp(`(${query})`, 'gi'))
+    return parts.map((part, index) => {
+      if (part.toLowerCase() === query.toLowerCase()) {
+        return (
+          <mark key={index} className="bg-yellow-200 dark:bg-yellow-600 text-gray-900 dark:text-gray-100">
+            {part}
+          </mark>
+        )
+      }
+      return part
+    })
   }
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
@@ -56,7 +73,7 @@ export function HistoryItem({ item, onToggleFavorite, onDelete, onClick }: Histo
       {/* Content */}
       <div className="flex-1 min-w-0">
         <p className="text-sm text-gray-900 dark:text-gray-100 line-clamp-2 break-all">
-          {truncateInput(item.input)}
+          {searchQuery ? highlightText(truncateInput(item.input), searchQuery) : truncateInput(item.input)}
         </p>
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
           {formatTimestamp(item.created_at)}
