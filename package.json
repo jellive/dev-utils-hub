@@ -1,5 +1,6 @@
 {
-  "name": "dev-utils-temp",
+  "name": "dev-utils-hub",
+  "productName": "Dev Utils Hub",
   "private": true,
   "version": "0.0.0",
   "type": "module",
