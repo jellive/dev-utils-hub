@@ -1,7 +1,6 @@
-import { app, ipcMain, shell, dialog, Menu, nativeImage, Tray, BrowserWindow } from "electron";
+import { app, ipcMain, shell, dialog, Menu, nativeImage, Tray, globalShortcut, BrowserWindow } from "electron";
 import { join } from "path";
 import Store from "electron-store";
-import "fs";
 import __cjs_mod__ from "node:module";
 const __filename = import.meta.filename;
 const __dirname = import.meta.dirname;
@@ -287,7 +286,9 @@ function createTray(mainWindow2) {
         }
       }
     ]);
-    tray.setContextMenu(contextMenu);
+    if (tray) {
+      tray.setContextMenu(contextMenu);
+    }
   };
   updateContextMenu();
   mainWindow2.on("show", updateContextMenu);
@@ -344,6 +345,27 @@ function destroyTray() {
     tray.destroy();
     tray = null;
   }
+}
+let mainWindow$1 = null;
+function registerGlobalShortcuts(window) {
+  mainWindow$1 = window;
+  const toggleShortcut = process.platform === "darwin" ? "Command+Shift+Space" : "Control+Space";
+  const registered = globalShortcut.register(toggleShortcut, () => {
+    console.log(`Global shortcut triggered: ${toggleShortcut}`);
+    if (mainWindow$1) {
+      toggleWindowVisibility(mainWindow$1);
+    }
+  });
+  if (registered) {
+    console.log(`✓ Global shortcut registered: ${toggleShortcut}`);
+  } else {
+    console.error(`✗ Failed to register global shortcut: ${toggleShortcut}`);
+    console.error("  This shortcut may already be in use by another application");
+  }
+}
+function unregisterGlobalShortcuts() {
+  globalShortcut.unregisterAll();
+  console.log("✓ All global shortcuts unregistered");
 }
 const store = new Store();
 app.isQuitting = false;
@@ -406,6 +428,9 @@ function createWindow() {
     if (mainWindow) {
       createTray(mainWindow);
     }
+    if (mainWindow) {
+      registerGlobalShortcuts(mainWindow);
+    }
     if (is.dev) {
       mainWindow?.webContents.openDevTools();
     }
@@ -455,4 +480,5 @@ app.on("before-quit", () => {
     saveWindowBounds();
   }
   destroyTray();
+  unregisterGlobalShortcuts();
 });

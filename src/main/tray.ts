@@ -1,7 +1,4 @@
 import { app, Tray, Menu, BrowserWindow, nativeImage } from 'electron'
-import { join } from 'path'
-import { is } from '@electron-toolkit/utils'
-import { existsSync } from 'fs'
 
 let tray: Tray | null = null
 let isTogglingWindow = false
@@ -76,7 +73,9 @@ export function createTray(mainWindow: BrowserWindow): Tray {
       }
     ])
 
-    tray.setContextMenu(contextMenu)
+    if (tray) {
+      tray.setContextMenu(contextMenu)
+    }
   }
 
   // Set initial context menu
@@ -91,31 +90,7 @@ export function createTray(mainWindow: BrowserWindow): Tray {
   return tray
 }
 
-function getTrayIconPath(): string {
-  const platform = process.platform
-
-  if (platform === 'darwin') {
-    // macOS: Use template image for automatic theme adaptation
-    if (is.dev) {
-      return join(__dirname, '../../build/trayIconTemplate.png')
-    }
-    return join(process.resourcesPath, 'trayIconTemplate.png')
-  } else if (platform === 'win32') {
-    // Windows: Use .ico file
-    if (is.dev) {
-      return join(__dirname, '../../build/trayIcon.ico')
-    }
-    return join(process.resourcesPath, 'trayIcon.ico')
-  } else {
-    // Linux: Use .png file
-    if (is.dev) {
-      return join(__dirname, '../../build/trayIcon.png')
-    }
-    return join(process.resourcesPath, 'trayIcon.png')
-  }
-}
-
-function toggleWindowVisibility(window: BrowserWindow): void {
+export function toggleWindowVisibility(window: BrowserWindow): void {
   isTogglingWindow = true
 
   // Check if window is visible AND not minimized
