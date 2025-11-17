@@ -42,7 +42,16 @@ const api = {
     onSwitchTool: (callback: (route: string) => void) => {
       ipcRenderer.on('shortcut:switch-tool', (_event, route: string) => callback(route))
       return () => ipcRenderer.removeAllListeners('shortcut:switch-tool')
-    }
+    },
+    // Shortcut management API
+    getAll: (): Promise<any> => ipcRenderer.invoke('shortcuts:get-all'),
+    updateGlobal: (accelerator: string): Promise<boolean> =>
+      ipcRenderer.invoke('shortcuts:update-global', accelerator),
+    reset: (): Promise<boolean> => ipcRenderer.invoke('shortcuts:reset'),
+    validate: (accelerator: string): Promise<{ valid: boolean; conflicts: string[]; warnings: string[] }> =>
+      ipcRenderer.invoke('shortcuts:validate', accelerator),
+    getRegistered: (): Promise<Array<{ accelerator: string; scope: string; description: string }>> =>
+      ipcRenderer.invoke('shortcuts:get-registered')
   }
 }
 

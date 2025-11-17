@@ -25,6 +25,11 @@ declare global {
         onOpenSettings: (callback: () => void) => () => void
         onToggleHistory: (callback: () => void) => () => void
         onSwitchTool: (callback: (route: string) => void) => () => void
+        getAll: () => Promise<any>
+        updateGlobal: (accelerator: string) => Promise<boolean>
+        reset: () => Promise<boolean>
+        validate: (accelerator: string) => Promise<{ valid: boolean; conflicts: string[]; warnings: string[] }>
+        getRegistered: () => Promise<Array<{ accelerator: string; scope: string; description: string }>>
       }
     }
   }

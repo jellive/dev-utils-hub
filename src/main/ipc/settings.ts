@@ -115,4 +115,72 @@ export function setupSettingsHandlers(): void {
       return false
     }
   })
+
+  // Get all keyboard shortcuts
+  ipcMain.handle('shortcuts:get-all', () => {
+    try {
+      return settingsStore.get('shortcuts')
+    } catch (error) {
+      console.error('Failed to get shortcuts:', error)
+      return null
+    }
+  })
+
+  // Update global shortcut
+  ipcMain.handle('shortcuts:update-global', async (_event, accelerator: string) => {
+    try {
+      const { updateGlobalShortcut } = await import('../shortcuts')
+      const success = updateGlobalShortcut(accelerator)
+      return success
+    } catch (error) {
+      console.error('Failed to update global shortcut:', error)
+      return false
+    }
+  })
+
+  // Reset shortcuts to defaults
+  ipcMain.handle('shortcuts:reset', () => {
+    try {
+      const defaultShortcuts = {
+        toggleApp: process.platform === 'darwin' ? 'Command+Shift+Space' : 'Control+Space'
+      }
+      settingsStore.set('shortcuts', defaultShortcuts)
+
+      // Re-register the global shortcut with default
+      import('../shortcuts').then(({ updateGlobalShortcut }) => {
+        updateGlobalShortcut(defaultShortcuts.toggleApp)
+      })
+
+      return true
+    } catch (error) {
+      console.error('Failed to reset shortcuts:', error)
+      return false
+    }
+  })
+
+  // Validate shortcut before setting
+  ipcMain.handle('shortcuts:validate', async (_event, accelerator: string) => {
+    try {
+      const { validateShortcut } = await import('../shortcuts')
+      return validateShortcut(accelerator)
+    } catch (error) {
+      console.error('Failed to validate shortcut:', error)
+      return {
+        valid: false,
+        conflicts: ['Validation error'],
+        warnings: []
+      }
+    }
+  })
+
+  // Get all registered shortcuts (for display in UI)
+  ipcMain.handle('shortcuts:get-registered', async () => {
+    try {
+      const { getRegisteredShortcuts } = await import('../shortcuts')
+      return getRegisteredShortcuts()
+    } catch (error) {
+      console.error('Failed to get registered shortcuts:', error)
+      return []
+    }
+  })
 }
