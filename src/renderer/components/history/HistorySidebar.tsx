@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { X, Search, Clock, XCircle, Star, AlertCircle } from 'lucide-react'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
@@ -62,6 +62,23 @@ export function HistorySidebar({
     })
   }, [history, searchQuery, showFavoritesOnly])
 
+  // Memoize event handlers to prevent unnecessary re-renders
+  const handleItemClick = useCallback((item: HistoryEntry) => {
+    if (onHistoryItemClick) {
+      onHistoryItemClick(item)
+    }
+  }, [onHistoryItemClick])
+
+  const handleClearAll = useCallback(async () => {
+    if (window.confirm('Are you sure you want to clear all history for this tool?')) {
+      await clearHistory(tool)
+    }
+  }, [clearHistory, tool])
+
+  const handleCloseSidebar = useCallback(() => {
+    onOpenChange(false)
+  }, [onOpenChange])
+
   // Listen for keyboard shortcut (Cmd/Ctrl+H)
   useEffect(() => {
     if (!window.api?.shortcuts) return
@@ -73,25 +90,13 @@ export function HistorySidebar({
     return unsubscribe
   }, [isOpen, onOpenChange])
 
-  const handleItemClick = (item: HistoryEntry) => {
-    if (onHistoryItemClick) {
-      onHistoryItemClick(item)
-    }
-  }
-
-  const handleClearAll = async () => {
-    if (window.confirm('Are you sure you want to clear all history for this tool?')) {
-      await clearHistory(tool)
-    }
-  }
-
   return (
     <>
       {/* Backdrop overlay when sidebar is open */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/20 z-40 lg:hidden"
-          onClick={() => onOpenChange(false)}
+          onClick={handleCloseSidebar}
         />
       )}
 
@@ -111,7 +116,7 @@ export function HistorySidebar({
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => onOpenChange(false)}
+            onClick={handleCloseSidebar}
             aria-label="Close history sidebar"
           >
             <X className="h-5 w-5" />

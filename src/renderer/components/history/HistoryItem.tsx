@@ -1,3 +1,4 @@
+import { memo, useCallback, useMemo } from 'react'
 import { Star, Trash2 } from 'lucide-react'
 import { Button } from '../ui/button'
 import { cn } from '../../lib/utils'
@@ -11,12 +12,13 @@ interface HistoryItemProps {
   searchQuery?: string
 }
 
-export function HistoryItem({ item, onToggleFavorite, onDelete, onClick, searchQuery }: HistoryItemProps) {
-  const formatTimestamp = (timestamp?: number): string => {
-    if (!timestamp) return 'Unknown'
+export const HistoryItem = memo(function HistoryItem({ item, onToggleFavorite, onDelete, onClick, searchQuery }: HistoryItemProps) {
+  // Memoize formatted timestamp to avoid recalculating on every render
+  const formattedTime = useMemo(() => {
+    if (!item.created_at) return 'Unknown'
 
     const now = Date.now()
-    const diff = now - timestamp
+    const diff = now - item.created_at
     const seconds = Math.floor(diff / 1000)
     const minutes = Math.floor(seconds / 60)
     const hours = Math.floor(minutes / 60)
@@ -27,20 +29,23 @@ export function HistoryItem({ item, onToggleFavorite, onDelete, onClick, searchQ
     if (hours < 24) return `${hours}h ago`
     if (days < 7) return `${days}d ago`
 
-    return new Date(timestamp).toLocaleDateString()
-  }
+    return new Date(item.created_at).toLocaleDateString()
+  }, [item.created_at])
 
-  const truncateInput = (input: string, maxLength = 100): string => {
-    if (input.length <= maxLength) return input
-    return input.substring(0, maxLength) + '...'
-  }
+  // Memoize truncated input
+  const truncatedInput = useMemo(() => {
+    const maxLength = 100
+    if (item.input.length <= maxLength) return item.input
+    return item.input.substring(0, maxLength) + '...'
+  }, [item.input])
 
-  const highlightText = (text: string, query: string): React.ReactNode => {
-    if (!query.trim()) return text
+  // Memoize highlighted text
+  const displayText = useMemo(() => {
+    if (!searchQuery?.trim()) return truncatedInput
 
-    const parts = text.split(new RegExp(`(${query})`, 'gi'))
+    const parts = truncatedInput.split(new RegExp(`(${searchQuery})`, 'gi'))
     return parts.map((part, index) => {
-      if (part.toLowerCase() === query.toLowerCase()) {
+      if (part.toLowerCase() === searchQuery.toLowerCase()) {
         return (
           <mark key={index} className="bg-yellow-200 dark:bg-yellow-600 text-gray-900 dark:text-gray-100">
             {part}
@@ -49,17 +54,21 @@ export function HistoryItem({ item, onToggleFavorite, onDelete, onClick, searchQ
       }
       return part
     })
-  }
+  }, [truncatedInput, searchQuery])
 
-  const handleToggleFavorite = (e: React.MouseEvent) => {
+  const handleToggleFavorite = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
     if (item.id) onToggleFavorite(item.id)
-  }
+  }, [item.id, onToggleFavorite])
 
-  const handleDelete = (e: React.MouseEvent) => {
+  const handleDelete = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
     if (item.id) onDelete(item.id)
-  }
+  }, [item.id, onDelete])
+
+  const handleClick = useCallback(() => {
+    onClick(item)
+  }, [item, onClick])
 
   return (
     <div
@@ -69,15 +78,15 @@ export function HistoryItem({ item, onToggleFavorite, onDelete, onClick, searchQ
         'border border-transparent hover:border-gray-200 dark:hover:border-gray-600',
         item.favorite && 'bg-yellow-50 dark:bg-yellow-900/10 border-yellow-200 dark:border-yellow-800'
       )}
-      onClick={() => onClick(item)}
+      onClick={handleClick}
     >
       {/* Content */}
       <div className="flex-1 min-w-0">
         <p className="text-sm text-gray-900 dark:text-gray-100 line-clamp-2 break-all">
-          {searchQuery ? highlightText(truncateInput(item.input), searchQuery) : truncateInput(item.input)}
+          {displayText}
         </p>
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-          {formatTimestamp(item.created_at)}
+          {formattedTime}
         </p>
       </div>
 
@@ -107,4 +116,4 @@ export function HistoryItem({ item, onToggleFavorite, onDelete, onClick, searchQ
       </div>
     </div>
   )
-}
+})
