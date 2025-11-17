@@ -1,5 +1,5 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Toaster } from 'sonner';
 import { Header } from './Header';
 import { OfflineIndicator } from './OfflineIndicator';
@@ -11,6 +11,7 @@ import { ArrowLeft } from 'lucide-react';
 import { usePerformanceMonitor } from '../hooks/usePerformanceMonitor';
 import { useTranslation } from 'react-i18next';
 import { useShortcutFeedback } from './ShortcutFeedback';
+import { HistorySidebar } from './history/HistorySidebar';
 
 export function Layout() {
   const { t } = useTranslation();
@@ -18,8 +19,15 @@ export function Layout() {
   const navigate = useNavigate();
   const isHomePage = location.pathname === '/';
   const { showFeedback, FeedbackComponent } = useShortcutFeedback();
+  const [isHistorySidebarOpen, setIsHistorySidebarOpen] = useState(false);
 
   usePerformanceMonitor(`Page: ${location.pathname}`);
+
+  // Extract tool name from pathname
+  const getToolName = (): string => {
+    const path = location.pathname.slice(1); // Remove leading '/'
+    return path || 'home';
+  };
 
   // Register keyboard shortcut handlers
   useEffect(() => {
@@ -98,6 +106,11 @@ export function Layout() {
       <ErrorTrigger />
       <Toaster />
       {FeedbackComponent}
+      <HistorySidebar
+        tool={getToolName()}
+        isOpen={isHistorySidebarOpen}
+        onOpenChange={setIsHistorySidebarOpen}
+      />
     </div>
   );
 }
