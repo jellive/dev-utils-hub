@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { X, Search, Clock, XCircle, Star } from 'lucide-react'
+import { X, Search, Clock, XCircle, Star, AlertCircle } from 'lucide-react'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { ScrollArea } from '../ui/scroll-area'
@@ -30,6 +30,7 @@ export function HistorySidebar({
   const {
     history,
     isLoading,
+    error,
     deleteHistory,
     toggleFavorite,
     clearHistory
@@ -158,6 +159,23 @@ export function HistorySidebar({
             </p>
           )}
         </div>
+
+        {/* Error banner */}
+        {error && (
+          <div className="mx-4 mt-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <div className="flex items-start gap-2">
+              <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-red-800 dark:text-red-300">
+                  Error loading history
+                </p>
+                <p className="text-xs text-red-700 dark:text-red-400 mt-1 break-words">
+                  {error}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* History list */}
         <ScrollArea className="flex-1 h-[calc(100%-140px)]">
