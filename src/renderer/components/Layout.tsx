@@ -10,12 +10,14 @@ import { Button } from './ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { usePerformanceMonitor } from '../hooks/usePerformanceMonitor';
 import { useTranslation } from 'react-i18next';
+import { useShortcutFeedback } from './ShortcutFeedback';
 
 export function Layout() {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const isHomePage = location.pathname === '/';
+  const { showFeedback, FeedbackComponent } = useShortcutFeedback();
 
   usePerformanceMonitor(`Page: ${location.pathname}`);
 
@@ -26,12 +28,43 @@ export function Layout() {
 
     const unsubscribeSwitchTool = window.api.shortcuts.onSwitchTool((route: string) => {
       navigate(route);
+
+      // Show feedback for tool switching
+      const toolNames = [
+        'Home',
+        'JSON Formatter',
+        'JWT Decoder',
+        'Base64 Converter',
+        'URL Converter',
+        'Regex Tester',
+        'Text Diff',
+        'Hash Generator',
+        'UUID Generator'
+      ];
+
+      const toolIndex = [
+        '/',
+        '/json',
+        '/jwt',
+        '/base64',
+        '/url',
+        '/regex',
+        '/diff',
+        '/hash',
+        '/uuid'
+      ].indexOf(route);
+
+      if (toolIndex !== -1) {
+        const isMac = navigator.platform.toLowerCase().includes('mac');
+        const modifier = isMac ? '⌘' : 'Ctrl';
+        showFeedback(`${modifier}${toolIndex + 1}`, toolNames[toolIndex]);
+      }
     });
 
     return () => {
       unsubscribeSwitchTool();
     };
-  }, [navigate]);
+  }, [navigate, showFeedback]);
 
   const handleBackToGrid = () => {
     navigate('/');
@@ -64,6 +97,7 @@ export function Layout() {
       <InstallPWAButton />
       <ErrorTrigger />
       <Toaster />
+      {FeedbackComponent}
     </div>
   );
 }
