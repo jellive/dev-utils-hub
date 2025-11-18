@@ -4,6 +4,7 @@ import { is } from '@electron-toolkit/utils'
 import Store from 'electron-store'
 import { setupSettingsHandlers } from './ipc/settings'
 import { setupHistoryHandlers } from './ipc/history'
+import { setupClipboardHandlers } from './ipc/clipboard'
 import { createApplicationMenu } from './menu'
 import { createTray, handleWindowClose, destroyTray } from './tray'
 import {
@@ -49,6 +50,9 @@ function setupIpcHandlers(): void {
 
   // Setup history handlers
   setupHistoryHandlers()
+
+  // Setup clipboard handlers
+  setupClipboardHandlers()
 }
 
 let mainWindow: BrowserWindow | null = null
@@ -93,7 +97,7 @@ function createWindow(): void {
     autoHideMenuBar: false,
     backgroundColor: '#ffffff',
     webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
+      preload: join(__dirname, '../preload/index.cjs'),
       sandbox: false,
       contextIsolation: true,
       nodeIntegration: false,
@@ -168,6 +172,9 @@ function createWindow(): void {
 
 // App lifecycle events
 app.whenReady().then(() => {
+  // Set app name (affects menu bar and process list)
+  app.setName('Dev Utils Hub')
+
   // Set app user model id for windows
   if (process.platform === 'win32') {
     app.setAppUserModelId('com.devutils.hub')

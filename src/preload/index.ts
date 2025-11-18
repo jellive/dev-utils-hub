@@ -90,6 +90,16 @@ const api = {
       ipcRenderer.invoke('maintenance:stats'),
     listBackups: (): Promise<Array<{ name: string; path: string; size: number; date: Date }>> =>
       ipcRenderer.invoke('maintenance:list-backups')
+  },
+
+  // Clipboard API
+  clipboard: {
+    readText: (): Promise<string> =>
+      ipcRenderer.invoke('clipboard:read-text'),
+    writeText: (text: string): Promise<boolean> =>
+      ipcRenderer.invoke('clipboard:write-text', text),
+    clear: (): Promise<boolean> =>
+      ipcRenderer.invoke('clipboard:clear')
   }
 }
 

@@ -69,7 +69,7 @@ function createTables(): void {
       output TEXT,
       metadata TEXT,
       favorite INTEGER DEFAULT 0,
-      created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+      created_at INTEGER NOT NULL DEFAULT (CAST(strftime('%s', 'now') AS INTEGER) * 1000)
     )
   `)
 

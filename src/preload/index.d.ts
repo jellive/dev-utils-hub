@@ -50,6 +50,11 @@ declare global {
         stats: () => Promise<MaintenanceStats>
         listBackups: () => Promise<Array<BackupInfo>>
       }
+      clipboard: {
+        readText: () => Promise<string>
+        writeText: (text: string) => Promise<boolean>
+        clear: () => Promise<boolean>
+      }
     }
   }
 }

@@ -33,8 +33,16 @@ export function HistorySidebar({
     error,
     deleteHistory,
     toggleFavorite,
-    clearHistory
+    clearHistory,
+    loadHistory
   } = useHistory({ tool, limit: 50, autoLoad: true })
+
+  // Reload history when sidebar opens
+  useEffect(() => {
+    if (isOpen) {
+      loadHistory(tool, 50)
+    }
+  }, [isOpen, tool, loadHistory])
 
   // Filter and sort history based on search query and favorites filter
   const filteredHistory = useMemo(() => {
@@ -52,7 +60,7 @@ export function HistorySidebar({
     }
 
     // Sort: favorites first, then by timestamp
-    return filtered.sort((a, b) => {
+    const sorted = filtered.sort((a, b) => {
       // Favorites go to top
       if (a.favorite && !b.favorite) return -1
       if (!a.favorite && b.favorite) return 1
@@ -60,6 +68,8 @@ export function HistorySidebar({
       // Then sort by timestamp (newest first)
       return (b.created_at || 0) - (a.created_at || 0)
     })
+
+    return sorted
   }, [history, searchQuery, showFavoritesOnly])
 
   // Memoize event handlers to prevent unnecessary re-renders

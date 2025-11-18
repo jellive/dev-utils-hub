@@ -35,9 +35,12 @@ export function setupHistoryHandlers(): void {
       metadata?: Record<string, any>
     ): number => {
       try {
-        return saveHistory(tool, input, output, metadata)
+        console.log('🟢 [IPC] history:save called with:', { tool, input, output, metadata })
+        const result = saveHistory(tool, input, output, metadata)
+        console.log('🟢 [IPC] history:save result:', result)
+        return result
       } catch (error) {
-        console.error('Failed to save history:', error)
+        console.error('🔴 [IPC] Failed to save history:', error)
         throw error
       }
     }

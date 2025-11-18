@@ -7,40 +7,41 @@ import { Badge } from '@/components/ui/badge';
 import { RefreshCw, Copy, Download, Package, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { useHistoryAutoSave } from '../../hooks/useHistoryAutoSave';
 import { HistorySidebar } from '../history/HistorySidebar';
+import { useClipboard } from '@/hooks/useClipboard';
 import type { HistoryEntry } from '../../../preload/index.d';
 
 export function UUIDGenerator() {
   const { t } = useTranslation();
+  const { copy } = useClipboard();
   const [currentUUID, setCurrentUUID] = useState('');
   const [bulkCount, setBulkCount] = useState('10');
   const [bulkUUIDs, setBulkUUIDs] = useState<string[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
-  const saveToHistory = useHistoryAutoSave({ tool: 'uuid' });
-
-  const generateUUID = () => {
+  const generateUUID = async () => {
     const uuid = crypto.randomUUID();
     setCurrentUUID(uuid);
 
-    // Save to integrated history
+    // Save to integrated history immediately
     const metadata = getUUIDMetadata(uuid);
-    saveToHistory(
-      uuid,
-      uuid,
-      metadata ? { version: metadata.version, variant: metadata.variant } : undefined
-    );
+    try {
+      if (window.api?.history) {
+        await window.api.history.save(
+          'uuid',
+          uuid,
+          uuid,
+          metadata ? { version: metadata.version, variant: metadata.variant } : undefined
+        );
+      }
+    } catch (error) {
+      console.error('Failed to save to history:', error);
+    }
   };
 
   const handleCopy = async (uuid: string) => {
-    try {
-      await navigator.clipboard.writeText(uuid);
-      toast.success(t('common.copied'));
-    } catch (err) {
-      toast.error(t('common.copyFailed'));
-    }
+    await copy(uuid);
   };
 
   const handleHistoryItemClick = (item: HistoryEntry) => {
@@ -64,12 +65,7 @@ export function UUIDGenerator() {
   };
 
   const copyAllBulk = async () => {
-    try {
-      await navigator.clipboard.writeText(bulkUUIDs.join('\n'));
-      toast.success(`${bulkUUIDs.length} UUIDs copied to clipboard!`);
-    } catch (err) {
-      toast.error('Failed to copy UUIDs');
-    }
+    await copy(bulkUUIDs.join('\n'));
   };
 
   const downloadBulk = () => {

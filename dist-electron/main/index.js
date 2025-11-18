@@ -1,4 +1,4 @@
-import { app, ipcMain, shell, dialog, Menu, nativeImage, Tray, globalShortcut, BrowserWindow } from "electron";
+import { app, ipcMain, clipboard, shell, dialog, Menu, nativeImage, Tray, globalShortcut, BrowserWindow } from "electron";
 import { join } from "path";
 import Store from "electron-store";
 import Database from "better-sqlite3";
@@ -176,7 +176,7 @@ function createTables() {
       output TEXT,
       metadata TEXT,
       favorite INTEGER DEFAULT 0,
-      created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+      created_at INTEGER NOT NULL DEFAULT (CAST(strftime('%s', 'now') AS INTEGER) * 1000)
     )
   `);
   db.exec(`
@@ -605,9 +605,12 @@ function setupHistoryHandlers() {
     "history:save",
     (_event, tool, input, output, metadata) => {
       try {
-        return saveHistory(tool, input, output, metadata);
+        console.log("🟢 [IPC] history:save called with:", { tool, input, output, metadata });
+        const result = saveHistory(tool, input, output, metadata);
+        console.log("🟢 [IPC] history:save result:", result);
+        return result;
       } catch (error) {
-        console.error("Failed to save history:", error);
+        console.error("🔴 [IPC] Failed to save history:", error);
         throw error;
       }
     }
@@ -731,6 +734,37 @@ function setupHistoryHandlers() {
     }
   });
   console.log("✓ History IPC handlers registered");
+}
+function setupClipboardHandlers() {
+  ipcMain.handle("clipboard:read-text", () => {
+    try {
+      return clipboard.readText();
+    } catch (error) {
+      console.error("Failed to read clipboard:", error);
+      throw error;
+    }
+  });
+  ipcMain.handle("clipboard:write-text", (_event, text) => {
+    try {
+      clipboard.writeText(text);
+      console.log("✓ Text written to clipboard");
+      return true;
+    } catch (error) {
+      console.error("Failed to write to clipboard:", error);
+      throw error;
+    }
+  });
+  ipcMain.handle("clipboard:clear", () => {
+    try {
+      clipboard.clear();
+      console.log("✓ Clipboard cleared");
+      return true;
+    } catch (error) {
+      console.error("Failed to clear clipboard:", error);
+      throw error;
+    }
+  });
+  console.log("✓ Clipboard IPC handlers registered");
 }
 function createApplicationMenu(mainWindow2) {
   const isMac = process.platform === "darwin";
@@ -1303,6 +1337,7 @@ function setupIpcHandlers() {
   });
   setupSettingsHandlers();
   setupHistoryHandlers();
+  setupClipboardHandlers();
 }
 let mainWindow = null;
 function getWindowBounds() {
@@ -1331,7 +1366,7 @@ function createWindow() {
     autoHideMenuBar: false,
     backgroundColor: "#ffffff",
     webPreferences: {
-      preload: join(__dirname, "../preload/index.js"),
+      preload: join(__dirname, "../preload/index.cjs"),
       sandbox: false,
       contextIsolation: true,
       nodeIntegration: false,
@@ -1381,6 +1416,7 @@ function createWindow() {
   }
 }
 app.whenReady().then(() => {
+  app.setName("Dev Utils Hub");
   if (process.platform === "win32") {
     app.setAppUserModelId("com.devutils.hub");
   }

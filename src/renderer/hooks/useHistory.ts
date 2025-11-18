@@ -57,7 +57,7 @@ export function useHistory(options: UseHistoryOptions = {}): UseHistoryReturn {
           output,
           metadata: metadata ? JSON.stringify(metadata) : undefined,
           favorite: 0,
-          created_at: Math.floor(Date.now() / 1000)
+          created_at: Date.now()
         }
 
         setHistory((prev) => [newEntry, ...prev])
