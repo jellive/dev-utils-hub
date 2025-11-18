@@ -9,8 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Copy, Link2, AlertCircle, CheckCircle2, HelpCircle } from 'lucide-react';
+import { Copy, Link2, AlertCircle, CheckCircle2, HelpCircle, Save, FolderOpen } from 'lucide-react';
 import { toast } from 'sonner';
+import { useFileSystem } from '../../hooks/useFileSystem';
 
 type EncodingMode = 'full' | 'query';
 
@@ -39,6 +40,13 @@ export function URLConverter() {
 
   // Auto-save to history
   const saveToHistory = useHistoryAutoSave({ tool: 'url' });
+
+  // File system hook
+  const { saveFile, openFile, isSaving, isOpening } = useFileSystem({
+    saveSuccessMessage: 'URL 파일이 저장되었습니다',
+    openSuccessMessage: 'URL 파일을 불러왔습니다',
+    errorMessage: '파일 작업 실패'
+  });
 
   // Save to history when output changes
   useEffect(() => {
@@ -170,6 +178,29 @@ export function URLConverter() {
     setIsValidUrl(null);
   };
 
+  const handleSaveToFile = async () => {
+    if (!output) {
+      toast.error('저장할 URL이 없습니다');
+      return;
+    }
+
+    await saveFile(output, `url-${Date.now()}.txt`, [
+      { name: 'Text Files', extensions: ['txt'] },
+      { name: 'All Files', extensions: ['*'] }
+    ]);
+  };
+
+  const handleOpenFile = async () => {
+    const result = await openFile([
+      { name: 'Text Files', extensions: ['txt'] },
+      { name: 'All Files', extensions: ['*'] }
+    ]);
+
+    if (result.success && result.content) {
+      setInput(result.content);
+    }
+  };
+
   const exampleURLs = [
     {
       label: 'Simple URL',
@@ -246,6 +277,24 @@ export function URLConverter() {
                 <Button onClick={handleClear} variant="outline">
                   {t('common.clear')}
                 </Button>
+                <Button
+                  onClick={handleSaveToFile}
+                  variant="outline"
+                  disabled={isSaving || !output}
+                  className="gap-2"
+                >
+                  <Save className="h-4 w-4" />
+                  {t('tools.url.save')}
+                </Button>
+                <Button
+                  onClick={handleOpenFile}
+                  variant="outline"
+                  disabled={isOpening}
+                  className="gap-2"
+                >
+                  <FolderOpen className="h-4 w-4" />
+                  {t('tools.url.open')}
+                </Button>
               </div>
 
               {/* Examples */}
@@ -320,6 +369,24 @@ export function URLConverter() {
                 </Button>
                 <Button onClick={handleClear} variant="outline">
                   {t('common.clear')}
+                </Button>
+                <Button
+                  onClick={handleSaveToFile}
+                  variant="outline"
+                  disabled={isSaving || !output}
+                  className="gap-2"
+                >
+                  <Save className="h-4 w-4" />
+                  {t('tools.url.save')}
+                </Button>
+                <Button
+                  onClick={handleOpenFile}
+                  variant="outline"
+                  disabled={isOpening}
+                  className="gap-2"
+                >
+                  <FolderOpen className="h-4 w-4" />
+                  {t('tools.url.open')}
                 </Button>
               </div>
             </CardContent>

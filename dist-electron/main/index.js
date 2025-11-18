@@ -1,8 +1,8 @@
-import { app, ipcMain, clipboard, shell, dialog, Menu, nativeImage, Tray, globalShortcut, BrowserWindow } from "electron";
-import { join } from "path";
+import { app, ipcMain, clipboard, BrowserWindow, dialog, shell, Menu, nativeImage, Tray, globalShortcut } from "electron";
+import path, { join } from "path";
 import Store from "electron-store";
 import Database from "better-sqlite3";
-import { existsSync, mkdirSync, readdirSync, statSync, unlinkSync, copyFileSync } from "fs";
+import { existsSync, mkdirSync, readdirSync, statSync, unlinkSync, copyFileSync, promises } from "fs";
 import electronLocalShortcut from "electron-localshortcut";
 import __cjs_mod__ from "node:module";
 const __filename = import.meta.filename;
@@ -766,6 +766,156 @@ function setupClipboardHandlers() {
   });
   console.log("✓ Clipboard IPC handlers registered");
 }
+const FILE_FILTERS = [
+  { name: "JSON Files", extensions: ["json"] },
+  { name: "Text Files", extensions: ["txt"] },
+  { name: "XML Files", extensions: ["xml"] },
+  { name: "CSV Files", extensions: ["csv"] },
+  { name: "All Files", extensions: ["*"] }
+];
+function mapErrorToFileErrorCode(error) {
+  const code = error?.code || error?.errno;
+  if (code === "EACCES" || code === "EPERM") {
+    return "PERMISSION_DENIED";
+  }
+  if (code === "ENOSPC") {
+    return "DISK_FULL";
+  }
+  if (code === "ENOENT") {
+    return "FILE_NOT_FOUND";
+  }
+  if (code === "EINVAL") {
+    return "INVALID_PATH";
+  }
+  return "UNKNOWN_ERROR";
+}
+function createErrorMessage(code, filePath) {
+  switch (code) {
+    case "CANCELLED":
+      return "파일 선택이 취소되었습니다";
+    case "PERMISSION_DENIED":
+      return `파일에 대한 접근 권한이 없습니다${filePath ? `: ${filePath}` : ""}`;
+    case "DISK_FULL":
+      return "디스크 공간이 부족합니다";
+    case "FILE_NOT_FOUND":
+      return `파일을 찾을 수 없습니다${filePath ? `: ${filePath}` : ""}`;
+    case "INVALID_PATH":
+      return "잘못된 파일 경로입니다";
+    default:
+      return "파일 작업 중 오류가 발생했습니다";
+  }
+}
+function setupFileHandlers() {
+  ipcMain.handle(
+    "file:save",
+    async (_event, content, defaultFileName, filters) => {
+      try {
+        const focusedWindow = BrowserWindow.getFocusedWindow();
+        const result = await dialog.showSaveDialog(focusedWindow, {
+          title: "파일 저장",
+          defaultPath: defaultFileName || "untitled.txt",
+          filters: filters || FILE_FILTERS,
+          properties: ["createDirectory", "showOverwriteConfirmation"]
+        });
+        if (result.canceled || !result.filePath) {
+          return {
+            success: false,
+            error: {
+              code: "CANCELLED",
+              message: createErrorMessage(
+                "CANCELLED"
+                /* CANCELLED */
+              )
+            }
+          };
+        }
+        const filePath = result.filePath;
+        if (!path.isAbsolute(filePath)) {
+          return {
+            success: false,
+            error: {
+              code: "INVALID_PATH",
+              message: createErrorMessage("INVALID_PATH", filePath)
+            }
+          };
+        }
+        await promises.writeFile(filePath, content, "utf-8");
+        console.log(`✓ File saved successfully: ${filePath}`);
+        return {
+          success: true,
+          filePath
+        };
+      } catch (error) {
+        const errorCode = mapErrorToFileErrorCode(error);
+        const errorMessage = createErrorMessage(errorCode);
+        console.error("Failed to save file:", error);
+        return {
+          success: false,
+          error: {
+            code: errorCode,
+            message: errorMessage,
+            originalError: error
+          }
+        };
+      }
+    }
+  );
+  ipcMain.handle(
+    "file:open",
+    async (_event, filters) => {
+      try {
+        const focusedWindow = BrowserWindow.getFocusedWindow();
+        const result = await dialog.showOpenDialog(focusedWindow, {
+          title: "파일 열기",
+          filters: filters || FILE_FILTERS,
+          properties: ["openFile"]
+        });
+        if (result.canceled || result.filePaths.length === 0) {
+          return {
+            success: false,
+            error: {
+              code: "CANCELLED",
+              message: createErrorMessage(
+                "CANCELLED"
+                /* CANCELLED */
+              )
+            }
+          };
+        }
+        const filePath = result.filePaths[0];
+        if (!path.isAbsolute(filePath)) {
+          return {
+            success: false,
+            error: {
+              code: "INVALID_PATH",
+              message: createErrorMessage("INVALID_PATH", filePath)
+            }
+          };
+        }
+        const content = await promises.readFile(filePath, "utf-8");
+        console.log(`✓ File opened successfully: ${filePath}`);
+        return {
+          success: true,
+          content,
+          filePath
+        };
+      } catch (error) {
+        const errorCode = mapErrorToFileErrorCode(error);
+        const errorMessage = createErrorMessage(errorCode);
+        console.error("Failed to open file:", error);
+        return {
+          success: false,
+          error: {
+            code: errorCode,
+            message: errorMessage,
+            originalError: error
+          }
+        };
+      }
+    }
+  );
+  console.log("✓ File IPC handlers registered");
+}
 function createApplicationMenu(mainWindow2) {
   const isMac = process.platform === "darwin";
   const template = [
@@ -1338,6 +1488,7 @@ function setupIpcHandlers() {
   setupSettingsHandlers();
   setupHistoryHandlers();
   setupClipboardHandlers();
+  setupFileHandlers();
 }
 let mainWindow = null;
 function getWindowBounds() {

@@ -213,7 +213,9 @@
       "download": "Download",
       "close": "Close",
       "clearHistory": "Clear",
-      "noHistory": "No UUIDs generated yet"
+      "noHistory": "No UUIDs generated yet",
+      "save": "Save",
+      "open": "Open"
     },
     "timestamp": {
       "name": "Timestamp Converter",

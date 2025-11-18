@@ -13,9 +13,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowUp, ArrowDown, Send } from 'lucide-react';
+import { ArrowUp, ArrowDown, Send, Save, FolderOpen } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { useFileSystem } from '../../hooks/useFileSystem';
 import {
   setCurrentFeature,
   addInteractionBreadcrumb,
@@ -35,6 +36,13 @@ export function Base64Converter() {
   const [activeTab, setActiveTab] = useState('encode');
   const [urlSafe, setUrlSafe] = useState(false);
   const [encoding, setEncoding] = useState('utf-8');
+
+  // File system hook
+  const { saveFile, openFile, isSaving, isOpening } = useFileSystem({
+    saveSuccessMessage: 'Base64 파일이 저장되었습니다',
+    openSuccessMessage: 'Base64 파일을 불러왔습니다',
+    errorMessage: '파일 작업 실패'
+  });
 
   // Auto-save to history
   const saveToHistory = useHistoryAutoSave({ tool: 'base64' });
@@ -265,6 +273,30 @@ export function Base64Converter() {
     e.preventDefault();
   };
 
+  const handleSaveToFile = async () => {
+    if (!output) {
+      toast.error('저장할 데이터가 없습니다');
+      return;
+    }
+
+    const extension = activeTab === 'encode' ? 'b64' : 'txt';
+    await saveFile(output, `base64-${activeTab}-${Date.now()}.${extension}`, [
+      { name: activeTab === 'encode' ? 'Base64 Files' : 'Text Files', extensions: [extension] },
+      { name: 'All Files', extensions: ['*'] }
+    ]);
+  };
+
+  const handleOpenFile = async () => {
+    const result = await openFile([
+      { name: 'Text Files', extensions: ['txt', 'b64'] },
+      { name: 'All Files', extensions: ['*'] }
+    ]);
+
+    if (result.success && result.content) {
+      setInput(result.content);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('tools.base64.title')}</h2>
@@ -358,6 +390,24 @@ export function Base64Converter() {
                 Send to API Tester
               </Button>
             )}
+            <Button
+              onClick={handleSaveToFile}
+              variant="outline"
+              disabled={isSaving || !output}
+              className="gap-2"
+            >
+              <Save className="h-4 w-4" />
+              {t('tools.base64.save')}
+            </Button>
+            <Button
+              onClick={handleOpenFile}
+              variant="outline"
+              disabled={isOpening}
+              className="gap-2"
+            >
+              <FolderOpen className="h-4 w-4" />
+              {t('tools.base64.open')}
+            </Button>
           </div>
         </TabsContent>
 
@@ -407,6 +457,24 @@ export function Base64Converter() {
                 Send to API Tester
               </Button>
             )}
+            <Button
+              onClick={handleSaveToFile}
+              variant="outline"
+              disabled={isSaving || !output}
+              className="gap-2"
+            >
+              <Save className="h-4 w-4" />
+              {t('tools.base64.save')}
+            </Button>
+            <Button
+              onClick={handleOpenFile}
+              variant="outline"
+              disabled={isOpening}
+              className="gap-2"
+            >
+              <FolderOpen className="h-4 w-4" />
+              {t('tools.base64.open')}
+            </Button>
           </div>
         </TabsContent>
       </Tabs>

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertCircle, Copy, Check, Send } from 'lucide-react';
+import { AlertCircle, Copy, Check, Send, Save, FolderOpen } from 'lucide-react';
 import { useHistoryAutoSave } from '../../hooks/useHistoryAutoSave';
+import { useFileSystem } from '../../hooks/useFileSystem';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
@@ -33,6 +34,13 @@ export function JsonFormatter() {
   const [indentLevel, setIndentLevel] = useState('2');
   const [isValid, setIsValid] = useState<boolean | null>(null);
   const [copied, setCopied] = useState(false);
+
+  // File system hook
+  const { saveFile, openFile, isSaving, isOpening } = useFileSystem({
+    saveSuccessMessage: 'JSON 파일이 저장되었습니다',
+    openSuccessMessage: 'JSON 파일을 불러왔습니다',
+    errorMessage: '파일 작업 실패'
+  });
 
   // Auto-save to history
   const saveToHistory = useHistoryAutoSave({ tool: 'json' });
@@ -119,6 +127,41 @@ export function JsonFormatter() {
       },
     });
     toast.success('JSON sent to API Tester');
+  };
+
+  const handleSaveToFile = async () => {
+    if (!output) {
+      toast.error('저장할 JSON이 없습니다');
+      return;
+    }
+
+    await saveFile(output, `json-${Date.now()}.json`, [
+      { name: 'JSON Files', extensions: ['json'] },
+      { name: 'All Files', extensions: ['*'] }
+    ]);
+  };
+
+  const handleOpenFile = async () => {
+    const result = await openFile([
+      { name: 'JSON Files', extensions: ['json'] },
+      { name: 'All Files', extensions: ['*'] }
+    ]);
+
+    if (result.success && result.content) {
+      setInput(result.content);
+      // Auto-format the loaded JSON
+      try {
+        const parsed = JSON.parse(result.content);
+        const formatted = JSON.stringify(parsed, null, parseInt(indentLevel));
+        setOutput(formatted);
+        setIsValid(true);
+        setError('');
+      } catch (err) {
+        setError('Invalid JSON in file: ' + (err as Error).message);
+        setOutput('');
+        setIsValid(false);
+      }
+    }
   };
 
   return (
@@ -263,6 +306,38 @@ export function JsonFormatter() {
                   </TooltipContent>
                 </Tooltip>
               )}
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={handleSaveToFile}
+                    variant="outline"
+                    disabled={isSaving || !output}
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    {t('tools.json.save')}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent role="tooltip">
+                  <p>Save JSON to file</p>
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={handleOpenFile}
+                    variant="outline"
+                    disabled={isOpening}
+                  >
+                    <FolderOpen className="h-4 w-4 mr-2" />
+                    {t('tools.json.open')}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent role="tooltip">
+                  <p>Open JSON from file</p>
+                </TooltipContent>
+              </Tooltip>
             </TooltipProvider>
           </div>
         </div>

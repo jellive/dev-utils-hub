@@ -212,7 +212,9 @@
       "download": "다운로드",
       "close": "닫기",
       "clearHistory": "지우기",
-      "noHistory": "아직 생성된 UUID가 없습니다"
+      "noHistory": "아직 생성된 UUID가 없습니다",
+      "save": "저장",
+      "open": "열기"
     },
     "timestamp": {
       "name": "타임스탬프 변환기",

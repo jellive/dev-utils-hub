@@ -23,7 +23,9 @@
       "error": "Error",
       "stats": "Stats",
       "size": "Size",
-      "lines": "Lines"
+      "lines": "Lines",
+      "save": "Save",
+      "open": "Open"
     },
     "jwt": {
       "name": "JWT Decoder",
@@ -42,7 +44,9 @@
       "audience": "Audience",
       "expiresAt": "Expires At",
       "issuedAt": "Issued At",
-      "notBefore": "Not Before"
+      "notBefore": "Not Before",
+      "save": "Save",
+      "open": "Open"
     },
     "base64": {
       "name": "Base64 Converter",
@@ -56,7 +60,9 @@
       "decodeTab": "Decode",
       "options": "Options",
       "urlSafe": "URL Safe",
-      "removeLineBreaks": "Remove Line Breaks"
+      "removeLineBreaks": "Remove Line Breaks",
+      "save": "Save",
+      "open": "Open"
     },
     "url": {
       "name": "URL Encoder/Decoder",
@@ -81,7 +87,9 @@
       "fullUrl": "Full URL",
       "queryOnly": "Query Parameters Only",
       "exampleUrls": "Example URLs",
-      "invalidUrl": "Invalid URL format"
+      "invalidUrl": "Invalid URL format",
+      "save": "Save",
+      "open": "Open"
     },
     "regex": {
       "name": "Regex Tester",
@@ -121,7 +129,9 @@
       "quickReference": "Quick Reference",
       "matchesFound": "{{count}} matches found",
       "captureGroupsCount": "{{count}} capture groups",
-      "noCaptures": "No Captures"
+      "noCaptures": "No Captures",
+      "save": "Save",
+      "open": "Open"
     },
     "diff": {
       "name": "Text Diff",
@@ -213,7 +223,9 @@
       "download": "Download",
       "close": "Close",
       "clearHistory": "Clear",
-      "noHistory": "No UUIDs generated yet"
+      "noHistory": "No UUIDs generated yet",
+      "save": "Save",
+      "open": "Open"
     },
     "timestamp": {
       "name": "Timestamp Converter",

@@ -1,5 +1,4 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import { electronAPI } from '@electron-toolkit/preload'
 
 // Platform information interface
 interface PlatformInfo {
@@ -100,6 +99,14 @@ const api = {
       ipcRenderer.invoke('clipboard:write-text', text),
     clear: (): Promise<boolean> =>
       ipcRenderer.invoke('clipboard:clear')
+  },
+
+  // File System API
+  file: {
+    save: (content: string, defaultFileName?: string, filters?: any): Promise<any> =>
+      ipcRenderer.invoke('file:save', content, defaultFileName, filters),
+    open: (filters?: any): Promise<any> =>
+      ipcRenderer.invoke('file:open', filters)
   }
 }
 
@@ -108,14 +115,11 @@ const api = {
 // just add to the DOM global.
 if (process.contextIsolated) {
   try {
-    contextBridge.exposeInMainWorld('electron', electronAPI)
     contextBridge.exposeInMainWorld('api', api)
   } catch (error) {
     console.error(error)
   }
 } else {
-  // @ts-ignore (define in dts)
-  window.electron = electronAPI
   // @ts-ignore (define in dts)
   window.api = api
 }

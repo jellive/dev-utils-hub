@@ -4,16 +4,22 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { RefreshCw, Copy, Download, Package, Clock } from 'lucide-react';
+import { RefreshCw, Copy, Download, Package, Clock, Save, FolderOpen } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { HistorySidebar } from '../history/HistorySidebar';
-import { useClipboard } from '@/hooks/useClipboard';
+import { useClipboard } from '../../hooks/useClipboard';
+import { useFileSystem } from '../../hooks/useFileSystem';
 import type { HistoryEntry } from '../../../preload/index.d';
 
 export function UUIDGenerator() {
   const { t } = useTranslation();
   const { copy } = useClipboard();
+  const { saveFile, openFile, isSaving, isOpening } = useFileSystem({
+    saveSuccessMessage: '파일이 저장되었습니다',
+    openSuccessMessage: '파일을 불러왔습니다',
+    errorMessage: '파일 작업 실패'
+  });
   const [currentUUID, setCurrentUUID] = useState('');
   const [bulkCount, setBulkCount] = useState('10');
   const [bulkUUIDs, setBulkUUIDs] = useState<string[]>([]);
@@ -104,6 +110,94 @@ export function UUIDGenerator() {
     };
   };
 
+  // Save history to file
+  const handleSaveToFile = async () => {
+    try {
+      if (!window.api?.history) {
+        toast.error('파일 저장 기능을 사용할 수 없습니다');
+        return;
+      }
+
+      // Get history from electron-store
+      const history = await window.api.history.get('uuid', 100);
+
+      if (history.length === 0) {
+        toast.error('저장할 히스토리가 없습니다');
+        return;
+      }
+
+      // Format history as text (one UUID per line)
+      const content = history.map(entry => entry.input).join('\n');
+
+      // Save to file
+      await saveFile(content, `uuids-${Date.now()}.txt`, [
+        { name: 'Text Files', extensions: ['txt'] },
+        { name: 'All Files', extensions: ['*'] }
+      ]);
+    } catch (error) {
+      console.error('Failed to save history to file:', error);
+      toast.error('파일 저장에 실패했습니다');
+    }
+  };
+
+  // Open file and load UUIDs
+  const handleOpenFile = async () => {
+    try {
+      const result = await openFile([
+        { name: 'Text Files', extensions: ['txt'] },
+        { name: 'All Files', extensions: ['*'] }
+      ]);
+
+      if (!result.success || !result.content) {
+        return;
+      }
+
+      if (!window.api?.history) {
+        toast.error('히스토리 저장 기능을 사용할 수 없습니다');
+        return;
+      }
+
+      // Parse UUIDs from file (one per line, skip empty lines)
+      const uuids = result.content
+        .split('\n')
+        .map((line: string) => line.trim())
+        .filter((line: string) => line.length > 0);
+
+      if (uuids.length === 0) {
+        toast.error('파일에 유효한 UUID가 없습니다');
+        return;
+      }
+
+      // Save each UUID to history
+      let savedCount = 0;
+      for (const uuid of uuids) {
+        // Basic UUID format validation
+        if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uuid)) {
+          const metadata = getUUIDMetadata(uuid);
+          await window.api.history.save(
+            'uuid',
+            uuid,
+            uuid,
+            metadata ? { version: metadata.version, variant: metadata.variant } : undefined
+          );
+          savedCount++;
+        }
+      }
+
+      toast.success(`${savedCount}개의 UUID를 불러왔습니다`);
+
+      // Set the first valid UUID as current
+      if (savedCount > 0) {
+        setCurrentUUID(uuids.find((uuid: string) =>
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uuid)
+        ) || '');
+      }
+    } catch (error) {
+      console.error('Failed to open file:', error);
+      toast.error('파일 열기에 실패했습니다');
+    }
+  };
+
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('tools.uuid.title')}</h2>
@@ -127,6 +221,28 @@ export function UUIDGenerator() {
         >
           <Clock className="h-5 w-5" />
           {t('tools.uuid.history')}
+        </Button>
+
+        <Button
+          onClick={handleSaveToFile}
+          variant="outline"
+          size="lg"
+          className="gap-2"
+          disabled={isSaving}
+        >
+          <Save className="h-5 w-5" />
+          {t('tools.uuid.save')}
+        </Button>
+
+        <Button
+          onClick={handleOpenFile}
+          variant="outline"
+          size="lg"
+          className="gap-2"
+          disabled={isOpening}
+        >
+          <FolderOpen className="h-5 w-5" />
+          {t('tools.uuid.open')}
         </Button>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

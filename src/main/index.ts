@@ -5,6 +5,7 @@ import Store from 'electron-store'
 import { setupSettingsHandlers } from './ipc/settings'
 import { setupHistoryHandlers } from './ipc/history'
 import { setupClipboardHandlers } from './ipc/clipboard'
+import { setupFileHandlers } from './ipc/file'
 import { createApplicationMenu } from './menu'
 import { createTray, handleWindowClose, destroyTray } from './tray'
 import {
@@ -53,6 +54,9 @@ function setupIpcHandlers(): void {
 
   // Setup clipboard handlers
   setupClipboardHandlers()
+
+  // Setup file handlers
+  setupFileHandlers()
 }
 
 let mainWindow: BrowserWindow | null = null

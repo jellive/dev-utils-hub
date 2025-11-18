@@ -8,8 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
-import { Copy, AlertTriangle, CheckCircle2, Shield, Send } from 'lucide-react';
+import { Copy, AlertTriangle, CheckCircle2, Shield, Send, Save, FolderOpen } from 'lucide-react';
 import { toast } from 'sonner';
+import { useFileSystem } from '../../hooks/useFileSystem';
 
 interface DecodedJWT {
   header: string;
@@ -34,6 +35,13 @@ export function JwtDecoder() {
 
   // Auto-save to history
   const saveToHistory = useHistoryAutoSave({ tool: 'jwt' });
+
+  // File system hook
+  const { saveFile, openFile, isSaving, isOpening } = useFileSystem({
+    saveSuccessMessage: 'JWT 파일이 저장되었습니다',
+    openSuccessMessage: 'JWT 파일을 불러왔습니다',
+    errorMessage: '파일 작업 실패'
+  });
 
   // Save to history when decoded output changes
   useEffect(() => {
@@ -125,6 +133,29 @@ export function JwtDecoder() {
     toast.success('JWT token sent to API Tester');
   };
 
+  const handleSaveToFile = async () => {
+    if (!input.trim()) {
+      toast.error('저장할 JWT 토큰이 없습니다');
+      return;
+    }
+
+    await saveFile(input.trim(), `jwt-${Date.now()}.txt`, [
+      { name: 'Text Files', extensions: ['txt'] },
+      { name: 'All Files', extensions: ['*'] }
+    ]);
+  };
+
+  const handleOpenFile = async () => {
+    const result = await openFile([
+      { name: 'Text Files', extensions: ['txt'] },
+      { name: 'All Files', extensions: ['*'] }
+    ]);
+
+    if (result.success && result.content) {
+      setInput(result.content);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Input Section */}
@@ -157,6 +188,22 @@ export function JwtDecoder() {
                 Send to API Tester
               </Button>
             )}
+            <Button
+              onClick={handleSaveToFile}
+              variant="outline"
+              disabled={isSaving || !input.trim()}
+            >
+              <Save className="mr-2 h-4 w-4" />
+              {t('tools.jwt.save')}
+            </Button>
+            <Button
+              onClick={handleOpenFile}
+              variant="outline"
+              disabled={isOpening}
+            >
+              <FolderOpen className="mr-2 h-4 w-4" />
+              {t('tools.jwt.open')}
+            </Button>
           </div>
         </CardContent>
       </Card>

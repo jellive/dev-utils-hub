@@ -7,9 +7,10 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { AlertCircle, Upload, X, HelpCircle, Check, X as XCircle, Send } from 'lucide-react';
+import { AlertCircle, Upload, X, HelpCircle, Check, X as XCircle, Send, Save, FolderOpen } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { useFileSystem } from '../../hooks/useFileSystem';
 
 type HashAlgorithm = 'md5' | 'sha256' | 'sha512';
 
@@ -36,6 +37,13 @@ export function HashGenerator() {
 
   // Auto-save to history
   const saveToHistory = useHistoryAutoSave({ tool: 'hash' });
+
+  // File system hook
+  const { saveFile, openFile, isSaving, isOpening } = useFileSystem({
+    saveSuccessMessage: '해시 파일이 저장되었습니다',
+    openSuccessMessage: '해시 파일을 불러왔습니다',
+    errorMessage: '파일 작업 실패'
+  });
 
   // Save to history when hash result changes
   useEffect(() => {
@@ -188,6 +196,46 @@ export function HashGenerator() {
       },
     });
     toast.success('Hash sent to API Tester');
+  };
+
+  const handleSaveToFile = async () => {
+    if (!hashResult) {
+      toast.error('저장할 해시값이 없습니다');
+      return;
+    }
+
+    const data = JSON.stringify({
+      input,
+      algorithm,
+      isHmacMode,
+      hmacKey: isHmacMode ? hmacKey : undefined,
+      hashResult
+    }, null, 2);
+
+    await saveFile(data, `hash-${algorithm}-${Date.now()}.json`, [
+      { name: 'JSON Files', extensions: ['json'] },
+      { name: 'All Files', extensions: ['*'] }
+    ]);
+  };
+
+  const handleOpenFile = async () => {
+    const result = await openFile([
+      { name: 'JSON Files', extensions: ['json'] },
+      { name: 'All Files', extensions: ['*'] }
+    ]);
+
+    if (result.success && result.content) {
+      try {
+        const data = JSON.parse(result.content);
+        if (data.input) setInput(data.input);
+        if (data.algorithm) setAlgorithm(data.algorithm);
+        if (data.isHmacMode !== undefined) setIsHmacMode(data.isHmacMode);
+        if (data.hmacKey) setHmacKey(data.hmacKey);
+        if (data.hashResult) setHashResult(data.hashResult);
+      } catch (err) {
+        toast.error('JSON 파일 파싱 실패');
+      }
+    }
   };
 
   return (
@@ -391,6 +439,24 @@ export function HashGenerator() {
         >
           Clear
         </button>
+        <Button
+          onClick={handleSaveToFile}
+          variant="outline"
+          disabled={isSaving || !hashResult}
+          className="gap-2"
+        >
+          <Save className="h-4 w-4" />
+          {t('common.save')}
+        </Button>
+        <Button
+          onClick={handleOpenFile}
+          variant="outline"
+          disabled={isOpening}
+          className="gap-2"
+        >
+          <FolderOpen className="h-4 w-4" />
+          {t('common.open')}
+        </Button>
       </div>
 
       {/* Processing Indicator */}

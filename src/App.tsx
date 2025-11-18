@@ -1,5 +1,5 @@
 import { RouterProvider } from 'react-router-dom';
-import { router } from './router';
+import { router } from './renderer/router';
 import { ErrorTrigger } from './components/ErrorTrigger';
 import './i18n/config';
 

@@ -7,9 +7,10 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { FileDiff, Copy } from 'lucide-react';
+import { FileDiff, Copy, Save, FolderOpen } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { useFileSystem } from '../../hooks/useFileSystem';
 import { diffLines } from '../../utils/diffAlgorithm';
 import type { DiffResult } from '../../utils/diffAlgorithm';
 
@@ -28,6 +29,13 @@ export function TextDiff() {
 
   // Auto-save to history
   const saveToHistory = useHistoryAutoSave({ tool: 'diff' });
+
+  // File system hook
+  const { saveFile, openFile, isSaving, isOpening } = useFileSystem({
+    saveSuccessMessage: 'Diff 파일이 저장되었습니다',
+    openSuccessMessage: 'Diff 파일을 불러왔습니다',
+    errorMessage: '파일 작업 실패'
+  });
 
   // Save to history when diff results change
   useEffect(() => {
@@ -76,6 +84,43 @@ export function TextDiff() {
       toast.success(t('common.copied'));
     } catch (err) {
       toast.error(t('common.copyFailed'));
+    }
+  };
+
+  const handleSaveToFile = async () => {
+    if (!originalText && !modifiedText) {
+      toast.error('저장할 텍스트가 없습니다');
+      return;
+    }
+    const data = JSON.stringify({
+      originalText,
+      modifiedText,
+      ignoreWhitespace,
+      viewMode
+    }, null, 2);
+    await saveFile(data, `diff-${Date.now()}.json`, [
+      { name: 'JSON Files', extensions: ['json'] },
+      { name: 'All Files', extensions: ['*'] }
+    ]);
+  };
+
+  const handleOpenFile = async () => {
+    const result = await openFile([
+      { name: 'JSON Files', extensions: ['json'] },
+      { name: 'All Files', extensions: ['*'] }
+    ]);
+    if (result.success && result.content) {
+      try {
+        const data = JSON.parse(result.content);
+        if (data.originalText !== undefined) setOriginalText(data.originalText);
+        if (data.modifiedText !== undefined) setModifiedText(data.modifiedText);
+        if (data.ignoreWhitespace !== undefined) setIgnoreWhitespace(data.ignoreWhitespace);
+        if (data.viewMode) setViewMode(data.viewMode);
+        setHasCompared(false);
+        setDiffResults([]);
+      } catch (err) {
+        toast.error('JSON 파일 파싱 실패');
+      }
     }
   };
 
@@ -215,6 +260,24 @@ export function TextDiff() {
               </Button>
               <Button onClick={handleClear} variant="outline">
                 {t('common.clear')}
+              </Button>
+              <Button
+                onClick={handleSaveToFile}
+                disabled={isSaving || (!originalText && !modifiedText)}
+                variant="outline"
+                className="gap-2"
+              >
+                <Save className="h-4 w-4" />
+                {t('common.save')}
+              </Button>
+              <Button
+                onClick={handleOpenFile}
+                disabled={isOpening}
+                variant="outline"
+                className="gap-2"
+              >
+                <FolderOpen className="h-4 w-4" />
+                {t('common.open')}
               </Button>
             </div>
           </div>

@@ -1,5 +1,3 @@
-import { ElectronAPI } from '@electron-toolkit/preload'
-
 interface PlatformInfo {
   platform: NodeJS.Platform
   arch: string
@@ -9,7 +7,6 @@ interface PlatformInfo {
 
 declare global {
   interface Window {
-    electron: ElectronAPI
     api: {
       ping: () => Promise<string>
       getAppVersion: () => Promise<string>
@@ -55,8 +52,45 @@ declare global {
         writeText: (text: string) => Promise<boolean>
         clear: () => Promise<boolean>
       }
+      file: {
+        save: (content: string, defaultFileName?: string, filters?: FileFilter[]) => Promise<SaveFileResult>
+        open: (filters?: FileFilter[]) => Promise<OpenFileResult>
+      }
     }
   }
+}
+
+export interface FileFilter {
+  name: string
+  extensions: string[]
+}
+
+export enum FileErrorCode {
+  CANCELLED = 'CANCELLED',
+  PERMISSION_DENIED = 'PERMISSION_DENIED',
+  DISK_FULL = 'DISK_FULL',
+  FILE_NOT_FOUND = 'FILE_NOT_FOUND',
+  INVALID_PATH = 'INVALID_PATH',
+  UNKNOWN_ERROR = 'UNKNOWN_ERROR'
+}
+
+export interface FileError {
+  code: FileErrorCode
+  message: string
+  originalError?: Error
+}
+
+export interface SaveFileResult {
+  success: boolean
+  filePath?: string
+  error?: FileError
+}
+
+export interface OpenFileResult {
+  success: boolean
+  content?: string
+  filePath?: string
+  error?: FileError
 }
 
 export interface BackupInfo {

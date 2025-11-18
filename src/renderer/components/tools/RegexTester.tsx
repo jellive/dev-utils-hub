@@ -9,9 +9,10 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Search, AlertCircle, HelpCircle, BookOpen, Copy } from 'lucide-react';
+import { Search, AlertCircle, HelpCircle, BookOpen, Copy, Save, FolderOpen } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { useFileSystem } from '../../hooks/useFileSystem';
 
 interface Match {
   text: string;
@@ -92,6 +93,13 @@ export function RegexTester() {
   // Auto-save to history
   const saveToHistory = useHistoryAutoSave({ tool: 'regex' });
 
+  // File system hook
+  const { saveFile, openFile, isSaving, isOpening } = useFileSystem({
+    saveSuccessMessage: '정규식 파일이 저장되었습니다',
+    openSuccessMessage: '정규식 파일을 불러왔습니다',
+    errorMessage: '파일 작업 실패'
+  });
+
   // Save to history when matches change
   useEffect(() => {
     if (matches.length > 0 && !error) {
@@ -156,6 +164,37 @@ export function RegexTester() {
     setFlags({ g: false, i: false, m: false });
     setMatches([]);
     setError('');
+  };
+
+  const handleSaveToFile = async () => {
+    if (!pattern) {
+      toast.error('저장할 정규식 패턴이 없습니다');
+      return;
+    }
+
+    const data = JSON.stringify({ pattern, testString, flags }, null, 2);
+    await saveFile(data, `regex-${Date.now()}.json`, [
+      { name: 'JSON Files', extensions: ['json'] },
+      { name: 'All Files', extensions: ['*'] }
+    ]);
+  };
+
+  const handleOpenFile = async () => {
+    const result = await openFile([
+      { name: 'JSON Files', extensions: ['json'] },
+      { name: 'All Files', extensions: ['*'] }
+    ]);
+
+    if (result.success && result.content) {
+      try {
+        const data = JSON.parse(result.content);
+        if (data.pattern) setPattern(data.pattern);
+        if (data.testString) setTestString(data.testString);
+        if (data.flags) setFlags(data.flags);
+      } catch (err) {
+        toast.error('JSON 파일 파싱 실패');
+      }
+    }
   };
 
   const toggleFlag = (flag: 'g' | 'i' | 'm') => {
@@ -389,6 +428,24 @@ export function RegexTester() {
             </Button>
             <Button onClick={handleClear} variant="outline">
               {t('tools.regex.clearAll')}
+            </Button>
+            <Button
+              onClick={handleSaveToFile}
+              variant="outline"
+              disabled={isSaving || !pattern}
+              className="gap-2"
+            >
+              <Save className="h-4 w-4" />
+              {t('tools.regex.save')}
+            </Button>
+            <Button
+              onClick={handleOpenFile}
+              variant="outline"
+              disabled={isOpening}
+              className="gap-2"
+            >
+              <FolderOpen className="h-4 w-4" />
+              {t('tools.regex.open')}
             </Button>
           </div>
         </CardContent>

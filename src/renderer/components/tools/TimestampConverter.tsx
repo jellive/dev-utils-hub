@@ -6,9 +6,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Clock, Copy } from 'lucide-react';
+import { Clock, Copy, Save, FolderOpen } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { useFileSystem } from '../../hooks/useFileSystem';
 
 type TimestampUnit = 'seconds' | 'milliseconds';
 
@@ -33,6 +34,13 @@ export function TimestampConverter() {
 
   // Auto-save to history
   const saveToHistory = useHistoryAutoSave({ tool: 'timestamp' });
+
+  // File system hook
+  const { saveFile, openFile, isSaving, isOpening } = useFileSystem({
+    saveSuccessMessage: '타임스탬프 파일이 저장되었습니다',
+    openSuccessMessage: '타임스탬프 파일을 불러왔습니다',
+    errorMessage: '파일 작업 실패'
+  });
 
   // Update current time every second
   useEffect(() => {
@@ -68,6 +76,41 @@ export function TimestampConverter() {
       toast.success(t('common.copied'));
     } catch (err) {
       toast.error(t('common.copyFailed'));
+    }
+  };
+
+  const handleSaveToFile = async () => {
+    if (!timestamp) {
+      toast.error('저장할 타임스탬프가 없습니다');
+      return;
+    }
+    const data = JSON.stringify({
+      timestamp,
+      unit,
+      timezone,
+      selectedDate: selectedDate?.toISOString()
+    }, null, 2);
+    await saveFile(data, `timestamp-${Date.now()}.json`, [
+      { name: 'JSON Files', extensions: ['json'] },
+      { name: 'All Files', extensions: ['*'] }
+    ]);
+  };
+
+  const handleOpenFile = async () => {
+    const result = await openFile([
+      { name: 'JSON Files', extensions: ['json'] },
+      { name: 'All Files', extensions: ['*'] }
+    ]);
+    if (result.success && result.content) {
+      try {
+        const data = JSON.parse(result.content);
+        if (data.timestamp) setTimestamp(data.timestamp);
+        if (data.unit) setUnit(data.unit);
+        if (data.timezone) setTimezone(data.timezone);
+        if (data.selectedDate) setSelectedDate(new Date(data.selectedDate));
+      } catch (err) {
+        toast.error('JSON 파일 파싱 실패');
+      }
     }
   };
 
@@ -137,6 +180,24 @@ export function TimestampConverter() {
                 <Button onClick={handleCurrentTime} variant="outline" className="gap-2">
                   <Clock className="h-4 w-4" />
                   {t('tools.timestamp.now')}
+                </Button>
+                <Button
+                  onClick={handleSaveToFile}
+                  disabled={isSaving || !timestamp}
+                  variant="outline"
+                  className="gap-2"
+                >
+                  <Save className="h-4 w-4" />
+                  {t('common.save')}
+                </Button>
+                <Button
+                  onClick={handleOpenFile}
+                  disabled={isOpening}
+                  variant="outline"
+                  className="gap-2"
+                >
+                  <FolderOpen className="h-4 w-4" />
+                  {t('common.open')}
                 </Button>
               </div>
 
