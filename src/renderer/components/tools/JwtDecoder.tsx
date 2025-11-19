@@ -8,9 +8,11 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
-import { Copy, AlertTriangle, CheckCircle2, Shield, Send, Save, FolderOpen } from 'lucide-react';
+import { Copy, AlertTriangle, CheckCircle2, Shield, Send, Upload, FileDown } from 'lucide-react';
 import { toast } from 'sonner';
-import { useFileSystem } from '../../hooks/useFileSystem';
+import { useHistoryExportImport } from '../../hooks/useHistoryExportImport';
+import { ExportDialog } from '../dialogs/ExportDialog';
+import { ImportDialog } from '../dialogs/ImportDialog';
 
 interface DecodedJWT {
   header: string;
@@ -32,16 +34,62 @@ export function JwtDecoder() {
   const [error, setError] = useState('');
   const [isExpired, setIsExpired] = useState<boolean | null>(null);
   const [expirationDate, setExpirationDate] = useState<Date | null>(null);
+  const [totalCount, setTotalCount] = useState(0);
 
   // Auto-save to history
   const saveToHistory = useHistoryAutoSave({ tool: 'jwt' });
 
-  // File system hook
-  const { exportFile, importFile, isExporting, isImporting } = useFileSystem({
-    exportSuccessMessage: 'JWT 파일이 저장되었습니다',
-    importSuccessMessage: 'JWT 파일을 불러왔습니다',
-    errorMessage: '파일 작업 실패'
+  // Use the new useHistoryExportImport hook with JWT-specific parsing
+  const {
+    isExporting,
+    isImporting,
+    showExportDialog,
+    showImportDialog,
+    setShowExportDialog,
+    setShowImportDialog,
+    handleExport,
+    handleImport,
+  } = useHistoryExportImport({
+    tool: 'jwt',
+    toolDisplayName: 'JWT Decoder',
+    parseImportData: (content, format) => {
+      // Parse based on format
+      if (format === 'json') {
+        const data = JSON.parse(content);
+        if (!Array.isArray(data)) throw new Error('JSON must be an array');
+        return data.map((item: any) => ({
+          input: String(item.input || ''),
+          output: item.output ? String(item.output) : undefined,
+        }));
+      } else if (format === 'csv') {
+        const lines = content.split('\n').filter(line => line.trim());
+        const dataLines = lines.slice(1); // Skip header
+        return dataLines.map(line => {
+          const values = line.split(',').map(val => val.trim().replace(/^"|"$/g, ''));
+          return { input: values[0] || '', output: values[1] || undefined };
+        });
+      } else {
+        // TXT format: one JWT per line
+        const lines = content.split('\n').filter(line => line.trim());
+        return lines.map(line => ({ input: line.trim(), output: undefined }));
+      }
+    },
   });
+
+  // Get total count for ExportDialog
+  useEffect(() => {
+    const fetchCount = async () => {
+      if (window.api?.history) {
+        try {
+          const count = await window.api.history.count('jwt');
+          setTotalCount(count);
+        } catch (error) {
+          console.error('Failed to get history count:', error);
+        }
+      }
+    };
+    fetchCount();
+  }, [decoded.payload]); // Refetch when JWT is decoded
 
   // Save to history when decoded output changes
   useEffect(() => {
@@ -133,29 +181,6 @@ export function JwtDecoder() {
     toast.success('JWT token sent to API Tester');
   };
 
-  const handleSaveToFile = async () => {
-    if (!input.trim()) {
-      toast.error('저장할 JWT 토큰이 없습니다');
-      return;
-    }
-
-    await exportFile(input.trim(), `jwt-${Date.now()}.txt`, [
-      { name: 'Text Files', extensions: ['txt'] },
-      { name: 'All Files', extensions: ['*'] }
-    ]);
-  };
-
-  const handleOpenFile = async () => {
-    const result = await importFile([
-      { name: 'Text Files', extensions: ['txt'] },
-      { name: 'All Files', extensions: ['*'] }
-    ]);
-
-    if (result.success && result.content) {
-      setInput(result.content);
-    }
-  };
-
   return (
     <div className="space-y-6">
       {/* Input Section */}
@@ -189,20 +214,20 @@ export function JwtDecoder() {
               </Button>
             )}
             <Button
-              onClick={handleSaveToFile}
+              onClick={() => setShowExportDialog(true)}
               variant="outline"
-              disabled={isExporting || !input.trim()}
+              disabled={isExporting}
             >
-              <Save className="mr-2 h-4 w-4" />
-              {t('tools.jwt.save')}
+              <Upload className="mr-2 h-4 w-4" />
+              {t('common.export')}
             </Button>
             <Button
-              onClick={handleOpenFile}
+              onClick={() => setShowImportDialog(true)}
               variant="outline"
               disabled={isImporting}
             >
-              <FolderOpen className="mr-2 h-4 w-4" />
-              {t('tools.jwt.open')}
+              <FileDown className="mr-2 h-4 w-4" />
+              {t('common.import')}
             </Button>
           </div>
         </CardContent>
@@ -339,6 +364,25 @@ export function JwtDecoder() {
           </CardContent>
         </Card>
       )}
+
+      {/* Export Dialog */}
+      <ExportDialog
+        open={showExportDialog}
+        onOpenChange={setShowExportDialog}
+        onExport={handleExport}
+        totalCount={totalCount}
+        title="JWT 히스토리 내보내기"
+        description="내보낼 JWT 히스토리 개수와 파일 형식을 선택하세요"
+      />
+
+      {/* Import Dialog */}
+      <ImportDialog
+        open={showImportDialog}
+        onOpenChange={setShowImportDialog}
+        onImport={handleImport}
+        title="JWT 파일 가져오기"
+        description="JWT 파일을 선택하여 히스토리에 추가하세요. 지원 형식: TXT, JSON, CSV"
+      />
     </div>
   );
 }
