@@ -128,7 +128,12 @@ function createWindow(): void {
 
   // Show window when ready
   mainWindow.on('ready-to-show', () => {
-    mainWindow?.show()
+    // Check if app was launched with --hidden flag (auto-start minimized)
+    const shouldStartHidden = process.argv.includes('--hidden')
+
+    if (!shouldStartHidden) {
+      mainWindow?.show()
+    }
 
     // Create application menu
     if (mainWindow) {

@@ -17,6 +17,13 @@ declare global {
         getAll: () => Promise<Record<string, any>>
         reset: () => Promise<boolean>
         delete: (key: string) => Promise<boolean>
+        setAutoStart: (enabled: boolean, startMinimized: boolean) => Promise<boolean>
+        getAutoStart: () => Promise<{
+          enabled: boolean
+          startMinimized: boolean
+          wasOpenedAtLogin: boolean
+          wasOpenedAsHidden: boolean
+        }>
       }
       shortcuts: {
         onOpenSettings: (callback: () => void) => () => void

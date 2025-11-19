@@ -25,7 +25,15 @@ const api = {
     set: (key: string, value: any): Promise<boolean> => ipcRenderer.invoke('settings:set', key, value),
     getAll: (): Promise<Record<string, any>> => ipcRenderer.invoke('settings:get-all'),
     reset: (): Promise<boolean> => ipcRenderer.invoke('settings:reset'),
-    delete: (key: string): Promise<boolean> => ipcRenderer.invoke('settings:delete', key)
+    delete: (key: string): Promise<boolean> => ipcRenderer.invoke('settings:delete', key),
+    setAutoStart: (enabled: boolean, startMinimized: boolean): Promise<boolean> =>
+      ipcRenderer.invoke('settings:set-auto-start', enabled, startMinimized),
+    getAutoStart: (): Promise<{
+      enabled: boolean
+      startMinimized: boolean
+      wasOpenedAtLogin: boolean
+      wasOpenedAsHidden: boolean
+    }> => ipcRenderer.invoke('settings:get-auto-start')
   },
 
   // Shortcut events API

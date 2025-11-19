@@ -183,4 +183,50 @@ export function setupSettingsHandlers(): void {
       return []
     }
   })
+
+  // Auto-start functionality
+  ipcMain.handle('settings:set-auto-start', async (_event, enabled: boolean, startMinimized: boolean) => {
+    try {
+      const { app } = await import('electron')
+
+      // Set login item settings
+      app.setLoginItemSettings({
+        openAtLogin: enabled,
+        openAsHidden: startMinimized,
+        args: startMinimized ? ['--hidden'] : []
+      })
+
+      // Save to store
+      settingsStore.set('launchAtStartup', enabled)
+      settingsStore.set('startMinimized', startMinimized)
+
+      return true
+    } catch (error) {
+      console.error('Failed to set auto-start:', error)
+      return false
+    }
+  })
+
+  // Get current auto-start status
+  ipcMain.handle('settings:get-auto-start', async () => {
+    try {
+      const { app } = await import('electron')
+      const loginItemSettings = app.getLoginItemSettings()
+
+      return {
+        enabled: loginItemSettings.openAtLogin,
+        startMinimized: settingsStore.get('startMinimized'),
+        wasOpenedAtLogin: loginItemSettings.wasOpenedAtLogin,
+        wasOpenedAsHidden: loginItemSettings.wasOpenedAsHidden
+      }
+    } catch (error) {
+      console.error('Failed to get auto-start status:', error)
+      return {
+        enabled: false,
+        startMinimized: false,
+        wasOpenedAtLogin: false,
+        wasOpenedAsHidden: false
+      }
+    }
+  })
 }
