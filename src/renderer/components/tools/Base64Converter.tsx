@@ -13,10 +13,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowUp, ArrowDown, Send, Save, FolderOpen } from 'lucide-react';
+import { ArrowUp, ArrowDown, Send, Upload, FileDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { useFileSystem } from '../../hooks/useFileSystem';
+import { useHistoryExportImport } from '../../hooks/useHistoryExportImport';
+import { ExportDialog } from '../dialogs/ExportDialog';
+import { ImportDialog } from '../dialogs/ImportDialog';
 import {
   setCurrentFeature,
   addInteractionBreadcrumb,
@@ -36,16 +38,62 @@ export function Base64Converter() {
   const [activeTab, setActiveTab] = useState('encode');
   const [urlSafe, setUrlSafe] = useState(false);
   const [encoding, setEncoding] = useState('utf-8');
-
-  // File system hook
-  const { exportFile, importFile, isExporting, isImporting } = useFileSystem({
-    exportSuccessMessage: 'Base64 파일이 저장되었습니다',
-    importSuccessMessage: 'Base64 파일을 불러왔습니다',
-    errorMessage: '파일 작업 실패'
-  });
+  const [totalCount, setTotalCount] = useState(0);
 
   // Auto-save to history
   const saveToHistory = useHistoryAutoSave({ tool: 'base64' });
+
+  // Use the new useHistoryExportImport hook
+  const {
+    isExporting,
+    isImporting,
+    showExportDialog,
+    showImportDialog,
+    setShowExportDialog,
+    setShowImportDialog,
+    handleExport,
+    handleImport,
+  } = useHistoryExportImport({
+    tool: 'base64',
+    toolDisplayName: 'Base64 Converter',
+    parseImportData: (content, format) => {
+      // Parse based on format
+      if (format === 'json') {
+        const data = JSON.parse(content);
+        if (!Array.isArray(data)) throw new Error('JSON must be an array');
+        return data.map((item: any) => ({
+          input: String(item.input || ''),
+          output: item.output ? String(item.output) : undefined,
+        }));
+      } else if (format === 'csv') {
+        const lines = content.split('\n').filter(line => line.trim());
+        const dataLines = lines.slice(1); // Skip header
+        return dataLines.map(line => {
+          const values = line.split(',').map(val => val.trim().replace(/^"|"$/g, ''));
+          return { input: values[0] || '', output: values[1] || undefined };
+        });
+      } else {
+        // TXT format: one item per line
+        const lines = content.split('\n').filter(line => line.trim());
+        return lines.map(line => ({ input: line.trim(), output: undefined }));
+      }
+    },
+  });
+
+  // Get total count for ExportDialog
+  useEffect(() => {
+    const fetchCount = async () => {
+      if (window.api?.history) {
+        try {
+          const count = await window.api.history.count('base64');
+          setTotalCount(count);
+        } catch (error) {
+          console.error('Failed to get history count:', error);
+        }
+      }
+    };
+    fetchCount();
+  }, [output]); // Refetch when output changes
 
   // Set feature context on mount
   useEffect(() => {
@@ -273,30 +321,6 @@ export function Base64Converter() {
     e.preventDefault();
   };
 
-  const handleSaveToFile = async () => {
-    if (!output) {
-      toast.error('저장할 데이터가 없습니다');
-      return;
-    }
-
-    const extension = activeTab === 'encode' ? 'b64' : 'txt';
-    await exportFile(output, `base64-${activeTab}-${Date.now()}.${extension}`, [
-      { name: activeTab === 'encode' ? 'Base64 Files' : 'Text Files', extensions: [extension] },
-      { name: 'All Files', extensions: ['*'] }
-    ]);
-  };
-
-  const handleOpenFile = async () => {
-    const result = await importFile([
-      { name: 'Text Files', extensions: ['txt', 'b64'] },
-      { name: 'All Files', extensions: ['*'] }
-    ]);
-
-    if (result.success && result.content) {
-      setInput(result.content);
-    }
-  };
-
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('tools.base64.title')}</h2>
@@ -391,22 +415,22 @@ export function Base64Converter() {
               </Button>
             )}
             <Button
-              onClick={handleSaveToFile}
+              onClick={() => setShowExportDialog(true)}
               variant="outline"
-              disabled={isExporting || !output}
+              disabled={isExporting}
               className="gap-2"
             >
-              <Save className="h-4 w-4" />
-              {t('tools.base64.save')}
+              <Upload className="h-4 w-4" />
+              {t('common.export')}
             </Button>
             <Button
-              onClick={handleOpenFile}
+              onClick={() => setShowImportDialog(true)}
               variant="outline"
               disabled={isImporting}
               className="gap-2"
             >
-              <FolderOpen className="h-4 w-4" />
-              {t('tools.base64.open')}
+              <FileDown className="h-4 w-4" />
+              {t('common.import')}
             </Button>
           </div>
         </TabsContent>
@@ -458,22 +482,22 @@ export function Base64Converter() {
               </Button>
             )}
             <Button
-              onClick={handleSaveToFile}
+              onClick={() => setShowExportDialog(true)}
               variant="outline"
-              disabled={isExporting || !output}
+              disabled={isExporting}
               className="gap-2"
             >
-              <Save className="h-4 w-4" />
-              {t('tools.base64.save')}
+              <Upload className="h-4 w-4" />
+              {t('common.export')}
             </Button>
             <Button
-              onClick={handleOpenFile}
+              onClick={() => setShowImportDialog(true)}
               variant="outline"
               disabled={isImporting}
               className="gap-2"
             >
-              <FolderOpen className="h-4 w-4" />
-              {t('tools.base64.open')}
+              <FileDown className="h-4 w-4" />
+              {t('common.import')}
             </Button>
           </div>
         </TabsContent>
@@ -504,6 +528,25 @@ export function Base64Converter() {
           className="h-32 font-mono bg-muted"
         />
       </div>
+
+      {/* Export Dialog */}
+      <ExportDialog
+        open={showExportDialog}
+        onOpenChange={setShowExportDialog}
+        onExport={handleExport}
+        totalCount={totalCount}
+        title="Base64 히스토리 내보내기"
+        description="내보낼 Base64 히스토리 개수와 파일 형식을 선택하세요"
+      />
+
+      {/* Import Dialog */}
+      <ImportDialog
+        open={showImportDialog}
+        onOpenChange={setShowImportDialog}
+        onImport={handleImport}
+        title="Base64 파일 가져오기"
+        description="Base64 파일을 선택하여 히스토리에 추가하세요. 지원 형식: TXT, JSON, CSV"
+      />
     </div>
   );
 }
