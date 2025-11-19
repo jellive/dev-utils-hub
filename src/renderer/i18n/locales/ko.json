@@ -445,6 +445,8 @@
     "generate": "생성",
     "compare": "비교",
     "test": "테스트",
+    "export": "내보내기",
+    "import": "가져오기",
     "backToTools": "도구로 돌아가기",
     "input": "입력",
     "output": "출력",

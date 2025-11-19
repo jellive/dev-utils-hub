@@ -446,6 +446,8 @@
     "generate": "Generate",
     "compare": "Compare",
     "test": "Test",
+    "export": "Export",
+    "import": "Import",
     "backToTools": "Back to Tools",
     "input": "Input",
     "output": "Output",
