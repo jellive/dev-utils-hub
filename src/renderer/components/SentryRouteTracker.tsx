@@ -21,7 +21,6 @@ const ROUTE_TO_TOOL_MAP: Record<string, Tool> = {
   '/hash': TOOLS.HASH_GENERATOR,
   '/uuid': TOOLS.UUID_GENERATOR,
   '/timestamp': TOOLS.TIMESTAMP_CONVERTER,
-  '/api-tester': TOOLS.API_TESTER,
 };
 
 /**

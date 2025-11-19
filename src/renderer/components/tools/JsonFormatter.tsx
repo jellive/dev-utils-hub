@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { AlertCircle, Copy, Check, Send, Upload, FileDown } from 'lucide-react';
+import { AlertCircle, Copy, Check, Upload, FileDown } from 'lucide-react';
 import { useHistoryAutoSave } from '../../hooks/useHistoryAutoSave';
 import { useHistoryExportImport } from '../../hooks/useHistoryExportImport';
 import { ExportDialog } from '../dialogs/ExportDialog';
@@ -29,7 +28,6 @@ import { useTranslation } from 'react-i18next';
 
 export function JsonFormatter() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
   const [error, setError] = useState('');
@@ -162,20 +160,6 @@ export function JsonFormatter() {
     }
   };
 
-  const sendToAPITester = () => {
-    if (!output || !isValid) {
-      toast.error('No valid JSON to send');
-      return;
-    }
-
-    // Navigate to API Tester with formatted JSON body
-    navigate('/api-tester', {
-      state: {
-        body: output,
-      },
-    });
-    toast.success('JSON sent to API Tester');
-  };
 
   return (
     <Card role="region" aria-label="JSON Formatter Tool">
@@ -305,20 +289,6 @@ export function JsonFormatter() {
                   <p>Clear all fields</p>
                 </TooltipContent>
               </Tooltip>
-
-              {output && isValid && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button onClick={sendToAPITester} variant="secondary">
-                      <Send className="h-4 w-4 mr-2" />
-                      Send to API Tester
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent role="tooltip">
-                    <p>Send formatted JSON to API Tester as request body</p>
-                  </TooltipContent>
-                </Tooltip>
-              )}
 
               <Tooltip>
                 <TooltipTrigger asChild>

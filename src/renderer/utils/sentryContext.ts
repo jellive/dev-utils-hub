@@ -19,7 +19,6 @@ export const TOOLS = {
   HASH_GENERATOR: 'hash',
   UUID_GENERATOR: 'uuid',
   TIMESTAMP_CONVERTER: 'timestamp',
-  API_TESTER: 'api-tester',
 } as const;
 
 export type Tool = (typeof TOOLS)[keyof typeof TOOLS];
@@ -32,7 +31,6 @@ export const FEATURES = {
   TOOL_USAGE: 'tool-usage',
   DATA_CONVERSION: 'data-conversion',
   TEXT_PROCESSING: 'text-processing',
-  API_TESTING: 'api-testing',
   VALIDATION: 'validation',
   HISTORY: 'history',
   SETTINGS: 'settings',
@@ -93,7 +91,6 @@ function getToolCategory(tool: Tool): string {
     [TOOLS.HASH_GENERATOR]: 'generator',
     [TOOLS.UUID_GENERATOR]: 'generator',
     [TOOLS.TIMESTAMP_CONVERTER]: 'converter',
-    [TOOLS.API_TESTER]: 'tester',
   };
 
   return categories[tool] || 'unknown';
