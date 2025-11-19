@@ -78,7 +78,23 @@ const api = {
     autoCleanup: (daysOld?: number, keepFavorites?: boolean): Promise<number> =>
       ipcRenderer.invoke('history:auto-cleanup', daysOld, keepFavorites),
     stats: (): Promise<any> =>
-      ipcRenderer.invoke('history:stats')
+      ipcRenderer.invoke('history:stats'),
+    // Event listeners for menu-triggered actions
+    onToggle: (callback: () => void) => {
+      const listener = () => callback()
+      ipcRenderer.on('toggle-history-panel', listener)
+      return () => ipcRenderer.removeListener('toggle-history-panel', listener)
+    },
+    onExport: (callback: () => void) => {
+      const listener = () => callback()
+      ipcRenderer.on('trigger-export', listener)
+      return () => ipcRenderer.removeListener('trigger-export', listener)
+    },
+    onImport: (callback: () => void) => {
+      const listener = () => callback()
+      ipcRenderer.on('trigger-import', listener)
+      return () => ipcRenderer.removeListener('trigger-import', listener)
+    }
   },
 
   // Maintenance API
@@ -111,6 +127,20 @@ const api = {
       ipcRenderer.invoke('file:save', content, defaultFileName, filters),
     open: (filters?: any): Promise<any> =>
       ipcRenderer.invoke('file:open', filters)
+  },
+
+  // Navigation API - for menu-triggered navigation
+  navigation: {
+    onNavigateToTool: (callback: (path: string) => void) => {
+      const listener = (_event: any, path: string) => callback(path)
+      ipcRenderer.on('navigate-to-tool', listener)
+      return () => ipcRenderer.removeListener('navigate-to-tool', listener)
+    },
+    onNavigateTo: (callback: (path: string) => void) => {
+      const listener = (_event: any, path: string) => callback(path)
+      ipcRenderer.on('navigate-to', listener)
+      return () => ipcRenderer.removeListener('navigate-to', listener)
+    }
   }
 }
 

@@ -41,6 +41,9 @@ declare global {
         clearAll: () => Promise<number>
         autoCleanup: (daysOld?: number, keepFavorites?: boolean) => Promise<number>
         stats: () => Promise<HistoryStats>
+        onToggle: (callback: () => void) => () => void
+        onExport: (callback: () => void) => () => void
+        onImport: (callback: () => void) => () => void
       }
       maintenance: {
         cleanup: (dryRun?: boolean) => Promise<number>
@@ -57,6 +60,10 @@ declare global {
       file: {
         save: (content: string, defaultFileName?: string, filters?: FileFilter[]) => Promise<SaveFileResult>
         open: (filters?: FileFilter[]) => Promise<OpenFileResult>
+      }
+      navigation: {
+        onNavigateToTool: (callback: (path: string) => void) => () => void
+        onNavigateTo: (callback: (path: string) => void) => () => void
       }
     }
   }
