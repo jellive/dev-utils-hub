@@ -9,7 +9,7 @@ files:
   - package.json
 asarUnpack:
   - resources/**
-afterSign: build/notarize.js
+afterSign: build/notarize.cjs
 mac:
   category: public.app-category.developer-tools
   hardenedRuntime: true
