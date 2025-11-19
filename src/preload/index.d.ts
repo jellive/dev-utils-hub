@@ -31,6 +31,8 @@ declare global {
       history: {
         save: (tool: string, input: string, output?: string, metadata?: Record<string, any>) => Promise<number>
         get: (tool?: string, limit?: number) => Promise<HistoryEntry[]>
+        getWithOptions: (tool: string, options?: GetHistoryOptions) => Promise<HistoryEntry[]>
+        count: (tool: string) => Promise<number>
         search: (tool: string, query: string, limit?: number) => Promise<HistoryEntry[]>
         getById: (id: number) => Promise<HistoryEntry | undefined>
         delete: (id: number) => Promise<boolean>
@@ -123,4 +125,12 @@ export interface HistoryStats {
   favorites: number
   oldestEntry: number | null
   newestEntry: number | null
+}
+
+export interface GetHistoryOptions {
+  limit?: number
+  offset?: number
+  favorites?: boolean
+  startDate?: number
+  endDate?: number
 }

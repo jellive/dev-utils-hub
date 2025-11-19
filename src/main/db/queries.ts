@@ -14,6 +14,17 @@ export interface HistoryEntry {
 }
 
 /**
+ * Options for getting history with filtering
+ */
+export interface GetHistoryOptions {
+  limit?: number
+  offset?: number
+  favorites?: boolean
+  startDate?: number
+  endDate?: number
+}
+
+/**
  * Database operation result interface
  */
 export interface DbOperationResult<T = any> {
@@ -195,6 +206,74 @@ export function getHistory(tool?: string, limit: number = 50): HistoryEntry[] {
 
   console.log(`✓ Retrieved ${rows.length} history entries${tool ? ` for ${tool}` : ''}`)
   return rows
+}
+
+/**
+ * Get history entries with advanced filtering options
+ */
+export function getHistoryWithOptions(tool: string, options: GetHistoryOptions = {}): HistoryEntry[] {
+  const db = getDatabase()
+
+  const {
+    limit = 50,
+    offset = 0,
+    favorites,
+    startDate,
+    endDate
+  } = options
+
+  let query = `
+    SELECT id, tool, input, output, metadata, favorite, created_at
+    FROM history
+    WHERE tool = ?
+  `
+  const params: any[] = [tool]
+
+  // Add favorites filter
+  if (favorites !== undefined) {
+    query += ' AND favorite = ?'
+    params.push(favorites ? 1 : 0)
+  }
+
+  // Add date range filters
+  if (startDate !== undefined) {
+    query += ' AND created_at >= ?'
+    params.push(startDate)
+  }
+
+  if (endDate !== undefined) {
+    query += ' AND created_at <= ?'
+    params.push(endDate)
+  }
+
+  // Add ordering and pagination
+  query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?'
+  params.push(limit, offset)
+
+  const stmt = db.prepare(query)
+  const rows = stmt.all(...params) as HistoryEntry[]
+
+  console.log(`✓ Retrieved ${rows.length} history entries for ${tool} with options`)
+  return rows
+}
+
+/**
+ * Get count of history entries for a specific tool
+ */
+export function getHistoryCount(tool: string): number {
+  const db = getDatabase()
+
+  const stmt = db.prepare(`
+    SELECT COUNT(*) as count
+    FROM history
+    WHERE tool = ?
+  `)
+
+  const result = stmt.get(tool) as { count: number }
+  const count = result.count
+
+  console.log(`✓ History count for ${tool}: ${count}`)
+  return count
 }
 
 /**

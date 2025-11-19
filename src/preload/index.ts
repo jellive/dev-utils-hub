@@ -59,6 +59,10 @@ const api = {
       ipcRenderer.invoke('history:save', tool, input, output, metadata),
     get: (tool?: string, limit?: number): Promise<any[]> =>
       ipcRenderer.invoke('history:get', tool, limit),
+    getWithOptions: (tool: string, options?: any): Promise<any[]> =>
+      ipcRenderer.invoke('history:get-with-options', tool, options),
+    count: (tool: string): Promise<number> =>
+      ipcRenderer.invoke('history:count', tool),
     search: (tool: string, query: string, limit?: number): Promise<any[]> =>
       ipcRenderer.invoke('history:search', tool, query, limit),
     getById: (id: number): Promise<any | undefined> =>

@@ -2,6 +2,8 @@ import { ipcMain } from 'electron'
 import {
   saveHistory,
   getHistory,
+  getHistoryWithOptions,
+  getHistoryCount,
   searchHistory,
   getHistoryById,
   deleteHistory,
@@ -10,7 +12,8 @@ import {
   clearAllHistory,
   autoCleanup,
   getHistoryStats,
-  type HistoryEntry
+  type HistoryEntry,
+  type GetHistoryOptions
 } from '../db/queries'
 import {
   runCleanup,
@@ -52,6 +55,29 @@ export function setupHistoryHandlers(): void {
       return getHistory(tool, limit)
     } catch (error) {
       console.error('Failed to get history:', error)
+      throw error
+    }
+  })
+
+  // Get history entries with options
+  ipcMain.handle(
+    'history:get-with-options',
+    (_event, tool: string, options?: GetHistoryOptions): HistoryEntry[] => {
+      try {
+        return getHistoryWithOptions(tool, options)
+      } catch (error) {
+        console.error('Failed to get history with options:', error)
+        throw error
+      }
+    }
+  )
+
+  // Get history count
+  ipcMain.handle('history:count', (_event, tool: string): number => {
+    try {
+      return getHistoryCount(tool)
+    } catch (error) {
+      console.error('Failed to get history count:', error)
       throw error
     }
   })
