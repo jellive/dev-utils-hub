@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useHistoryAutoSave } from '../../hooks/useHistoryAutoSave';
+import { useHistoryExportImport } from '../../hooks/useHistoryExportImport';
+import { ExportDialog } from '../dialogs/ExportDialog';
+import { ImportDialog } from '../dialogs/ImportDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,10 +12,9 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Search, AlertCircle, HelpCircle, BookOpen, Copy, Save, FolderOpen } from 'lucide-react';
+import { Search, AlertCircle, HelpCircle, BookOpen, Copy, Upload, FileDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { useFileSystem } from '../../hooks/useFileSystem';
 
 interface Match {
   text: string;
@@ -89,16 +91,62 @@ export function RegexTester() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [error, setError] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
+
+  // Use the new useHistoryExportImport hook with Regex parsing
+  const {
+    isExporting,
+    isImporting,
+    showExportDialog,
+    showImportDialog,
+    setShowExportDialog,
+    setShowImportDialog,
+    handleExport,
+    handleImport,
+  } = useHistoryExportImport({
+    tool: 'regex',
+    toolDisplayName: 'Regex Tester',
+    parseImportData: (content, format) => {
+      // Parse based on format
+      if (format === 'json') {
+        const data = JSON.parse(content);
+        if (!Array.isArray(data)) throw new Error('JSON must be an array');
+        return data.map((item: any) => ({
+          input: String(item.input || ''),
+          output: item.output ? String(item.output) : undefined,
+        }));
+      } else if (format === 'csv') {
+        const lines = content.split('\n').filter(line => line.trim());
+        const dataLines = lines.slice(1); // Skip header
+        return dataLines.map(line => {
+          const values = line.split(',').map(val => val.trim().replace(/^"|"$/g, ''));
+          return { input: values[0] || '', output: values[1] || undefined };
+        });
+      } else {
+        // TXT format: one regex pattern per line
+        const lines = content.split('\n').filter(line => line.trim());
+        return lines.map(line => ({ input: line.trim(), output: undefined }));
+      }
+    },
+  });
 
   // Auto-save to history
   const saveToHistory = useHistoryAutoSave({ tool: 'regex' });
 
-  // File system hook
-  const { exportFile, importFile, isExporting, isImporting } = useFileSystem({
-    exportSuccessMessage: '정규식 파일이 저장되었습니다',
-    importSuccessMessage: '정규식 파일을 불러왔습니다',
-    errorMessage: '파일 작업 실패'
-  });
+  // Get total count for ExportDialog
+  useEffect(() => {
+    const fetchCount = async () => {
+      if (window.api?.history) {
+        try {
+          const count = await window.api.history.count('regex');
+          setTotalCount(count);
+        } catch (error) {
+          console.error('Failed to get history count:', error);
+        }
+      }
+    };
+    fetchCount();
+  }, [matches]); // Refetch when matches are found
 
   // Save to history when matches change
   useEffect(() => {
@@ -164,37 +212,6 @@ export function RegexTester() {
     setFlags({ g: false, i: false, m: false });
     setMatches([]);
     setError('');
-  };
-
-  const handleSaveToFile = async () => {
-    if (!pattern) {
-      toast.error('저장할 정규식 패턴이 없습니다');
-      return;
-    }
-
-    const data = JSON.stringify({ pattern, testString, flags }, null, 2);
-    await exportFile(data, `regex-${Date.now()}.json`, [
-      { name: 'JSON Files', extensions: ['json'] },
-      { name: 'All Files', extensions: ['*'] }
-    ]);
-  };
-
-  const handleOpenFile = async () => {
-    const result = await importFile([
-      { name: 'JSON Files', extensions: ['json'] },
-      { name: 'All Files', extensions: ['*'] }
-    ]);
-
-    if (result.success && result.content) {
-      try {
-        const data = JSON.parse(result.content);
-        if (data.pattern) setPattern(data.pattern);
-        if (data.testString) setTestString(data.testString);
-        if (data.flags) setFlags(data.flags);
-      } catch (err) {
-        toast.error('JSON 파일 파싱 실패');
-      }
-    }
   };
 
   const toggleFlag = (flag: 'g' | 'i' | 'm') => {
@@ -430,22 +447,22 @@ export function RegexTester() {
               {t('tools.regex.clearAll')}
             </Button>
             <Button
-              onClick={handleSaveToFile}
+              onClick={() => setShowExportDialog(true)}
               variant="outline"
-              disabled={isExporting || !pattern}
+              disabled={isExporting}
               className="gap-2"
             >
-              <Save className="h-4 w-4" />
-              {t('tools.regex.save')}
+              <Upload className="h-4 w-4" />
+              {t('common.export')}
             </Button>
             <Button
-              onClick={handleOpenFile}
+              onClick={() => setShowImportDialog(true)}
               variant="outline"
               disabled={isImporting}
               className="gap-2"
             >
-              <FolderOpen className="h-4 w-4" />
-              {t('tools.regex.open')}
+              <FileDown className="h-4 w-4" />
+              {t('common.import')}
             </Button>
           </div>
         </CardContent>
@@ -635,6 +652,25 @@ export function RegexTester() {
           <li>• <code className="font-mono">(...)</code> - Capture group | <code className="font-mono">(?&lt;name&gt;...)</code> - Named capture group</li>
         </ul>
       </div>
+
+      {/* Export Dialog */}
+      <ExportDialog
+        open={showExportDialog}
+        onOpenChange={setShowExportDialog}
+        onExport={handleExport}
+        totalCount={totalCount}
+        title="Regex 히스토리 내보내기"
+        description="내보낼 Regex 히스토리 개수와 파일 형식을 선택하세요"
+      />
+
+      {/* Import Dialog */}
+      <ImportDialog
+        open={showImportDialog}
+        onOpenChange={setShowImportDialog}
+        onImport={handleImport}
+        title="Regex 파일 가져오기"
+        description="Regex 파일을 선택하여 히스토리에 추가하세요. 지원 형식: TXT, JSON, CSV"
+      />
     </div>
   );
 }
