@@ -9,6 +9,7 @@ interface SettingsSchema {
   minimizeToTray: boolean
   launchAtStartup: boolean
   startMinimized: boolean
+  autoInstallUpdates: boolean
   // Keyboard shortcuts
   shortcuts: {
     toggleApp: string // Global shortcut for show/hide app
@@ -48,6 +49,7 @@ const settingsStore = new Store<SettingsSchema>({
     minimizeToTray: false,
     launchAtStartup: false,
     startMinimized: false,
+    autoInstallUpdates: true,
     shortcuts: {
       toggleApp: process.platform === 'darwin' ? 'Command+Shift+Space' : 'Control+Space'
     },

@@ -17,6 +17,7 @@ import {
 } from './shortcuts'
 import { initializeDatabase, closeDatabase } from './db'
 import { initializeMaintenance, stopMaintenance } from './db/maintenance'
+import { initializeUpdater, stopUpdater } from './updater'
 
 // Initialize electron-store for persistent settings
 const store = new Store()
@@ -154,6 +155,11 @@ function createWindow(): void {
       checkAndLogConflicts()
     }
 
+    // Initialize auto-updater
+    if (mainWindow) {
+      initializeUpdater(mainWindow)
+    }
+
     // Open DevTools in development
     if (is.dev) {
       mainWindow?.webContents.openDevTools()
@@ -241,6 +247,7 @@ app.on('before-quit', () => {
   }
   destroyTray()
   unregisterGlobalShortcuts()
+  stopUpdater()
   stopMaintenance()
   closeDatabase()
 })
