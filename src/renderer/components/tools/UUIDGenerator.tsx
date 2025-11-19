@@ -1,30 +1,89 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { RefreshCw, Copy, Download, Package, Clock, Save, FolderOpen } from 'lucide-react';
+import { RefreshCw, Copy, Download, Package, Clock, Upload, FileDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { HistorySidebar } from '../history/HistorySidebar';
 import { useClipboard } from '../../hooks/useClipboard';
-import { useFileSystem } from '../../hooks/useFileSystem';
+import { useHistoryExportImport } from '../../hooks/useHistoryExportImport';
+import { ExportDialog } from '../dialogs/ExportDialog';
+import { ImportDialog } from '../dialogs/ImportDialog';
 import type { HistoryEntry } from '../../../preload/index.d';
 
 export function UUIDGenerator() {
   const { t } = useTranslation();
   const { copy } = useClipboard();
-  const { exportFile, importFile, isExporting, isImporting } = useFileSystem({
-    exportSuccessMessage: '파일이 내보내졌습니다',
-    importSuccessMessage: '파일을 가져왔습니다',
-    errorMessage: '파일 작업 실패'
+
+  // Use the new useHistoryExportImport hook with UUID validation
+  const {
+    isExporting,
+    isImporting,
+    showExportDialog,
+    showImportDialog,
+    setShowExportDialog,
+    setShowImportDialog,
+    handleExport,
+    handleImport,
+  } = useHistoryExportImport({
+    tool: 'uuid',
+    toolDisplayName: 'UUID Generator',
+    parseImportData: (content, format) => {
+      // Use default parsing first
+      const defaultParse = (content: string) => {
+        if (format === 'json') {
+          const data = JSON.parse(content);
+          if (!Array.isArray(data)) throw new Error('JSON must be an array');
+          return data.map((item: any) => ({
+            input: String(item.input || ''),
+            output: item.output ? String(item.output) : undefined,
+          }));
+        } else if (format === 'csv') {
+          const lines = content.split('\n').filter(line => line.trim());
+          const dataLines = lines.slice(1); // Skip header
+          return dataLines.map(line => {
+            const values = line.split(',').map(val => val.trim().replace(/^"|"$/g, ''));
+            return { input: values[0] || '', output: values[1] || undefined };
+          });
+        } else {
+          const lines = content.split('\n').filter(line => line.trim());
+          return lines.map(line => ({ input: line.trim(), output: undefined }));
+        }
+      };
+
+      const data = defaultParse(content);
+
+      // Validate UUID format and filter invalid entries
+      return data.filter(item =>
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.input)
+      );
+    },
   });
+
   const [currentUUID, setCurrentUUID] = useState('');
   const [bulkCount, setBulkCount] = useState('10');
   const [bulkUUIDs, setBulkUUIDs] = useState<string[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
+
+  // Get total count for ExportDialog
+  useEffect(() => {
+    const fetchCount = async () => {
+      if (window.api?.history) {
+        try {
+          const count = await window.api.history.count('uuid');
+          setTotalCount(count);
+        } catch (error) {
+          console.error('Failed to get history count:', error);
+        }
+      }
+    };
+    fetchCount();
+  }, [currentUUID, bulkUUIDs]); // Refetch when UUIDs are generated
 
   const generateUUID = async () => {
     const uuid = crypto.randomUUID();
@@ -129,94 +188,6 @@ export function UUIDGenerator() {
     };
   };
 
-  // Save history to file
-  const handleSaveToFile = async () => {
-    try {
-      if (!window.api?.history) {
-        toast.error('파일 저장 기능을 사용할 수 없습니다');
-        return;
-      }
-
-      // Get history from electron-store
-      const history = await window.api.history.get('uuid', 100);
-
-      if (history.length === 0) {
-        toast.error('저장할 히스토리가 없습니다');
-        return;
-      }
-
-      // Format history as text (one UUID per line)
-      const content = history.map(entry => entry.input).join('\n');
-
-      // Export to file
-      await exportFile(content, `uuids-${Date.now()}.txt`, [
-        { name: 'Text Files', extensions: ['txt'] },
-        { name: 'All Files', extensions: ['*'] }
-      ]);
-    } catch (error) {
-      console.error('Failed to save history to file:', error);
-      toast.error('파일 저장에 실패했습니다');
-    }
-  };
-
-  // Import file and load UUIDs
-  const handleImportFile = async () => {
-    try {
-      const result = await importFile([
-        { name: 'Text Files', extensions: ['txt'] },
-        { name: 'All Files', extensions: ['*'] }
-      ]);
-
-      if (!result.success || !result.content) {
-        return;
-      }
-
-      if (!window.api?.history) {
-        toast.error('히스토리 저장 기능을 사용할 수 없습니다');
-        return;
-      }
-
-      // Parse UUIDs from file (one per line, skip empty lines)
-      const uuids = result.content
-        .split('\n')
-        .map((line: string) => line.trim())
-        .filter((line: string) => line.length > 0);
-
-      if (uuids.length === 0) {
-        toast.error('파일에 유효한 UUID가 없습니다');
-        return;
-      }
-
-      // Save each UUID to history
-      let savedCount = 0;
-      for (const uuid of uuids) {
-        // Basic UUID format validation
-        if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uuid)) {
-          const metadata = getUUIDMetadata(uuid);
-          await window.api.history.save(
-            'uuid',
-            uuid,
-            uuid,
-            metadata ? { version: metadata.version, variant: metadata.variant } : undefined
-          );
-          savedCount++;
-        }
-      }
-
-      toast.success(`${savedCount}개의 UUID를 불러왔습니다`);
-
-      // Set the first valid UUID as current
-      if (savedCount > 0) {
-        setCurrentUUID(uuids.find((uuid: string) =>
-          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uuid)
-        ) || '');
-      }
-    } catch (error) {
-      console.error('Failed to open file:', error);
-      toast.error('파일 열기에 실패했습니다');
-    }
-  };
-
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('tools.uuid.title')}</h2>
@@ -243,25 +214,25 @@ export function UUIDGenerator() {
         </Button>
 
         <Button
-          onClick={handleSaveToFile}
+          onClick={() => setShowExportDialog(true)}
           variant="outline"
           size="lg"
           className="gap-2"
           disabled={isExporting}
         >
-          <Save className="h-5 w-5" />
-          {t('tools.uuid.save')}
+          <Upload className="h-5 w-5" />
+          {t('tools.uuid.export')}
         </Button>
 
         <Button
-          onClick={handleImportFile}
+          onClick={() => setShowImportDialog(true)}
           variant="outline"
           size="lg"
           className="gap-2"
           disabled={isImporting}
         >
-          <FolderOpen className="h-5 w-5" />
-          {t('tools.uuid.open')}
+          <FileDown className="h-5 w-5" />
+          {t('tools.uuid.import')}
         </Button>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -379,6 +350,25 @@ export function UUIDGenerator() {
         isOpen={isHistoryOpen}
         onOpenChange={setIsHistoryOpen}
         onHistoryItemClick={handleHistoryItemClick}
+      />
+
+      {/* Export Dialog */}
+      <ExportDialog
+        open={showExportDialog}
+        onOpenChange={setShowExportDialog}
+        onExport={handleExport}
+        totalCount={totalCount}
+        title="UUID 히스토리 내보내기"
+        description="내보낼 UUID 개수와 파일 형식을 선택하세요"
+      />
+
+      {/* Import Dialog */}
+      <ImportDialog
+        open={showImportDialog}
+        onOpenChange={setShowImportDialog}
+        onImport={handleImport}
+        title="UUID 파일 가져오기"
+        description="UUID 파일을 선택하여 히스토리에 추가하세요. 지원 형식: TXT, JSON, CSV"
       />
 
       {/* Info Section */}
