@@ -24,8 +24,8 @@
       "stats": "통계",
       "size": "크기",
       "lines": "줄",
-      "save": "저장",
-      "open": "열기"
+      "save": "내보내기",
+      "open": "가져오기"
     },
     "jwt": {
       "name": "JWT 디코더",
@@ -45,8 +45,8 @@
       "expiresAt": "만료 시간",
       "issuedAt": "발급 시간",
       "notBefore": "유효 시작 시간",
-      "save": "저장",
-      "open": "열기"
+      "save": "내보내기",
+      "open": "가져오기"
     },
     "base64": {
       "name": "Base64 변환기",
@@ -61,8 +61,8 @@
       "options": "옵션",
       "urlSafe": "URL 안전",
       "removeLineBreaks": "줄 바꿈 제거",
-      "save": "저장",
-      "open": "열기"
+      "save": "내보내기",
+      "open": "가져오기"
     },
     "url": {
       "name": "URL 인코더/디코더",
@@ -88,8 +88,8 @@
       "queryOnly": "쿼리 매개변수만",
       "exampleUrls": "예제 URL",
       "invalidUrl": "유효하지 않은 URL 형식",
-      "save": "저장",
-      "open": "열기"
+      "save": "내보내기",
+      "open": "가져오기"
     },
     "regex": {
       "name": "정규식 테스터",
@@ -130,8 +130,8 @@
       "matchesFound": "{{count}}개 일치 항목 발견",
       "captureGroupsCount": "{{count}}개 캡처 그룹",
       "noCaptures": "캡처 없음",
-      "save": "저장",
-      "open": "열기"
+      "save": "내보내기",
+      "open": "가져오기"
     },
     "diff": {
       "name": "텍스트 비교",
@@ -223,8 +223,8 @@
       "close": "닫기",
       "clearHistory": "지우기",
       "noHistory": "아직 생성된 UUID가 없습니다",
-      "save": "저장",
-      "open": "열기"
+      "save": "내보내기",
+      "open": "가져오기"
     },
     "timestamp": {
       "name": "타임스탬프 변환기",
