@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertCircle, Copy, Check, Send, Save, FolderOpen } from 'lucide-react';
+import { AlertCircle, Copy, Check, Send, Upload, FileDown } from 'lucide-react';
 import { useHistoryAutoSave } from '../../hooks/useHistoryAutoSave';
-import { useFileSystem } from '../../hooks/useFileSystem';
+import { useHistoryExportImport } from '../../hooks/useHistoryExportImport';
+import { ExportDialog } from '../dialogs/ExportDialog';
+import { ImportDialog } from '../dialogs/ImportDialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
@@ -34,16 +36,62 @@ export function JsonFormatter() {
   const [indentLevel, setIndentLevel] = useState('2');
   const [isValid, setIsValid] = useState<boolean | null>(null);
   const [copied, setCopied] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
 
-  // File system hook
-  const { exportFile, importFile, isExporting, isImporting } = useFileSystem({
-    exportSuccessMessage: 'JSON 파일이 저장되었습니다',
-    importSuccessMessage: 'JSON 파일을 불러왔습니다',
-    errorMessage: '파일 작업 실패'
+  // Use the new useHistoryExportImport hook with JSON parsing
+  const {
+    isExporting,
+    isImporting,
+    showExportDialog,
+    showImportDialog,
+    setShowExportDialog,
+    setShowImportDialog,
+    handleExport,
+    handleImport,
+  } = useHistoryExportImport({
+    tool: 'json',
+    toolDisplayName: 'JSON Formatter',
+    parseImportData: (content, format) => {
+      // Parse based on format
+      if (format === 'json') {
+        const data = JSON.parse(content);
+        if (!Array.isArray(data)) throw new Error('JSON must be an array');
+        return data.map((item: any) => ({
+          input: String(item.input || ''),
+          output: item.output ? String(item.output) : undefined,
+        }));
+      } else if (format === 'csv') {
+        const lines = content.split('\n').filter(line => line.trim());
+        const dataLines = lines.slice(1); // Skip header
+        return dataLines.map(line => {
+          const values = line.split(',').map(val => val.trim().replace(/^"|"$/g, ''));
+          return { input: values[0] || '', output: values[1] || undefined };
+        });
+      } else {
+        // TXT format: one JSON per line
+        const lines = content.split('\n').filter(line => line.trim());
+        return lines.map(line => ({ input: line.trim(), output: undefined }));
+      }
+    },
   });
 
   // Auto-save to history
   const saveToHistory = useHistoryAutoSave({ tool: 'json' });
+
+  // Get total count for ExportDialog
+  useEffect(() => {
+    const fetchCount = async () => {
+      if (window.api?.history) {
+        try {
+          const count = await window.api.history.count('json');
+          setTotalCount(count);
+        } catch (error) {
+          console.error('Failed to get history count:', error);
+        }
+      }
+    };
+    fetchCount();
+  }, [output]); // Refetch when JSON is formatted
 
   // Save to history when output changes
   useEffect(() => {
@@ -127,41 +175,6 @@ export function JsonFormatter() {
       },
     });
     toast.success('JSON sent to API Tester');
-  };
-
-  const handleSaveToFile = async () => {
-    if (!output) {
-      toast.error('저장할 JSON이 없습니다');
-      return;
-    }
-
-    await exportFile(output, `json-${Date.now()}.json`, [
-      { name: 'JSON Files', extensions: ['json'] },
-      { name: 'All Files', extensions: ['*'] }
-    ]);
-  };
-
-  const handleOpenFile = async () => {
-    const result = await importFile([
-      { name: 'JSON Files', extensions: ['json'] },
-      { name: 'All Files', extensions: ['*'] }
-    ]);
-
-    if (result.success && result.content) {
-      setInput(result.content);
-      // Auto-format the loaded JSON
-      try {
-        const parsed = JSON.parse(result.content);
-        const formatted = JSON.stringify(parsed, null, parseInt(indentLevel));
-        setOutput(formatted);
-        setIsValid(true);
-        setError('');
-      } catch (err) {
-        setError('Invalid JSON in file: ' + (err as Error).message);
-        setOutput('');
-        setIsValid(false);
-      }
-    }
   };
 
   return (
@@ -310,38 +323,57 @@ export function JsonFormatter() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    onClick={handleSaveToFile}
+                    onClick={() => setShowExportDialog(true)}
                     variant="outline"
-                    disabled={isExporting || !output}
+                    disabled={isExporting}
                   >
-                    <Save className="h-4 w-4 mr-2" />
-                    {t('tools.json.save')}
+                    <Upload className="h-4 w-4 mr-2" />
+                    {t('common.export')}
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent role="tooltip">
-                  <p>Save JSON to file</p>
+                  <p>Export history to file</p>
                 </TooltipContent>
               </Tooltip>
 
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    onClick={handleOpenFile}
+                    onClick={() => setShowImportDialog(true)}
                     variant="outline"
                     disabled={isImporting}
                   >
-                    <FolderOpen className="h-4 w-4 mr-2" />
-                    {t('tools.json.open')}
+                    <FileDown className="h-4 w-4 mr-2" />
+                    {t('common.import')}
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent role="tooltip">
-                  <p>Open JSON from file</p>
+                  <p>Import history from file</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </div>
         </div>
       </CardContent>
+
+      {/* Export Dialog */}
+      <ExportDialog
+        open={showExportDialog}
+        onOpenChange={setShowExportDialog}
+        onExport={handleExport}
+        totalCount={totalCount}
+        title="JSON 히스토리 내보내기"
+        description="내보낼 JSON 히스토리 개수와 파일 형식을 선택하세요"
+      />
+
+      {/* Import Dialog */}
+      <ImportDialog
+        open={showImportDialog}
+        onOpenChange={setShowImportDialog}
+        onImport={handleImport}
+        title="JSON 파일 가져오기"
+        description="JSON 파일을 선택하여 히스토리에 추가하세요. 지원 형식: TXT, JSON, CSV"
+      />
     </Card>
   );
 }
