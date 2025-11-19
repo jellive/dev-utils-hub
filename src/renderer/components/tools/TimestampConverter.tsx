@@ -36,9 +36,9 @@ export function TimestampConverter() {
   const saveToHistory = useHistoryAutoSave({ tool: 'timestamp' });
 
   // File system hook
-  const { saveFile, openFile, isSaving, isOpening } = useFileSystem({
-    saveSuccessMessage: '타임스탬프 파일이 저장되었습니다',
-    openSuccessMessage: '타임스탬프 파일을 불러왔습니다',
+  const { exportFile, importFile, isExporting, isImporting } = useFileSystem({
+    exportSuccessMessage: '타임스탬프 파일이 저장되었습니다',
+    importSuccessMessage: '타임스탬프 파일을 불러왔습니다',
     errorMessage: '파일 작업 실패'
   });
 
@@ -90,14 +90,14 @@ export function TimestampConverter() {
       timezone,
       selectedDate: selectedDate?.toISOString()
     }, null, 2);
-    await saveFile(data, `timestamp-${Date.now()}.json`, [
+    await exportFile(data, `timestamp-${Date.now()}.json`, [
       { name: 'JSON Files', extensions: ['json'] },
       { name: 'All Files', extensions: ['*'] }
     ]);
   };
 
   const handleOpenFile = async () => {
-    const result = await openFile([
+    const result = await importFile([
       { name: 'JSON Files', extensions: ['json'] },
       { name: 'All Files', extensions: ['*'] }
     ]);
@@ -183,7 +183,7 @@ export function TimestampConverter() {
                 </Button>
                 <Button
                   onClick={handleSaveToFile}
-                  disabled={isSaving || !timestamp}
+                  disabled={isExporting || !timestamp}
                   variant="outline"
                   className="gap-2"
                 >
@@ -192,7 +192,7 @@ export function TimestampConverter() {
                 </Button>
                 <Button
                   onClick={handleOpenFile}
-                  disabled={isOpening}
+                  disabled={isImporting}
                   variant="outline"
                   className="gap-2"
                 >

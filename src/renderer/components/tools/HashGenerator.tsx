@@ -39,9 +39,9 @@ export function HashGenerator() {
   const saveToHistory = useHistoryAutoSave({ tool: 'hash' });
 
   // File system hook
-  const { saveFile, openFile, isSaving, isOpening } = useFileSystem({
-    saveSuccessMessage: '해시 파일이 저장되었습니다',
-    openSuccessMessage: '해시 파일을 불러왔습니다',
+  const { exportFile, importFile, isExporting, isImporting } = useFileSystem({
+    exportSuccessMessage: '해시 파일이 저장되었습니다',
+    importSuccessMessage: '해시 파일을 불러왔습니다',
     errorMessage: '파일 작업 실패'
   });
 
@@ -212,14 +212,14 @@ export function HashGenerator() {
       hashResult
     }, null, 2);
 
-    await saveFile(data, `hash-${algorithm}-${Date.now()}.json`, [
+    await exportFile(data, `hash-${algorithm}-${Date.now()}.json`, [
       { name: 'JSON Files', extensions: ['json'] },
       { name: 'All Files', extensions: ['*'] }
     ]);
   };
 
   const handleOpenFile = async () => {
-    const result = await openFile([
+    const result = await importFile([
       { name: 'JSON Files', extensions: ['json'] },
       { name: 'All Files', extensions: ['*'] }
     ]);
@@ -442,7 +442,7 @@ export function HashGenerator() {
         <Button
           onClick={handleSaveToFile}
           variant="outline"
-          disabled={isSaving || !hashResult}
+          disabled={isExporting || !hashResult}
           className="gap-2"
         >
           <Save className="h-4 w-4" />
@@ -451,7 +451,7 @@ export function HashGenerator() {
         <Button
           onClick={handleOpenFile}
           variant="outline"
-          disabled={isOpening}
+          disabled={isImporting}
           className="gap-2"
         >
           <FolderOpen className="h-4 w-4" />

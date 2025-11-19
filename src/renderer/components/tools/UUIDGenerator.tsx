@@ -15,9 +15,9 @@ import type { HistoryEntry } from '../../../preload/index.d';
 export function UUIDGenerator() {
   const { t } = useTranslation();
   const { copy } = useClipboard();
-  const { saveFile, openFile, isSaving, isOpening } = useFileSystem({
-    saveSuccessMessage: '파일이 저장되었습니다',
-    openSuccessMessage: '파일을 불러왔습니다',
+  const { exportFile, importFile, isExporting, isImporting } = useFileSystem({
+    exportSuccessMessage: '파일이 내보내졌습니다',
+    importSuccessMessage: '파일을 가져왔습니다',
     errorMessage: '파일 작업 실패'
   });
   const [currentUUID, setCurrentUUID] = useState('');
@@ -56,7 +56,7 @@ export function UUIDGenerator() {
     toast.success(t('common.loaded'));
   };
 
-  const generateBulk = () => {
+  const generateBulk = async () => {
     const count = parseInt(bulkCount);
     if (isNaN(count) || count < 1 || count > 100) {
       toast.error('Please enter a number between 1 and 100');
@@ -68,6 +68,25 @@ export function UUIDGenerator() {
       uuids.push(crypto.randomUUID());
     }
     setBulkUUIDs(uuids);
+
+    // Save all generated UUIDs to history
+    if (window.api?.history) {
+      try {
+        for (const uuid of uuids) {
+          const metadata = getUUIDMetadata(uuid);
+          await window.api.history.save(
+            'uuid',
+            uuid,
+            uuid,
+            metadata ? { version: metadata.version, variant: metadata.variant } : undefined
+          );
+        }
+        toast.success(`${count}개의 UUID가 생성되고 히스토리에 저장되었습니다`);
+      } catch (error) {
+        console.error('Failed to save bulk UUIDs to history:', error);
+        toast.error('히스토리 저장에 실패했습니다');
+      }
+    }
   };
 
   const copyAllBulk = async () => {
@@ -129,8 +148,8 @@ export function UUIDGenerator() {
       // Format history as text (one UUID per line)
       const content = history.map(entry => entry.input).join('\n');
 
-      // Save to file
-      await saveFile(content, `uuids-${Date.now()}.txt`, [
+      // Export to file
+      await exportFile(content, `uuids-${Date.now()}.txt`, [
         { name: 'Text Files', extensions: ['txt'] },
         { name: 'All Files', extensions: ['*'] }
       ]);
@@ -140,10 +159,10 @@ export function UUIDGenerator() {
     }
   };
 
-  // Open file and load UUIDs
-  const handleOpenFile = async () => {
+  // Import file and load UUIDs
+  const handleImportFile = async () => {
     try {
-      const result = await openFile([
+      const result = await importFile([
         { name: 'Text Files', extensions: ['txt'] },
         { name: 'All Files', extensions: ['*'] }
       ]);
@@ -228,18 +247,18 @@ export function UUIDGenerator() {
           variant="outline"
           size="lg"
           className="gap-2"
-          disabled={isSaving}
+          disabled={isExporting}
         >
           <Save className="h-5 w-5" />
           {t('tools.uuid.save')}
         </Button>
 
         <Button
-          onClick={handleOpenFile}
+          onClick={handleImportFile}
           variant="outline"
           size="lg"
           className="gap-2"
-          disabled={isOpening}
+          disabled={isImporting}
         >
           <FolderOpen className="h-5 w-5" />
           {t('tools.uuid.open')}

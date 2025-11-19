@@ -31,9 +31,9 @@ export function TextDiff() {
   const saveToHistory = useHistoryAutoSave({ tool: 'diff' });
 
   // File system hook
-  const { saveFile, openFile, isSaving, isOpening } = useFileSystem({
-    saveSuccessMessage: 'Diff 파일이 저장되었습니다',
-    openSuccessMessage: 'Diff 파일을 불러왔습니다',
+  const { exportFile, importFile, isExporting, isImporting } = useFileSystem({
+    exportSuccessMessage: 'Diff 파일이 저장되었습니다',
+    importSuccessMessage: 'Diff 파일을 불러왔습니다',
     errorMessage: '파일 작업 실패'
   });
 
@@ -98,14 +98,14 @@ export function TextDiff() {
       ignoreWhitespace,
       viewMode
     }, null, 2);
-    await saveFile(data, `diff-${Date.now()}.json`, [
+    await exportFile(data, `diff-${Date.now()}.json`, [
       { name: 'JSON Files', extensions: ['json'] },
       { name: 'All Files', extensions: ['*'] }
     ]);
   };
 
   const handleOpenFile = async () => {
-    const result = await openFile([
+    const result = await importFile([
       { name: 'JSON Files', extensions: ['json'] },
       { name: 'All Files', extensions: ['*'] }
     ]);
@@ -263,7 +263,7 @@ export function TextDiff() {
               </Button>
               <Button
                 onClick={handleSaveToFile}
-                disabled={isSaving || (!originalText && !modifiedText)}
+                disabled={isExporting || (!originalText && !modifiedText)}
                 variant="outline"
                 className="gap-2"
               >
@@ -272,7 +272,7 @@ export function TextDiff() {
               </Button>
               <Button
                 onClick={handleOpenFile}
-                disabled={isOpening}
+                disabled={isImporting}
                 variant="outline"
                 className="gap-2"
               >

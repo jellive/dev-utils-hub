@@ -38,9 +38,9 @@ export function Base64Converter() {
   const [encoding, setEncoding] = useState('utf-8');
 
   // File system hook
-  const { saveFile, openFile, isSaving, isOpening } = useFileSystem({
-    saveSuccessMessage: 'Base64 파일이 저장되었습니다',
-    openSuccessMessage: 'Base64 파일을 불러왔습니다',
+  const { exportFile, importFile, isExporting, isImporting } = useFileSystem({
+    exportSuccessMessage: 'Base64 파일이 저장되었습니다',
+    importSuccessMessage: 'Base64 파일을 불러왔습니다',
     errorMessage: '파일 작업 실패'
   });
 
@@ -280,14 +280,14 @@ export function Base64Converter() {
     }
 
     const extension = activeTab === 'encode' ? 'b64' : 'txt';
-    await saveFile(output, `base64-${activeTab}-${Date.now()}.${extension}`, [
+    await exportFile(output, `base64-${activeTab}-${Date.now()}.${extension}`, [
       { name: activeTab === 'encode' ? 'Base64 Files' : 'Text Files', extensions: [extension] },
       { name: 'All Files', extensions: ['*'] }
     ]);
   };
 
   const handleOpenFile = async () => {
-    const result = await openFile([
+    const result = await importFile([
       { name: 'Text Files', extensions: ['txt', 'b64'] },
       { name: 'All Files', extensions: ['*'] }
     ]);
@@ -393,7 +393,7 @@ export function Base64Converter() {
             <Button
               onClick={handleSaveToFile}
               variant="outline"
-              disabled={isSaving || !output}
+              disabled={isExporting || !output}
               className="gap-2"
             >
               <Save className="h-4 w-4" />
@@ -402,7 +402,7 @@ export function Base64Converter() {
             <Button
               onClick={handleOpenFile}
               variant="outline"
-              disabled={isOpening}
+              disabled={isImporting}
               className="gap-2"
             >
               <FolderOpen className="h-4 w-4" />
@@ -460,7 +460,7 @@ export function Base64Converter() {
             <Button
               onClick={handleSaveToFile}
               variant="outline"
-              disabled={isSaving || !output}
+              disabled={isExporting || !output}
               className="gap-2"
             >
               <Save className="h-4 w-4" />
@@ -469,7 +469,7 @@ export function Base64Converter() {
             <Button
               onClick={handleOpenFile}
               variant="outline"
-              disabled={isOpening}
+              disabled={isImporting}
               className="gap-2"
             >
               <FolderOpen className="h-4 w-4" />

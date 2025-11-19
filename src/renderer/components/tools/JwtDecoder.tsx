@@ -37,9 +37,9 @@ export function JwtDecoder() {
   const saveToHistory = useHistoryAutoSave({ tool: 'jwt' });
 
   // File system hook
-  const { saveFile, openFile, isSaving, isOpening } = useFileSystem({
-    saveSuccessMessage: 'JWT 파일이 저장되었습니다',
-    openSuccessMessage: 'JWT 파일을 불러왔습니다',
+  const { exportFile, importFile, isExporting, isImporting } = useFileSystem({
+    exportSuccessMessage: 'JWT 파일이 저장되었습니다',
+    importSuccessMessage: 'JWT 파일을 불러왔습니다',
     errorMessage: '파일 작업 실패'
   });
 
@@ -139,14 +139,14 @@ export function JwtDecoder() {
       return;
     }
 
-    await saveFile(input.trim(), `jwt-${Date.now()}.txt`, [
+    await exportFile(input.trim(), `jwt-${Date.now()}.txt`, [
       { name: 'Text Files', extensions: ['txt'] },
       { name: 'All Files', extensions: ['*'] }
     ]);
   };
 
   const handleOpenFile = async () => {
-    const result = await openFile([
+    const result = await importFile([
       { name: 'Text Files', extensions: ['txt'] },
       { name: 'All Files', extensions: ['*'] }
     ]);
@@ -191,7 +191,7 @@ export function JwtDecoder() {
             <Button
               onClick={handleSaveToFile}
               variant="outline"
-              disabled={isSaving || !input.trim()}
+              disabled={isExporting || !input.trim()}
             >
               <Save className="mr-2 h-4 w-4" />
               {t('tools.jwt.save')}
@@ -199,7 +199,7 @@ export function JwtDecoder() {
             <Button
               onClick={handleOpenFile}
               variant="outline"
-              disabled={isOpening}
+              disabled={isImporting}
             >
               <FolderOpen className="mr-2 h-4 w-4" />
               {t('tools.jwt.open')}

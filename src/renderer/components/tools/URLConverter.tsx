@@ -42,9 +42,9 @@ export function URLConverter() {
   const saveToHistory = useHistoryAutoSave({ tool: 'url' });
 
   // File system hook
-  const { saveFile, openFile, isSaving, isOpening } = useFileSystem({
-    saveSuccessMessage: 'URL 파일이 저장되었습니다',
-    openSuccessMessage: 'URL 파일을 불러왔습니다',
+  const { exportFile, importFile, isExporting, isImporting } = useFileSystem({
+    exportSuccessMessage: 'URL 파일이 저장되었습니다',
+    importSuccessMessage: 'URL 파일을 불러왔습니다',
     errorMessage: '파일 작업 실패'
   });
 
@@ -184,14 +184,14 @@ export function URLConverter() {
       return;
     }
 
-    await saveFile(output, `url-${Date.now()}.txt`, [
+    await exportFile(output, `url-${Date.now()}.txt`, [
       { name: 'Text Files', extensions: ['txt'] },
       { name: 'All Files', extensions: ['*'] }
     ]);
   };
 
   const handleOpenFile = async () => {
-    const result = await openFile([
+    const result = await importFile([
       { name: 'Text Files', extensions: ['txt'] },
       { name: 'All Files', extensions: ['*'] }
     ]);
@@ -280,7 +280,7 @@ export function URLConverter() {
                 <Button
                   onClick={handleSaveToFile}
                   variant="outline"
-                  disabled={isSaving || !output}
+                  disabled={isExporting || !output}
                   className="gap-2"
                 >
                   <Save className="h-4 w-4" />
@@ -289,7 +289,7 @@ export function URLConverter() {
                 <Button
                   onClick={handleOpenFile}
                   variant="outline"
-                  disabled={isOpening}
+                  disabled={isImporting}
                   className="gap-2"
                 >
                   <FolderOpen className="h-4 w-4" />
@@ -373,7 +373,7 @@ export function URLConverter() {
                 <Button
                   onClick={handleSaveToFile}
                   variant="outline"
-                  disabled={isSaving || !output}
+                  disabled={isExporting || !output}
                   className="gap-2"
                 >
                   <Save className="h-4 w-4" />
@@ -382,7 +382,7 @@ export function URLConverter() {
                 <Button
                   onClick={handleOpenFile}
                   variant="outline"
-                  disabled={isOpening}
+                  disabled={isImporting}
                   className="gap-2"
                 >
                   <FolderOpen className="h-4 w-4" />

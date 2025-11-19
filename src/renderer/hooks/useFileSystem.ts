@@ -3,23 +3,23 @@ import { toast } from 'sonner'
 import { FileErrorCode, type SaveFileResult, type OpenFileResult, type FileFilter } from '../../preload/index.d'
 
 export interface UseFileSystemOptions {
-  /** Custom success message for save operations */
-  saveSuccessMessage?: string
-  /** Custom success message for open operations */
-  openSuccessMessage?: string
+  /** Custom success message for export operations */
+  exportSuccessMessage?: string
+  /** Custom success message for import operations */
+  importSuccessMessage?: string
   /** Custom error message */
   errorMessage?: string
 }
 
 export interface UseFileSystemReturn {
-  /** Save content to file */
-  saveFile: (content: string, defaultFileName?: string, filters?: FileFilter[]) => Promise<SaveFileResult>
-  /** Open and read file */
-  openFile: (filters?: FileFilter[]) => Promise<OpenFileResult>
-  /** Whether a save operation is in progress */
-  isSaving: boolean
-  /** Whether an open operation is in progress */
-  isOpening: boolean
+  /** Export content to file */
+  exportFile: (content: string, defaultFileName?: string, filters?: FileFilter[]) => Promise<SaveFileResult>
+  /** Import and read file */
+  importFile: (filters?: FileFilter[]) => Promise<OpenFileResult>
+  /** Whether an export operation is in progress */
+  isExporting: boolean
+  /** Whether an import operation is in progress */
+  isImporting: boolean
 }
 
 /**
@@ -27,42 +27,42 @@ export interface UseFileSystemReturn {
  */
 export function useFileSystem(options: UseFileSystemOptions = {}): UseFileSystemReturn {
   const {
-    saveSuccessMessage = '파일이 저장되었습니다',
-    openSuccessMessage = '파일을 불러왔습니다',
+    exportSuccessMessage = '파일이 내보내졌습니다',
+    importSuccessMessage = '파일을 가져왔습니다',
     errorMessage = '파일 작업 실패'
   } = options
 
-  const [isSaving, setIsSaving] = useState(false)
-  const [isOpening, setIsOpening] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
+  const [isImporting, setIsImporting] = useState(false)
 
-  // Save file
-  const saveFile = useCallback(
+  // Export file
+  const exportFile = useCallback(
     async (
       content: string,
       defaultFileName?: string,
       filters?: FileFilter[]
     ): Promise<SaveFileResult> => {
       if (!content) {
-        console.warn('Cannot save empty content')
-        toast.error('저장할 내용이 없습니다')
+        console.warn('Cannot export empty content')
+        toast.error('내보낼 내용이 없습니다')
         return {
           success: false,
           error: {
             code: FileErrorCode.INVALID_PATH,
-            message: '저장할 내용이 없습니다'
+            message: '내보낼 내용이 없습니다'
           }
         }
       }
 
       try {
-        setIsSaving(true)
+        setIsExporting(true)
 
         if (window.api?.file) {
           // Use Electron file API
           const result = await window.api.file.save(content, defaultFileName, filters)
 
           if (result.success) {
-            toast.success(saveSuccessMessage)
+            toast.success(exportSuccessMessage)
           } else if (result.error?.code !== 'CANCELLED') {
             // Don't show error toast for user cancellation
             toast.error(result.error?.message || errorMessage)
@@ -81,7 +81,7 @@ export function useFileSystem(options: UseFileSystemOptions = {}): UseFileSystem
           document.body.removeChild(a)
           URL.revokeObjectURL(url)
 
-          toast.success(saveSuccessMessage)
+          toast.success(exportSuccessMessage)
 
           return {
             success: true,
@@ -89,7 +89,7 @@ export function useFileSystem(options: UseFileSystemOptions = {}): UseFileSystem
           }
         }
       } catch (error) {
-        console.error('Failed to save file:', error)
+        console.error('Failed to export file:', error)
         toast.error(errorMessage)
 
         return {
@@ -101,24 +101,24 @@ export function useFileSystem(options: UseFileSystemOptions = {}): UseFileSystem
           }
         }
       } finally {
-        setIsSaving(false)
+        setIsExporting(false)
       }
     },
-    [saveSuccessMessage, errorMessage]
+    [exportSuccessMessage, errorMessage]
   )
 
-  // Open file
-  const openFile = useCallback(
+  // Import file
+  const importFile = useCallback(
     async (filters?: FileFilter[]): Promise<OpenFileResult> => {
       try {
-        setIsOpening(true)
+        setIsImporting(true)
 
         if (window.api?.file) {
           // Use Electron file API
           const result = await window.api.file.open(filters)
 
           if (result.success) {
-            toast.success(openSuccessMessage)
+            toast.success(importSuccessMessage)
           } else if (result.error?.code !== 'CANCELLED') {
             // Don't show error toast for user cancellation
             toast.error(result.error?.message || errorMessage)
@@ -152,7 +152,7 @@ export function useFileSystem(options: UseFileSystemOptions = {}): UseFileSystem
 
               try {
                 const content = await file.text()
-                toast.success(openSuccessMessage)
+                toast.success(importSuccessMessage)
 
                 resolve({
                   success: true,
@@ -177,7 +177,7 @@ export function useFileSystem(options: UseFileSystemOptions = {}): UseFileSystem
           })
         }
       } catch (error) {
-        console.error('Failed to open file:', error)
+        console.error('Failed to import file:', error)
         toast.error(errorMessage)
 
         return {
@@ -189,16 +189,16 @@ export function useFileSystem(options: UseFileSystemOptions = {}): UseFileSystem
           }
         }
       } finally {
-        setIsOpening(false)
+        setIsImporting(false)
       }
     },
-    [openSuccessMessage, errorMessage]
+    [importSuccessMessage, errorMessage]
   )
 
   return {
-    saveFile,
-    openFile,
-    isSaving,
-    isOpening
+    exportFile,
+    importFile,
+    isExporting,
+    isImporting
   }
 }

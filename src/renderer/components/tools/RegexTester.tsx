@@ -94,9 +94,9 @@ export function RegexTester() {
   const saveToHistory = useHistoryAutoSave({ tool: 'regex' });
 
   // File system hook
-  const { saveFile, openFile, isSaving, isOpening } = useFileSystem({
-    saveSuccessMessage: '정규식 파일이 저장되었습니다',
-    openSuccessMessage: '정규식 파일을 불러왔습니다',
+  const { exportFile, importFile, isExporting, isImporting } = useFileSystem({
+    exportSuccessMessage: '정규식 파일이 저장되었습니다',
+    importSuccessMessage: '정규식 파일을 불러왔습니다',
     errorMessage: '파일 작업 실패'
   });
 
@@ -173,14 +173,14 @@ export function RegexTester() {
     }
 
     const data = JSON.stringify({ pattern, testString, flags }, null, 2);
-    await saveFile(data, `regex-${Date.now()}.json`, [
+    await exportFile(data, `regex-${Date.now()}.json`, [
       { name: 'JSON Files', extensions: ['json'] },
       { name: 'All Files', extensions: ['*'] }
     ]);
   };
 
   const handleOpenFile = async () => {
-    const result = await openFile([
+    const result = await importFile([
       { name: 'JSON Files', extensions: ['json'] },
       { name: 'All Files', extensions: ['*'] }
     ]);
@@ -432,7 +432,7 @@ export function RegexTester() {
             <Button
               onClick={handleSaveToFile}
               variant="outline"
-              disabled={isSaving || !pattern}
+              disabled={isExporting || !pattern}
               className="gap-2"
             >
               <Save className="h-4 w-4" />
@@ -441,7 +441,7 @@ export function RegexTester() {
             <Button
               onClick={handleOpenFile}
               variant="outline"
-              disabled={isOpening}
+              disabled={isImporting}
               className="gap-2"
             >
               <FolderOpen className="h-4 w-4" />

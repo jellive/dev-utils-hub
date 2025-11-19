@@ -36,9 +36,9 @@ export function JsonFormatter() {
   const [copied, setCopied] = useState(false);
 
   // File system hook
-  const { saveFile, openFile, isSaving, isOpening } = useFileSystem({
-    saveSuccessMessage: 'JSON 파일이 저장되었습니다',
-    openSuccessMessage: 'JSON 파일을 불러왔습니다',
+  const { exportFile, importFile, isExporting, isImporting } = useFileSystem({
+    exportSuccessMessage: 'JSON 파일이 저장되었습니다',
+    importSuccessMessage: 'JSON 파일을 불러왔습니다',
     errorMessage: '파일 작업 실패'
   });
 
@@ -135,14 +135,14 @@ export function JsonFormatter() {
       return;
     }
 
-    await saveFile(output, `json-${Date.now()}.json`, [
+    await exportFile(output, `json-${Date.now()}.json`, [
       { name: 'JSON Files', extensions: ['json'] },
       { name: 'All Files', extensions: ['*'] }
     ]);
   };
 
   const handleOpenFile = async () => {
-    const result = await openFile([
+    const result = await importFile([
       { name: 'JSON Files', extensions: ['json'] },
       { name: 'All Files', extensions: ['*'] }
     ]);
@@ -312,7 +312,7 @@ export function JsonFormatter() {
                   <Button
                     onClick={handleSaveToFile}
                     variant="outline"
-                    disabled={isSaving || !output}
+                    disabled={isExporting || !output}
                   >
                     <Save className="h-4 w-4 mr-2" />
                     {t('tools.json.save')}
@@ -328,7 +328,7 @@ export function JsonFormatter() {
                   <Button
                     onClick={handleOpenFile}
                     variant="outline"
-                    disabled={isOpening}
+                    disabled={isImporting}
                   >
                     <FolderOpen className="h-4 w-4 mr-2" />
                     {t('tools.json.open')}
