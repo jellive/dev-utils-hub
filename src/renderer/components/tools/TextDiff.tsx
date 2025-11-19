@@ -1,5 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useHistoryAutoSave } from '../../hooks/useHistoryAutoSave';
+import { useHistoryExportImport } from '../../hooks/useHistoryExportImport';
+import { ExportDialog } from '../dialogs/ExportDialog';
+import { ImportDialog } from '../dialogs/ImportDialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,10 +10,9 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { FileDiff, Copy, Save, FolderOpen } from 'lucide-react';
+import { FileDiff, Copy, Upload, FileDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { useFileSystem } from '../../hooks/useFileSystem';
 import { diffLines } from '../../utils/diffAlgorithm';
 import type { DiffResult } from '../../utils/diffAlgorithm';
 
@@ -23,19 +25,65 @@ export function TextDiff() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [ignoreWhitespace, setIgnoreWhitespace] = useState(false);
   const [viewMode, setViewMode] = useState<'unified' | 'split'>('split');
+  const [totalCount, setTotalCount] = useState(0);
 
   const leftScrollRef = useRef<HTMLDivElement>(null);
   const rightScrollRef = useRef<HTMLDivElement>(null);
 
+  // Use the new useHistoryExportImport hook with Diff parsing
+  const {
+    isExporting,
+    isImporting,
+    showExportDialog,
+    showImportDialog,
+    setShowExportDialog,
+    setShowImportDialog,
+    handleExport,
+    handleImport,
+  } = useHistoryExportImport({
+    tool: 'diff',
+    toolDisplayName: 'Text Diff',
+    parseImportData: (content, format) => {
+      // Parse based on format
+      if (format === 'json') {
+        const data = JSON.parse(content);
+        if (!Array.isArray(data)) throw new Error('JSON must be an array');
+        return data.map((item: any) => ({
+          input: String(item.input || ''),
+          output: item.output ? String(item.output) : undefined,
+        }));
+      } else if (format === 'csv') {
+        const lines = content.split('\n').filter(line => line.trim());
+        const dataLines = lines.slice(1); // Skip header
+        return dataLines.map(line => {
+          const values = line.split(',').map(val => val.trim().replace(/^"|"$/g, ''));
+          return { input: values[0] || '', output: values[1] || undefined };
+        });
+      } else {
+        // TXT format: one diff per line
+        const lines = content.split('\n').filter(line => line.trim());
+        return lines.map(line => ({ input: line.trim(), output: undefined }));
+      }
+    },
+  });
+
   // Auto-save to history
   const saveToHistory = useHistoryAutoSave({ tool: 'diff' });
 
-  // File system hook
-  const { exportFile, importFile, isExporting, isImporting } = useFileSystem({
-    exportSuccessMessage: 'Diff 파일이 저장되었습니다',
-    importSuccessMessage: 'Diff 파일을 불러왔습니다',
-    errorMessage: '파일 작업 실패'
-  });
+  // Get total count for ExportDialog
+  useEffect(() => {
+    const fetchCount = async () => {
+      if (window.api?.history) {
+        try {
+          const count = await window.api.history.count('diff');
+          setTotalCount(count);
+        } catch (error) {
+          console.error('Failed to get history count:', error);
+        }
+      }
+    };
+    fetchCount();
+  }, [diffResults]); // Refetch when diff is compared
 
   // Save to history when diff results change
   useEffect(() => {
@@ -84,43 +132,6 @@ export function TextDiff() {
       toast.success(t('common.copied'));
     } catch (err) {
       toast.error(t('common.copyFailed'));
-    }
-  };
-
-  const handleSaveToFile = async () => {
-    if (!originalText && !modifiedText) {
-      toast.error('저장할 텍스트가 없습니다');
-      return;
-    }
-    const data = JSON.stringify({
-      originalText,
-      modifiedText,
-      ignoreWhitespace,
-      viewMode
-    }, null, 2);
-    await exportFile(data, `diff-${Date.now()}.json`, [
-      { name: 'JSON Files', extensions: ['json'] },
-      { name: 'All Files', extensions: ['*'] }
-    ]);
-  };
-
-  const handleOpenFile = async () => {
-    const result = await importFile([
-      { name: 'JSON Files', extensions: ['json'] },
-      { name: 'All Files', extensions: ['*'] }
-    ]);
-    if (result.success && result.content) {
-      try {
-        const data = JSON.parse(result.content);
-        if (data.originalText !== undefined) setOriginalText(data.originalText);
-        if (data.modifiedText !== undefined) setModifiedText(data.modifiedText);
-        if (data.ignoreWhitespace !== undefined) setIgnoreWhitespace(data.ignoreWhitespace);
-        if (data.viewMode) setViewMode(data.viewMode);
-        setHasCompared(false);
-        setDiffResults([]);
-      } catch (err) {
-        toast.error('JSON 파일 파싱 실패');
-      }
     }
   };
 
@@ -262,22 +273,22 @@ export function TextDiff() {
                 {t('common.clear')}
               </Button>
               <Button
-                onClick={handleSaveToFile}
-                disabled={isExporting || (!originalText && !modifiedText)}
+                onClick={() => setShowExportDialog(true)}
+                disabled={isExporting}
                 variant="outline"
                 className="gap-2"
               >
-                <Save className="h-4 w-4" />
-                {t('common.save')}
+                <Upload className="h-4 w-4" />
+                {t('common.export')}
               </Button>
               <Button
-                onClick={handleOpenFile}
+                onClick={() => setShowImportDialog(true)}
                 disabled={isImporting}
                 variant="outline"
                 className="gap-2"
               >
-                <FolderOpen className="h-4 w-4" />
-                {t('common.open')}
+                <FileDown className="h-4 w-4" />
+                {t('common.import')}
               </Button>
             </div>
           </div>
@@ -503,6 +514,25 @@ export function TextDiff() {
           <li>• {t('tools.diff.step5')}</li>
         </ul>
       </div>
+
+      {/* Export Dialog */}
+      <ExportDialog
+        open={showExportDialog}
+        onOpenChange={setShowExportDialog}
+        onExport={handleExport}
+        totalCount={totalCount}
+        title="Diff 히스토리 내보내기"
+        description="내보낼 Diff 히스토리 개수와 파일 형식을 선택하세요"
+      />
+
+      {/* Import Dialog */}
+      <ImportDialog
+        open={showImportDialog}
+        onOpenChange={setShowImportDialog}
+        onImport={handleImport}
+        title="Diff 파일 가져오기"
+        description="Diff 파일을 선택하여 히스토리에 추가하세요. 지원 형식: TXT, JSON, CSV"
+      />
     </div>
   );
 }
