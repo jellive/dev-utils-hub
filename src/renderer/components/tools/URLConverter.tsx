@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHistoryAutoSave } from '../../hooks/useHistoryAutoSave';
+import { useHistoryExportImport } from '../../hooks/useHistoryExportImport';
+import { ExportDialog } from '../dialogs/ExportDialog';
+import { ImportDialog } from '../dialogs/ImportDialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -9,9 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Copy, Link2, AlertCircle, CheckCircle2, HelpCircle, Save, FolderOpen } from 'lucide-react';
+import { Copy, Link2, AlertCircle, CheckCircle2, HelpCircle, Upload, FileDown } from 'lucide-react';
 import { toast } from 'sonner';
-import { useFileSystem } from '../../hooks/useFileSystem';
 
 type EncodingMode = 'full' | 'query';
 
@@ -37,16 +39,62 @@ export function URLConverter() {
   const [urlComponents, setUrlComponents] = useState<URLComponents | null>(null);
   const [queryParams, setQueryParams] = useState<QueryParam[]>([]);
   const [isValidUrl, setIsValidUrl] = useState<boolean | null>(null);
+  const [totalCount, setTotalCount] = useState(0);
+
+  // Use the new useHistoryExportImport hook with URL parsing
+  const {
+    isExporting,
+    isImporting,
+    showExportDialog,
+    showImportDialog,
+    setShowExportDialog,
+    setShowImportDialog,
+    handleExport,
+    handleImport,
+  } = useHistoryExportImport({
+    tool: 'url',
+    toolDisplayName: 'URL Converter',
+    parseImportData: (content, format) => {
+      // Parse based on format
+      if (format === 'json') {
+        const data = JSON.parse(content);
+        if (!Array.isArray(data)) throw new Error('JSON must be an array');
+        return data.map((item: any) => ({
+          input: String(item.input || ''),
+          output: item.output ? String(item.output) : undefined,
+        }));
+      } else if (format === 'csv') {
+        const lines = content.split('\n').filter(line => line.trim());
+        const dataLines = lines.slice(1); // Skip header
+        return dataLines.map(line => {
+          const values = line.split(',').map(val => val.trim().replace(/^"|"$/g, ''));
+          return { input: values[0] || '', output: values[1] || undefined };
+        });
+      } else {
+        // TXT format: one URL per line
+        const lines = content.split('\n').filter(line => line.trim());
+        return lines.map(line => ({ input: line.trim(), output: undefined }));
+      }
+    },
+  });
 
   // Auto-save to history
   const saveToHistory = useHistoryAutoSave({ tool: 'url' });
 
-  // File system hook
-  const { exportFile, importFile, isExporting, isImporting } = useFileSystem({
-    exportSuccessMessage: 'URL 파일이 저장되었습니다',
-    importSuccessMessage: 'URL 파일을 불러왔습니다',
-    errorMessage: '파일 작업 실패'
-  });
+  // Get total count for ExportDialog
+  useEffect(() => {
+    const fetchCount = async () => {
+      if (window.api?.history) {
+        try {
+          const count = await window.api.history.count('url');
+          setTotalCount(count);
+        } catch (error) {
+          console.error('Failed to get history count:', error);
+        }
+      }
+    };
+    fetchCount();
+  }, [output]); // Refetch when URL is encoded/decoded
 
   // Save to history when output changes
   useEffect(() => {
@@ -178,29 +226,6 @@ export function URLConverter() {
     setIsValidUrl(null);
   };
 
-  const handleSaveToFile = async () => {
-    if (!output) {
-      toast.error('저장할 URL이 없습니다');
-      return;
-    }
-
-    await exportFile(output, `url-${Date.now()}.txt`, [
-      { name: 'Text Files', extensions: ['txt'] },
-      { name: 'All Files', extensions: ['*'] }
-    ]);
-  };
-
-  const handleOpenFile = async () => {
-    const result = await importFile([
-      { name: 'Text Files', extensions: ['txt'] },
-      { name: 'All Files', extensions: ['*'] }
-    ]);
-
-    if (result.success && result.content) {
-      setInput(result.content);
-    }
-  };
-
   const exampleURLs = [
     {
       label: 'Simple URL',
@@ -278,22 +303,22 @@ export function URLConverter() {
                   {t('common.clear')}
                 </Button>
                 <Button
-                  onClick={handleSaveToFile}
+                  onClick={() => setShowExportDialog(true)}
                   variant="outline"
-                  disabled={isExporting || !output}
+                  disabled={isExporting}
                   className="gap-2"
                 >
-                  <Save className="h-4 w-4" />
-                  {t('tools.url.save')}
+                  <Upload className="h-4 w-4" />
+                  {t('common.export')}
                 </Button>
                 <Button
-                  onClick={handleOpenFile}
+                  onClick={() => setShowImportDialog(true)}
                   variant="outline"
                   disabled={isImporting}
                   className="gap-2"
                 >
-                  <FolderOpen className="h-4 w-4" />
-                  {t('tools.url.open')}
+                  <FileDown className="h-4 w-4" />
+                  {t('common.import')}
                 </Button>
               </div>
 
@@ -371,22 +396,22 @@ export function URLConverter() {
                   {t('common.clear')}
                 </Button>
                 <Button
-                  onClick={handleSaveToFile}
+                  onClick={() => setShowExportDialog(true)}
                   variant="outline"
-                  disabled={isExporting || !output}
+                  disabled={isExporting}
                   className="gap-2"
                 >
-                  <Save className="h-4 w-4" />
-                  {t('tools.url.save')}
+                  <Upload className="h-4 w-4" />
+                  {t('common.export')}
                 </Button>
                 <Button
-                  onClick={handleOpenFile}
+                  onClick={() => setShowImportDialog(true)}
                   variant="outline"
                   disabled={isImporting}
                   className="gap-2"
                 >
-                  <FolderOpen className="h-4 w-4" />
-                  {t('tools.url.open')}
+                  <FileDown className="h-4 w-4" />
+                  {t('common.import')}
                 </Button>
               </div>
             </CardContent>
@@ -517,6 +542,25 @@ export function URLConverter() {
           </CardContent>
         </Card>
       )}
+
+      {/* Export Dialog */}
+      <ExportDialog
+        open={showExportDialog}
+        onOpenChange={setShowExportDialog}
+        onExport={handleExport}
+        totalCount={totalCount}
+        title="URL 히스토리 내보내기"
+        description="내보낼 URL 히스토리 개수와 파일 형식을 선택하세요"
+      />
+
+      {/* Import Dialog */}
+      <ImportDialog
+        open={showImportDialog}
+        onOpenChange={setShowImportDialog}
+        onImport={handleImport}
+        title="URL 파일 가져오기"
+        description="URL 파일을 선택하여 히스토리에 추가하세요. 지원 형식: TXT, JSON, CSV"
+      />
     </div>
   );
 }
