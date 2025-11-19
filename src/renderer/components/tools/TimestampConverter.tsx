@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useHistoryAutoSave } from '../../hooks/useHistoryAutoSave';
+import { useHistoryExportImport } from '../../hooks/useHistoryExportImport';
+import { ExportDialog } from '../dialogs/ExportDialog';
+import { ImportDialog } from '../dialogs/ImportDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Clock, Copy, Save, FolderOpen } from 'lucide-react';
+import { Clock, Copy, Upload, FileDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { useFileSystem } from '../../hooks/useFileSystem';
 
 type TimestampUnit = 'seconds' | 'milliseconds';
 
@@ -35,11 +37,41 @@ export function TimestampConverter() {
   // Auto-save to history
   const saveToHistory = useHistoryAutoSave({ tool: 'timestamp' });
 
-  // File system hook
-  const { exportFile, importFile, isExporting, isImporting } = useFileSystem({
-    exportSuccessMessage: '타임스탬프 파일이 저장되었습니다',
-    importSuccessMessage: '타임스탬프 파일을 불러왔습니다',
-    errorMessage: '파일 작업 실패'
+  const [totalCount, setTotalCount] = useState(0);
+
+  // Export/Import hook
+  const {
+    isExporting,
+    isImporting,
+    showExportDialog,
+    showImportDialog,
+    setShowExportDialog,
+    setShowImportDialog,
+    handleExport,
+    handleImport,
+  } = useHistoryExportImport({
+    tool: 'timestamp',
+    toolDisplayName: 'Timestamp Converter',
+    parseImportData: (content, format) => {
+      if (format === 'json') {
+        const data = JSON.parse(content);
+        if (!Array.isArray(data)) throw new Error('JSON must be an array');
+        return data.map((item: any) => ({
+          input: String(item.input || ''),
+          output: item.output ? String(item.output) : undefined,
+        }));
+      } else if (format === 'csv') {
+        const lines = content.split('\n').filter(line => line.trim());
+        const dataLines = lines.slice(1);
+        return dataLines.map(line => {
+          const values = line.split(',').map(val => val.trim().replace(/^"|"$/g, ''));
+          return { input: values[0] || '', output: values[1] || undefined };
+        });
+      } else {
+        const lines = content.split('\n').filter(line => line.trim());
+        return lines.map(line => ({ input: line.trim(), output: undefined }));
+      }
+    },
   });
 
   // Update current time every second
@@ -49,6 +81,21 @@ export function TimestampConverter() {
     }, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  // Get total count for ExportDialog
+  useEffect(() => {
+    const fetchCount = async () => {
+      if (window.api?.history) {
+        try {
+          const count = await window.api.history.count('timestamp');
+          setTotalCount(count);
+        } catch (error) {
+          console.error('Failed to get history count:', error);
+        }
+      }
+    };
+    fetchCount();
+  }, [timestamp, selectedDate]);
 
   // Save to history when timestamp or selectedDate changes
   useEffect(() => {
@@ -76,41 +123,6 @@ export function TimestampConverter() {
       toast.success(t('common.copied'));
     } catch (err) {
       toast.error(t('common.copyFailed'));
-    }
-  };
-
-  const handleSaveToFile = async () => {
-    if (!timestamp) {
-      toast.error('저장할 타임스탬프가 없습니다');
-      return;
-    }
-    const data = JSON.stringify({
-      timestamp,
-      unit,
-      timezone,
-      selectedDate: selectedDate?.toISOString()
-    }, null, 2);
-    await exportFile(data, `timestamp-${Date.now()}.json`, [
-      { name: 'JSON Files', extensions: ['json'] },
-      { name: 'All Files', extensions: ['*'] }
-    ]);
-  };
-
-  const handleOpenFile = async () => {
-    const result = await importFile([
-      { name: 'JSON Files', extensions: ['json'] },
-      { name: 'All Files', extensions: ['*'] }
-    ]);
-    if (result.success && result.content) {
-      try {
-        const data = JSON.parse(result.content);
-        if (data.timestamp) setTimestamp(data.timestamp);
-        if (data.unit) setUnit(data.unit);
-        if (data.timezone) setTimezone(data.timezone);
-        if (data.selectedDate) setSelectedDate(new Date(data.selectedDate));
-      } catch (err) {
-        toast.error('JSON 파일 파싱 실패');
-      }
     }
   };
 
@@ -182,22 +194,22 @@ export function TimestampConverter() {
                   {t('tools.timestamp.now')}
                 </Button>
                 <Button
-                  onClick={handleSaveToFile}
-                  disabled={isExporting || !timestamp}
+                  onClick={() => setShowExportDialog(true)}
+                  disabled={isExporting}
                   variant="outline"
                   className="gap-2"
                 >
-                  <Save className="h-4 w-4" />
-                  {t('common.save')}
+                  <Upload className="h-4 w-4" />
+                  {t('common.export')}
                 </Button>
                 <Button
-                  onClick={handleOpenFile}
+                  onClick={() => setShowImportDialog(true)}
                   disabled={isImporting}
                   variant="outline"
                   className="gap-2"
                 >
-                  <FolderOpen className="h-4 w-4" />
-                  {t('common.open')}
+                  <FileDown className="h-4 w-4" />
+                  {t('common.import')}
                 </Button>
               </div>
 
@@ -404,6 +416,25 @@ export function TimestampConverter() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Export Dialog */}
+      <ExportDialog
+        open={showExportDialog}
+        onOpenChange={setShowExportDialog}
+        onExport={handleExport}
+        totalCount={totalCount}
+        title="타임스탬프 히스토리 내보내기"
+        description="내보낼 타임스탬프 히스토리 개수와 파일 형식을 선택하세요"
+      />
+
+      {/* Import Dialog */}
+      <ImportDialog
+        open={showImportDialog}
+        onOpenChange={setShowImportDialog}
+        onImport={handleImport}
+        title="타임스탬프 파일 가져오기"
+        description="타임스탬프 파일을 선택하여 히스토리에 추가하세요. 지원 형식: TXT, JSON, CSV"
+      />
     </div>
   );
 }
