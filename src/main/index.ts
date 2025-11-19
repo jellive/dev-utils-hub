@@ -24,6 +24,23 @@ const store = new Store()
 // Global flag to prevent minimize-to-tray on quit
 ;(app as any).isQuitting = false
 
+// Handle EPIPE errors from console.log when stdout is closed
+process.stdout.on('error', (err) => {
+  if (err.code === 'EPIPE') {
+    // Ignore EPIPE errors - they happen when stdout is closed
+    return
+  }
+  console.error('stdout error:', err)
+})
+
+process.stderr.on('error', (err) => {
+  if (err.code === 'EPIPE') {
+    // Ignore EPIPE errors - they happen when stderr is closed
+    return
+  }
+  console.error('stderr error:', err)
+})
+
 // IPC Handlers
 function setupIpcHandlers(): void {
   // Test ping handler
