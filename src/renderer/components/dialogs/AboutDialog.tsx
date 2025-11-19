@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { ExternalLink, Github } from 'lucide-react';
 import {
   Dialog,
@@ -18,10 +19,34 @@ export function AboutDialog({ open, onOpenChange }: AboutDialogProps) {
   // Get version from package.json via import.meta.env
   const appVersion = import.meta.env.VITE_APP_VERSION || '1.0.0';
 
-  // Get Electron versions
-  const electronVersion = process.versions.electron || 'N/A';
-  const chromeVersion = process.versions.chrome || 'N/A';
-  const nodeVersion = process.versions.node || 'N/A';
+  // Get Electron versions via API
+  const [platformInfo, setPlatformInfo] = useState<{
+    electron: string;
+    chrome: string;
+    node: string;
+  }>({
+    electron: 'N/A',
+    chrome: 'N/A',
+    node: 'N/A',
+  });
+
+  useEffect(() => {
+    const loadPlatformInfo = async () => {
+      if (window.api?.getPlatformInfo) {
+        try {
+          const info = await window.api.getPlatformInfo();
+          setPlatformInfo({
+            electron: info.versions.electron || 'N/A',
+            chrome: info.versions.chrome || 'N/A',
+            node: info.versions.node || 'N/A',
+          });
+        } catch (error) {
+          console.error('Failed to get platform info:', error);
+        }
+      }
+    };
+    loadPlatformInfo();
+  }, []);
 
   const handleOpenGitHub = () => {
     window.open('https://github.com/yourusername/dev-utils-hub', '_blank');
@@ -67,15 +92,15 @@ export function AboutDialog({ open, onOpenChange }: AboutDialogProps) {
             <div className="text-sm text-muted-foreground space-y-1">
               <div className="flex justify-between">
                 <span>Electron:</span>
-                <span className="font-mono">{electronVersion}</span>
+                <span className="font-mono">{platformInfo.electron}</span>
               </div>
               <div className="flex justify-between">
                 <span>Chromium:</span>
-                <span className="font-mono">{chromeVersion}</span>
+                <span className="font-mono">{platformInfo.chrome}</span>
               </div>
               <div className="flex justify-between">
                 <span>Node.js:</span>
-                <span className="font-mono">{nodeVersion}</span>
+                <span className="font-mono">{platformInfo.node}</span>
               </div>
             </div>
           </div>
