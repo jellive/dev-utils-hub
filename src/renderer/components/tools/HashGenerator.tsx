@@ -7,10 +7,12 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { AlertCircle, Upload, X, HelpCircle, Check, X as XCircle, Send, Save, FolderOpen } from 'lucide-react';
+import { AlertCircle, Upload, X, HelpCircle, Check, X as XCircle, Send, Upload as UploadIcon, FileDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { useFileSystem } from '../../hooks/useFileSystem';
+import { useHistoryExportImport } from '../../hooks/useHistoryExportImport';
+import { ExportDialog } from '../dialogs/ExportDialog';
+import { ImportDialog } from '../dialogs/ImportDialog';
 
 type HashAlgorithm = 'md5' | 'sha256' | 'sha512';
 
@@ -33,17 +35,63 @@ export function HashGenerator() {
   const [isHmacMode, setIsHmacMode] = useState(false);
   const [hmacKey, setHmacKey] = useState('');
   const [comparisonHash, setComparisonHash] = useState('');
+  const [totalCount, setTotalCount] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Auto-save to history
   const saveToHistory = useHistoryAutoSave({ tool: 'hash' });
 
-  // File system hook
-  const { exportFile, importFile, isExporting, isImporting } = useFileSystem({
-    exportSuccessMessage: '해시 파일이 저장되었습니다',
-    importSuccessMessage: '해시 파일을 불러왔습니다',
-    errorMessage: '파일 작업 실패'
+  // Use the new useHistoryExportImport hook with hash-specific parsing
+  const {
+    isExporting,
+    isImporting,
+    showExportDialog,
+    showImportDialog,
+    setShowExportDialog,
+    setShowImportDialog,
+    handleExport,
+    handleImport,
+  } = useHistoryExportImport({
+    tool: 'hash',
+    toolDisplayName: 'Hash Generator',
+    parseImportData: (content, format) => {
+      // Parse based on format
+      if (format === 'json') {
+        const data = JSON.parse(content);
+        if (!Array.isArray(data)) throw new Error('JSON must be an array');
+        return data.map((item: any) => ({
+          input: String(item.input || ''),
+          output: item.output ? String(item.output) : undefined,
+        }));
+      } else if (format === 'csv') {
+        const lines = content.split('\n').filter(line => line.trim());
+        const dataLines = lines.slice(1); // Skip header
+        return dataLines.map(line => {
+          const values = line.split(',').map(val => val.trim().replace(/^"|"$/g, ''));
+          return { input: values[0] || '', output: values[1] || undefined };
+        });
+      } else {
+        // TXT format: one hash per line
+        const lines = content.split('\n').filter(line => line.trim());
+        return lines.map(line => ({ input: line.trim(), output: undefined }));
+      }
+    },
   });
+
+  // Get total count for ExportDialog
+  useEffect(() => {
+    const fetchCount = async () => {
+      if (window.api?.history) {
+        try {
+          const count = await window.api.history.count('hash');
+          setTotalCount(count);
+        } catch (error) {
+          console.error('Failed to get history count:', error);
+        }
+      }
+    };
+    fetchCount();
+  }, [hashResult]); // Refetch when hash is generated
 
   // Save to history when hash result changes
   useEffect(() => {
@@ -196,46 +244,6 @@ export function HashGenerator() {
       },
     });
     toast.success('Hash sent to API Tester');
-  };
-
-  const handleSaveToFile = async () => {
-    if (!hashResult) {
-      toast.error('저장할 해시값이 없습니다');
-      return;
-    }
-
-    const data = JSON.stringify({
-      input,
-      algorithm,
-      isHmacMode,
-      hmacKey: isHmacMode ? hmacKey : undefined,
-      hashResult
-    }, null, 2);
-
-    await exportFile(data, `hash-${algorithm}-${Date.now()}.json`, [
-      { name: 'JSON Files', extensions: ['json'] },
-      { name: 'All Files', extensions: ['*'] }
-    ]);
-  };
-
-  const handleOpenFile = async () => {
-    const result = await importFile([
-      { name: 'JSON Files', extensions: ['json'] },
-      { name: 'All Files', extensions: ['*'] }
-    ]);
-
-    if (result.success && result.content) {
-      try {
-        const data = JSON.parse(result.content);
-        if (data.input) setInput(data.input);
-        if (data.algorithm) setAlgorithm(data.algorithm);
-        if (data.isHmacMode !== undefined) setIsHmacMode(data.isHmacMode);
-        if (data.hmacKey) setHmacKey(data.hmacKey);
-        if (data.hashResult) setHashResult(data.hashResult);
-      } catch (err) {
-        toast.error('JSON 파일 파싱 실패');
-      }
-    }
   };
 
   return (
@@ -440,22 +448,22 @@ export function HashGenerator() {
           Clear
         </button>
         <Button
-          onClick={handleSaveToFile}
+          onClick={() => setShowExportDialog(true)}
           variant="outline"
-          disabled={isExporting || !hashResult}
+          disabled={isExporting}
           className="gap-2"
         >
-          <Save className="h-4 w-4" />
-          {t('common.save')}
+          <UploadIcon className="h-4 w-4" />
+          {t('common.export')}
         </Button>
         <Button
-          onClick={handleOpenFile}
+          onClick={() => setShowImportDialog(true)}
           variant="outline"
           disabled={isImporting}
           className="gap-2"
         >
-          <FolderOpen className="h-4 w-4" />
-          {t('common.open')}
+          <FileDown className="h-4 w-4" />
+          {t('common.import')}
         </Button>
       </div>
 
@@ -549,6 +557,25 @@ export function HashGenerator() {
           <li>• <strong>SHA-512</strong>: 512-bit hash (128 hex characters) - Most secure</li>
         </ul>
       </div>
+
+      {/* Export Dialog */}
+      <ExportDialog
+        open={showExportDialog}
+        onOpenChange={setShowExportDialog}
+        onExport={handleExport}
+        totalCount={totalCount}
+        title="해시 히스토리 내보내기"
+        description="내보낼 해시 히스토리 개수와 파일 형식을 선택하세요"
+      />
+
+      {/* Import Dialog */}
+      <ImportDialog
+        open={showImportDialog}
+        onOpenChange={setShowImportDialog}
+        onImport={handleImport}
+        title="해시 파일 가져오기"
+        description="해시 파일을 선택하여 히스토리에 추가하세요. 지원 형식: TXT, JSON, CSV"
+      />
     </div>
   );
 }
