@@ -15,6 +15,14 @@ export function createApplicationMenu(mainWindow: BrowserWindow): void {
                 click: () => showAboutDialog(mainWindow)
               },
               { type: 'separator' as const },
+              {
+                label: 'Preferences...',
+                accelerator: 'Cmd+,',
+                click: () => {
+                  mainWindow.webContents.send('navigate-to', '/settings')
+                }
+              },
+              { type: 'separator' as const },
               { role: 'services' as const },
               { type: 'separator' as const },
               { role: 'hide' as const },
@@ -31,6 +39,21 @@ export function createApplicationMenu(mainWindow: BrowserWindow): void {
     {
       label: 'File',
       submenu: [
+        {
+          label: 'Export History...',
+          accelerator: isMac ? 'Cmd+E' : 'Ctrl+E',
+          click: () => {
+            mainWindow.webContents.send('trigger-export')
+          }
+        },
+        {
+          label: 'Import History...',
+          accelerator: isMac ? 'Cmd+I' : 'Ctrl+I',
+          click: () => {
+            mainWindow.webContents.send('trigger-import')
+          }
+        },
+        { type: 'separator' as const },
         isMac
           ? { role: 'close' as const }
           : {
@@ -63,22 +86,101 @@ export function createApplicationMenu(mainWindow: BrowserWindow): void {
       ]
     },
 
+    // Tools menu
+    {
+      label: 'Tools',
+      submenu: [
+        {
+          label: 'JSON Formatter',
+          accelerator: isMac ? 'Cmd+1' : 'Ctrl+1',
+          click: () => {
+            mainWindow.webContents.send('navigate-to-tool', '/json')
+          }
+        },
+        {
+          label: 'JWT Decoder',
+          accelerator: isMac ? 'Cmd+2' : 'Ctrl+2',
+          click: () => {
+            mainWindow.webContents.send('navigate-to-tool', '/jwt')
+          }
+        },
+        {
+          label: 'Base64 Converter',
+          accelerator: isMac ? 'Cmd+3' : 'Ctrl+3',
+          click: () => {
+            mainWindow.webContents.send('navigate-to-tool', '/base64')
+          }
+        },
+        {
+          label: 'URL Encoder/Decoder',
+          accelerator: isMac ? 'Cmd+4' : 'Ctrl+4',
+          click: () => {
+            mainWindow.webContents.send('navigate-to-tool', '/url')
+          }
+        },
+        {
+          label: 'Regex Tester',
+          accelerator: isMac ? 'Cmd+5' : 'Ctrl+5',
+          click: () => {
+            mainWindow.webContents.send('navigate-to-tool', '/regex')
+          }
+        },
+        {
+          label: 'Text Diff',
+          accelerator: isMac ? 'Cmd+6' : 'Ctrl+6',
+          click: () => {
+            mainWindow.webContents.send('navigate-to-tool', '/diff')
+          }
+        },
+        {
+          label: 'Hash Generator',
+          accelerator: isMac ? 'Cmd+7' : 'Ctrl+7',
+          click: () => {
+            mainWindow.webContents.send('navigate-to-tool', '/hash')
+          }
+        },
+        {
+          label: 'UUID Generator',
+          accelerator: isMac ? 'Cmd+8' : 'Ctrl+8',
+          click: () => {
+            mainWindow.webContents.send('navigate-to-tool', '/uuid')
+          }
+        },
+        {
+          label: 'Timestamp Converter',
+          accelerator: isMac ? 'Cmd+9' : 'Ctrl+9',
+          click: () => {
+            mainWindow.webContents.send('navigate-to-tool', '/timestamp')
+          }
+        },
+        { type: 'separator' as const },
+        {
+          label: 'All Tools...',
+          accelerator: isMac ? 'Cmd+0' : 'Ctrl+0',
+          click: () => {
+            mainWindow.webContents.send('navigate-to-tool', '/')
+          }
+        }
+      ]
+    },
+
     // View menu
     {
       label: 'View',
       submenu: [
         {
+          label: 'Toggle History Panel',
+          accelerator: isMac ? 'Cmd+Shift+H' : 'Ctrl+Shift+H',
+          click: () => {
+            mainWindow.webContents.send('toggle-history-panel')
+          }
+        },
+        { type: 'separator' as const },
+        {
           label: 'Reload',
           accelerator: isMac ? 'Cmd+R' : 'Ctrl+R',
           click: () => {
             mainWindow.reload()
-          }
-        },
-        {
-          label: 'Force Reload',
-          accelerator: isMac ? 'Cmd+Shift+R' : 'Ctrl+Shift+R',
-          click: () => {
-            mainWindow.webContents.reloadIgnoringCache()
           }
         },
         {
@@ -119,9 +221,9 @@ export function createApplicationMenu(mainWindow: BrowserWindow): void {
       label: 'Help',
       submenu: [
         {
-          label: 'Learn More',
+          label: 'Documentation',
           click: async () => {
-            await shell.openExternal('https://github.com/electron/electron')
+            await shell.openExternal('https://github.com/yourusername/dev-utils-hub/wiki')
           }
         },
         {
@@ -130,11 +232,17 @@ export function createApplicationMenu(mainWindow: BrowserWindow): void {
             await shell.openExternal('https://github.com/yourusername/dev-utils-hub')
           }
         },
+        {
+          label: 'Report Issue',
+          click: async () => {
+            await shell.openExternal('https://github.com/yourusername/dev-utils-hub/issues/new')
+          }
+        },
         { type: 'separator' as const },
         {
           label: 'Check for Updates',
+          enabled: false, // 향후 구현
           click: () => {
-            // Placeholder for auto-updater
             dialog.showMessageBox(mainWindow, {
               type: 'info',
               title: 'Check for Updates',
