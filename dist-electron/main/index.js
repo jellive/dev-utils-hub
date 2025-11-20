@@ -1843,14 +1843,33 @@ process.stdout.on("error", (err) => {
   if (err.code === "EPIPE") {
     return;
   }
-  console.error("stdout error:", err);
 });
 process.stderr.on("error", (err) => {
   if (err.code === "EPIPE") {
     return;
   }
-  console.error("stderr error:", err);
 });
+const originalLog = console.log;
+const originalError = console.error;
+const originalWarn = console.warn;
+const originalInfo = console.info;
+function safeConsole(original, ...args) {
+  try {
+    original(...args);
+  } catch (error) {
+    if (error?.code !== "EPIPE") {
+      try {
+        process.stderr.write(`Console error: ${error}
+`);
+      } catch {
+      }
+    }
+  }
+}
+console.log = (...args) => safeConsole(originalLog, ...args);
+console.error = (...args) => safeConsole(originalError, ...args);
+console.warn = (...args) => safeConsole(originalWarn, ...args);
+console.info = (...args) => safeConsole(originalInfo, ...args);
 function setupIpcHandlers() {
   ipcMain.handle("ping", () => {
     return "pong";

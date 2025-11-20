@@ -31,7 +31,7 @@ process.stdout.on('error', (err) => {
     // Ignore EPIPE errors - they happen when stdout is closed
     return
   }
-  console.error('stdout error:', err)
+  // Cannot use console.error here as it might also throw EPIPE
 })
 
 process.stderr.on('error', (err) => {
@@ -39,8 +39,35 @@ process.stderr.on('error', (err) => {
     // Ignore EPIPE errors - they happen when stderr is closed
     return
   }
-  console.error('stderr error:', err)
+  // Cannot use console.error here as it might also throw EPIPE
 })
+
+// Override console methods to handle EPIPE errors gracefully
+const originalLog = console.log
+const originalError = console.error
+const originalWarn = console.warn
+const originalInfo = console.info
+
+function safeConsole(original: Function, ...args: any[]): void {
+  try {
+    original(...args)
+  } catch (error: any) {
+    // Silently ignore EPIPE errors
+    if (error?.code !== 'EPIPE') {
+      // For other errors, try to write to stderr directly
+      try {
+        process.stderr.write(`Console error: ${error}\n`)
+      } catch {
+        // Completely ignore if even stderr fails
+      }
+    }
+  }
+}
+
+console.log = (...args: any[]) => safeConsole(originalLog, ...args)
+console.error = (...args: any[]) => safeConsole(originalError, ...args)
+console.warn = (...args: any[]) => safeConsole(originalWarn, ...args)
+console.info = (...args: any[]) => safeConsole(originalInfo, ...args)
 
 // IPC Handlers
 function setupIpcHandlers(): void {
