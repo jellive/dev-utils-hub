@@ -58,6 +58,8 @@ coverage/
 
 # Build outputs
 dev-dist/
+dist-electron/
+dist-*
 
 # Project documentation files
 SENTRY_SETUP.md
