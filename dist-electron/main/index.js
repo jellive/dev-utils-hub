@@ -4,6 +4,7 @@ import Store from "electron-store";
 import Database from "better-sqlite3";
 import { existsSync, mkdirSync, readdirSync, statSync, unlinkSync, copyFileSync, promises } from "fs";
 import electronLocalShortcut from "electron-localshortcut";
+import { autoUpdater } from "electron-updater";
 import __cjs_mod__ from "node:module";
 const __filename = import.meta.filename;
 const __dirname = import.meta.dirname;
@@ -25,6 +26,7 @@ const settingsStore = new Store({
     minimizeToTray: false,
     launchAtStartup: false,
     startMinimized: false,
+    autoInstallUpdates: true,
     shortcuts: {
       toggleApp: process.platform === "darwin" ? "Command+Shift+Space" : "Control+Space"
     },
@@ -132,6 +134,42 @@ function setupSettingsHandlers() {
     } catch (error) {
       console.error("Failed to get registered shortcuts:", error);
       return [];
+    }
+  });
+  ipcMain.handle("settings:set-auto-start", async (_event, enabled, startMinimized) => {
+    try {
+      const { app: app2 } = await import("electron");
+      app2.setLoginItemSettings({
+        openAtLogin: enabled,
+        openAsHidden: startMinimized,
+        args: startMinimized ? ["--hidden"] : []
+      });
+      settingsStore.set("launchAtStartup", enabled);
+      settingsStore.set("startMinimized", startMinimized);
+      return true;
+    } catch (error) {
+      console.error("Failed to set auto-start:", error);
+      return false;
+    }
+  });
+  ipcMain.handle("settings:get-auto-start", async () => {
+    try {
+      const { app: app2 } = await import("electron");
+      const loginItemSettings = app2.getLoginItemSettings();
+      return {
+        enabled: loginItemSettings.openAtLogin,
+        startMinimized: settingsStore.get("startMinimized"),
+        wasOpenedAtLogin: loginItemSettings.wasOpenedAtLogin,
+        wasOpenedAsHidden: loginItemSettings.wasOpenedAsHidden
+      };
+    } catch (error) {
+      console.error("Failed to get auto-start status:", error);
+      return {
+        enabled: false,
+        startMinimized: false,
+        wasOpenedAtLogin: false,
+        wasOpenedAsHidden: false
+      };
     }
   });
 }
@@ -284,6 +322,52 @@ function getHistory(tool, limit = 50) {
   const rows = stmt.all(...params);
   console.log(`✓ Retrieved ${rows.length} history entries${tool ? ` for ${tool}` : ""}`);
   return rows;
+}
+function getHistoryWithOptions(tool, options = {}) {
+  const db2 = getDatabase();
+  const {
+    limit = 50,
+    offset = 0,
+    favorites,
+    startDate,
+    endDate
+  } = options;
+  let query = `
+    SELECT id, tool, input, output, metadata, favorite, created_at
+    FROM history
+    WHERE tool = ?
+  `;
+  const params = [tool];
+  if (favorites !== void 0) {
+    query += " AND favorite = ?";
+    params.push(favorites ? 1 : 0);
+  }
+  if (startDate !== void 0) {
+    query += " AND created_at >= ?";
+    params.push(startDate);
+  }
+  if (endDate !== void 0) {
+    query += " AND created_at <= ?";
+    params.push(endDate);
+  }
+  query += " ORDER BY created_at DESC LIMIT ? OFFSET ?";
+  params.push(limit, offset);
+  const stmt = db2.prepare(query);
+  const rows = stmt.all(...params);
+  console.log(`✓ Retrieved ${rows.length} history entries for ${tool} with options`);
+  return rows;
+}
+function getHistoryCount(tool) {
+  const db2 = getDatabase();
+  const stmt = db2.prepare(`
+    SELECT COUNT(*) as count
+    FROM history
+    WHERE tool = ?
+  `);
+  const result = stmt.get(tool);
+  const count = result.count;
+  console.log(`✓ History count for ${tool}: ${count}`);
+  return count;
 }
 function searchHistory(tool, query, limit = 50) {
   const db2 = getDatabase();
@@ -624,6 +708,25 @@ function setupHistoryHandlers() {
     }
   });
   ipcMain.handle(
+    "history:get-with-options",
+    (_event, tool, options) => {
+      try {
+        return getHistoryWithOptions(tool, options);
+      } catch (error) {
+        console.error("Failed to get history with options:", error);
+        throw error;
+      }
+    }
+  );
+  ipcMain.handle("history:count", (_event, tool) => {
+    try {
+      return getHistoryCount(tool);
+    } catch (error) {
+      console.error("Failed to get history count:", error);
+      throw error;
+    }
+  });
+  ipcMain.handle(
     "history:search",
     (_event, tool, query, limit) => {
       try {
@@ -929,6 +1032,14 @@ function createApplicationMenu(mainWindow2) {
             click: () => showAboutDialog(mainWindow2)
           },
           { type: "separator" },
+          {
+            label: "Preferences...",
+            accelerator: "Cmd+,",
+            click: () => {
+              mainWindow2.webContents.send("navigate-to", "/settings");
+            }
+          },
+          { type: "separator" },
           { role: "services" },
           { type: "separator" },
           { role: "hide" },
@@ -943,6 +1054,21 @@ function createApplicationMenu(mainWindow2) {
     {
       label: "File",
       submenu: [
+        {
+          label: "Export History...",
+          accelerator: isMac ? "Cmd+E" : "Ctrl+E",
+          click: () => {
+            mainWindow2.webContents.send("trigger-export");
+          }
+        },
+        {
+          label: "Import History...",
+          accelerator: isMac ? "Cmd+I" : "Ctrl+I",
+          click: () => {
+            mainWindow2.webContents.send("trigger-import");
+          }
+        },
+        { type: "separator" },
         isMac ? { role: "close" } : {
           label: "Quit",
           accelerator: "Ctrl+Q",
@@ -969,22 +1095,100 @@ function createApplicationMenu(mainWindow2) {
         ] : [{ role: "delete" }, { type: "separator" }, { role: "selectAll" }]
       ]
     },
+    // Tools menu
+    {
+      label: "Tools",
+      submenu: [
+        {
+          label: "JSON Formatter",
+          accelerator: isMac ? "Cmd+1" : "Ctrl+1",
+          click: () => {
+            mainWindow2.webContents.send("navigate-to-tool", "/json");
+          }
+        },
+        {
+          label: "JWT Decoder",
+          accelerator: isMac ? "Cmd+2" : "Ctrl+2",
+          click: () => {
+            mainWindow2.webContents.send("navigate-to-tool", "/jwt");
+          }
+        },
+        {
+          label: "Base64 Converter",
+          accelerator: isMac ? "Cmd+3" : "Ctrl+3",
+          click: () => {
+            mainWindow2.webContents.send("navigate-to-tool", "/base64");
+          }
+        },
+        {
+          label: "URL Encoder/Decoder",
+          accelerator: isMac ? "Cmd+4" : "Ctrl+4",
+          click: () => {
+            mainWindow2.webContents.send("navigate-to-tool", "/url");
+          }
+        },
+        {
+          label: "Regex Tester",
+          accelerator: isMac ? "Cmd+5" : "Ctrl+5",
+          click: () => {
+            mainWindow2.webContents.send("navigate-to-tool", "/regex");
+          }
+        },
+        {
+          label: "Text Diff",
+          accelerator: isMac ? "Cmd+6" : "Ctrl+6",
+          click: () => {
+            mainWindow2.webContents.send("navigate-to-tool", "/diff");
+          }
+        },
+        {
+          label: "Hash Generator",
+          accelerator: isMac ? "Cmd+7" : "Ctrl+7",
+          click: () => {
+            mainWindow2.webContents.send("navigate-to-tool", "/hash");
+          }
+        },
+        {
+          label: "UUID Generator",
+          accelerator: isMac ? "Cmd+8" : "Ctrl+8",
+          click: () => {
+            mainWindow2.webContents.send("navigate-to-tool", "/uuid");
+          }
+        },
+        {
+          label: "Timestamp Converter",
+          accelerator: isMac ? "Cmd+9" : "Ctrl+9",
+          click: () => {
+            mainWindow2.webContents.send("navigate-to-tool", "/timestamp");
+          }
+        },
+        { type: "separator" },
+        {
+          label: "All Tools...",
+          accelerator: isMac ? "Cmd+0" : "Ctrl+0",
+          click: () => {
+            mainWindow2.webContents.send("navigate-to-tool", "/");
+          }
+        }
+      ]
+    },
     // View menu
     {
       label: "View",
       submenu: [
         {
+          label: "Toggle History Panel",
+          accelerator: isMac ? "Cmd+Shift+H" : "Ctrl+Shift+H",
+          click: () => {
+            mainWindow2.webContents.send("toggle-history-panel");
+          }
+        },
+        { type: "separator" },
+        {
           label: "Reload",
           accelerator: isMac ? "Cmd+R" : "Ctrl+R",
           click: () => {
             mainWindow2.reload();
-          }
-        },
-        {
-          label: "Force Reload",
-          accelerator: isMac ? "Cmd+Shift+R" : "Ctrl+Shift+R",
-          click: () => {
-            mainWindow2.webContents.reloadIgnoringCache();
           }
         },
         {
@@ -1021,9 +1225,9 @@ function createApplicationMenu(mainWindow2) {
       label: "Help",
       submenu: [
         {
-          label: "Learn More",
+          label: "Documentation",
           click: async () => {
-            await shell.openExternal("https://github.com/electron/electron");
+            await shell.openExternal("https://github.com/yourusername/dev-utils-hub/wiki");
           }
         },
         {
@@ -1032,9 +1236,17 @@ function createApplicationMenu(mainWindow2) {
             await shell.openExternal("https://github.com/yourusername/dev-utils-hub");
           }
         },
+        {
+          label: "Report Issue",
+          click: async () => {
+            await shell.openExternal("https://github.com/yourusername/dev-utils-hub/issues/new");
+          }
+        },
         { type: "separator" },
         {
           label: "Check for Updates",
+          enabled: false,
+          // 향후 구현
           click: () => {
             dialog.showMessageBox(mainWindow2, {
               type: "info",
@@ -1082,21 +1294,35 @@ function createTray(mainWindow2) {
   tray = new Tray(icon);
   console.log("✓ System tray created successfully");
   if (process.platform === "darwin") {
-    tray.setTitle("DU");
-    console.log("✓ Tray title set to: DU");
+    tray.setTitle("DevUtils");
+    console.log("✓ Tray title set to: DevUtils");
   }
-  tray.setToolTip("Dev Utils Hub");
-  console.log("✓ Tray tooltip set to: Dev Utils Hub");
+  tray.setToolTip("Dev Utils Hub - Developer Utilities");
+  console.log("✓ Tray tooltip set to: Dev Utils Hub - Developer Utilities");
   tray.setIgnoreDoubleClickEvents(true);
+  const showWindowAndNavigate = (path2) => {
+    if (process.platform === "darwin") {
+      app.dock.show();
+    }
+    if (mainWindow2.isMinimized()) {
+      mainWindow2.restore();
+    }
+    mainWindow2.show();
+    mainWindow2.focus();
+    if (process.platform === "darwin") {
+      app.focus({ steal: true });
+    }
+    mainWindow2.webContents.send("navigate-to-tool", path2);
+  };
   const updateContextMenu = () => {
     const isVisible = mainWindow2.isVisible() && !mainWindow2.isMinimized();
     const contextMenu = Menu.buildFromTemplate([
       {
-        label: "Show App",
+        label: "Show Dev Utils Hub",
         type: "checkbox",
         checked: isVisible,
         click: () => {
-          console.log("Menu: Show App clicked");
+          console.log("Menu: Show Dev Utils Hub clicked");
           if (isTogglingWindow) {
             console.log("Already toggling, ignoring menu click");
             return;
@@ -1104,24 +1330,70 @@ function createTray(mainWindow2) {
           toggleWindowVisibility(mainWindow2);
         }
       },
+      { type: "separator" },
+      {
+        label: "Quick Tools",
+        submenu: [
+          {
+            label: "UUID Generator",
+            accelerator: process.platform === "darwin" ? "Cmd+1" : "Ctrl+1",
+            click: () => showWindowAndNavigate("/uuid")
+          },
+          {
+            label: "JSON Formatter",
+            accelerator: process.platform === "darwin" ? "Cmd+2" : "Ctrl+2",
+            click: () => showWindowAndNavigate("/json")
+          },
+          {
+            label: "Base64 Converter",
+            accelerator: process.platform === "darwin" ? "Cmd+3" : "Ctrl+3",
+            click: () => showWindowAndNavigate("/base64")
+          },
+          {
+            label: "Hash Generator",
+            accelerator: process.platform === "darwin" ? "Cmd+4" : "Ctrl+4",
+            click: () => showWindowAndNavigate("/hash")
+          },
+          {
+            label: "URL Encoder/Decoder",
+            accelerator: process.platform === "darwin" ? "Cmd+5" : "Ctrl+5",
+            click: () => showWindowAndNavigate("/url")
+          },
+          { type: "separator" },
+          {
+            label: "All Tools...",
+            accelerator: process.platform === "darwin" ? "Cmd+0" : "Ctrl+0",
+            click: () => showWindowAndNavigate("/")
+          }
+        ]
+      },
+      { type: "separator" },
+      {
+        label: "View History",
+        accelerator: process.platform === "darwin" ? "Cmd+H" : "Ctrl+H",
+        click: () => {
+          showWindow(mainWindow2);
+          mainWindow2.webContents.send("shortcut:toggle-history");
+        }
+      },
       {
         label: "Settings",
-        enabled: false,
-        // Placeholder for future
         click: () => {
+          showWindow(mainWindow2);
+          mainWindow2.webContents.send("shortcut:open-settings");
         }
       },
       { type: "separator" },
       {
-        label: "Check for Updates",
-        enabled: false,
-        // Placeholder for future
+        label: "About Dev Utils Hub",
         click: () => {
+          showWindowAndNavigate("/settings");
         }
       },
       { type: "separator" },
       {
-        label: "Quit",
+        label: "Quit Dev Utils Hub",
+        accelerator: process.platform === "darwin" ? "Cmd+Q" : "Ctrl+Q",
         click: () => {
           app.isQuitting = true;
           app.quit();
@@ -1468,8 +1740,117 @@ const shortcuts = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePro
   updateGlobalShortcut,
   validateShortcut
 }, Symbol.toStringTag, { value: "Module" }));
+autoUpdater.autoDownload = false;
+autoUpdater.autoInstallOnAppQuit = true;
+let updateCheckInterval = null;
+function initializeUpdater(mainWindow2) {
+  if (process.env.NODE_ENV === "development") {
+    console.log("⚠️  Auto-updater disabled in development mode");
+    return;
+  }
+  console.log("🔄 Initializing auto-updater...");
+  setupUpdateEventHandlers(mainWindow2);
+  setTimeout(() => {
+    checkForUpdates();
+  }, 1e4);
+  updateCheckInterval = setInterval(
+    () => {
+      checkForUpdates();
+    },
+    60 * 60 * 1e3
+  );
+  console.log("✓ Auto-updater initialized");
+}
+function stopUpdater() {
+  if (updateCheckInterval) {
+    clearInterval(updateCheckInterval);
+    updateCheckInterval = null;
+  }
+  console.log("✓ Auto-updater stopped");
+}
+async function checkForUpdates() {
+  try {
+    console.log("🔍 Checking for updates...");
+    await autoUpdater.checkForUpdates();
+  } catch (error) {
+    console.error("❌ Failed to check for updates:", error);
+  }
+}
+function quitAndInstall() {
+  try {
+    console.log("🔄 Installing update and restarting...");
+    autoUpdater.quitAndInstall(false, true);
+  } catch (error) {
+    console.error("❌ Failed to install update:", error);
+  }
+}
+function setupUpdateEventHandlers(mainWindow2) {
+  autoUpdater.on("checking-for-update", () => {
+    console.log("🔍 Checking for updates...");
+  });
+  autoUpdater.on("update-available", (info) => {
+    console.log("✨ Update available:", info.version);
+    mainWindow2.webContents.send("update-available", {
+      version: info.version,
+      releaseNotes: info.releaseNotes,
+      releaseDate: info.releaseDate
+    });
+  });
+  autoUpdater.on("update-not-available", (info) => {
+    console.log("✓ App is up to date:", info.version);
+  });
+  autoUpdater.on("download-progress", (progress) => {
+    console.log(
+      `⬇️  Download progress: ${progress.percent.toFixed(2)}% (${progress.transferred}/${progress.total})`
+    );
+    mainWindow2.webContents.send("download-progress", {
+      percent: progress.percent,
+      transferred: progress.transferred,
+      total: progress.total,
+      bytesPerSecond: progress.bytesPerSecond
+    });
+  });
+  autoUpdater.on("update-downloaded", (info) => {
+    console.log("✓ Update downloaded:", info.version);
+    mainWindow2.webContents.send("update-downloaded", {
+      version: info.version
+    });
+    const autoInstall = settingsStore.get("autoInstallUpdates") ?? true;
+    if (autoInstall) {
+      dialog.showMessageBox(mainWindow2, {
+        type: "info",
+        title: "Update Ready",
+        message: `Version ${info.version} has been downloaded.`,
+        detail: "The update will be installed when you quit the app.",
+        buttons: ["Install Now", "Later"]
+      }).then((result) => {
+        if (result.response === 0) {
+          quitAndInstall();
+        }
+      });
+    }
+  });
+  autoUpdater.on("error", (error) => {
+    console.error("❌ Auto-updater error:", error);
+    mainWindow2.webContents.send("update-error", {
+      message: error.message
+    });
+  });
+}
 const store = new Store();
 app.isQuitting = false;
+process.stdout.on("error", (err) => {
+  if (err.code === "EPIPE") {
+    return;
+  }
+  console.error("stdout error:", err);
+});
+process.stderr.on("error", (err) => {
+  if (err.code === "EPIPE") {
+    return;
+  }
+  console.error("stderr error:", err);
+});
 function setupIpcHandlers() {
   ipcMain.handle("ping", () => {
     return "pong";
@@ -1525,7 +1906,10 @@ function createWindow() {
     }
   });
   mainWindow.on("ready-to-show", () => {
-    mainWindow?.show();
+    const shouldStartHidden = process.argv.includes("--hidden");
+    if (!shouldStartHidden) {
+      mainWindow?.show();
+    }
     if (mainWindow) {
       createApplicationMenu(mainWindow);
     }
@@ -1536,6 +1920,9 @@ function createWindow() {
       registerGlobalShortcuts(mainWindow);
       registerWindowShortcuts(mainWindow);
       checkAndLogConflicts();
+    }
+    if (mainWindow) {
+      initializeUpdater(mainWindow);
     }
     if (is.dev) {
       mainWindow?.webContents.openDevTools();
@@ -1593,6 +1980,7 @@ app.on("before-quit", () => {
   }
   destroyTray();
   unregisterGlobalShortcuts();
+  stopUpdater();
   stopMaintenance();
   closeDatabase();
 });

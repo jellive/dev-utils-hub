@@ -13,7 +13,9 @@ const api = {
     set: (key, value) => electron.ipcRenderer.invoke("settings:set", key, value),
     getAll: () => electron.ipcRenderer.invoke("settings:get-all"),
     reset: () => electron.ipcRenderer.invoke("settings:reset"),
-    delete: (key) => electron.ipcRenderer.invoke("settings:delete", key)
+    delete: (key) => electron.ipcRenderer.invoke("settings:delete", key),
+    setAutoStart: (enabled, startMinimized) => electron.ipcRenderer.invoke("settings:set-auto-start", enabled, startMinimized),
+    getAutoStart: () => electron.ipcRenderer.invoke("settings:get-auto-start")
   },
   // Shortcut events API
   shortcuts: {
@@ -40,6 +42,8 @@ const api = {
   history: {
     save: (tool, input, output, metadata) => electron.ipcRenderer.invoke("history:save", tool, input, output, metadata),
     get: (tool, limit) => electron.ipcRenderer.invoke("history:get", tool, limit),
+    getWithOptions: (tool, options) => electron.ipcRenderer.invoke("history:get-with-options", tool, options),
+    count: (tool) => electron.ipcRenderer.invoke("history:count", tool),
     search: (tool, query, limit) => electron.ipcRenderer.invoke("history:search", tool, query, limit),
     getById: (id) => electron.ipcRenderer.invoke("history:get-by-id", id),
     delete: (id) => electron.ipcRenderer.invoke("history:delete", id),
@@ -47,7 +51,23 @@ const api = {
     clear: (tool) => electron.ipcRenderer.invoke("history:clear", tool),
     clearAll: () => electron.ipcRenderer.invoke("history:clear-all"),
     autoCleanup: (daysOld, keepFavorites) => electron.ipcRenderer.invoke("history:auto-cleanup", daysOld, keepFavorites),
-    stats: () => electron.ipcRenderer.invoke("history:stats")
+    stats: () => electron.ipcRenderer.invoke("history:stats"),
+    // Event listeners for menu-triggered actions
+    onToggle: (callback) => {
+      const listener = () => callback();
+      electron.ipcRenderer.on("toggle-history-panel", listener);
+      return () => electron.ipcRenderer.removeListener("toggle-history-panel", listener);
+    },
+    onExport: (callback) => {
+      const listener = () => callback();
+      electron.ipcRenderer.on("trigger-export", listener);
+      return () => electron.ipcRenderer.removeListener("trigger-export", listener);
+    },
+    onImport: (callback) => {
+      const listener = () => callback();
+      electron.ipcRenderer.on("trigger-import", listener);
+      return () => electron.ipcRenderer.removeListener("trigger-import", listener);
+    }
   },
   // Maintenance API
   maintenance: {
@@ -67,6 +87,19 @@ const api = {
   file: {
     save: (content, defaultFileName, filters) => electron.ipcRenderer.invoke("file:save", content, defaultFileName, filters),
     open: (filters) => electron.ipcRenderer.invoke("file:open", filters)
+  },
+  // Navigation API - for menu-triggered navigation
+  navigation: {
+    onNavigateToTool: (callback) => {
+      const listener = (_event, path) => callback(path);
+      electron.ipcRenderer.on("navigate-to-tool", listener);
+      return () => electron.ipcRenderer.removeListener("navigate-to-tool", listener);
+    },
+    onNavigateTo: (callback) => {
+      const listener = (_event, path) => callback(path);
+      electron.ipcRenderer.on("navigate-to", listener);
+      return () => electron.ipcRenderer.removeListener("navigate-to", listener);
+    }
   }
 };
 if (process.contextIsolated) {
