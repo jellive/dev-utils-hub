@@ -1598,8 +1598,16 @@ function registerWindowShortcuts(window) {
 function unregisterWindowShortcuts(window) {
   const windowShortcuts = Array.from(registeredShortcuts.entries()).filter(([_, info]) => info.scope === "window").map(([accelerator]) => accelerator);
   windowShortcuts.forEach((accelerator) => untrackShortcut(accelerator));
-  electronLocalShortcut.unregisterAll(window);
-  console.log("✓ Window-specific shortcuts unregistered");
+  try {
+    electronLocalShortcut.unregisterAll(window);
+    console.log("✓ Window-specific shortcuts unregistered");
+  } catch (error) {
+    if (error.message?.includes("destroyed")) {
+      console.log("✓ Window-specific shortcuts cleaned up (window already destroyed)");
+    } else {
+      console.error("Error unregistering window shortcuts:", error);
+    }
+  }
 }
 function checkAndLogConflicts() {
   const conflictReport = checkShortcutConflicts();

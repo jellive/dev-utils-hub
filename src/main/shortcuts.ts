@@ -201,8 +201,18 @@ export function unregisterWindowShortcuts(window: BrowserWindow): void {
 
   windowShortcuts.forEach(accelerator => untrackShortcut(accelerator))
 
-  electronLocalShortcut.unregisterAll(window)
-  console.log('✓ Window-specific shortcuts unregistered')
+  // Safely unregister shortcuts - window might already be destroyed
+  try {
+    electronLocalShortcut.unregisterAll(window)
+    console.log('✓ Window-specific shortcuts unregistered')
+  } catch (error) {
+    // Window already destroyed - silently ignore
+    if ((error as any).message?.includes('destroyed')) {
+      console.log('✓ Window-specific shortcuts cleaned up (window already destroyed)')
+    } else {
+      console.error('Error unregistering window shortcuts:', error)
+    }
+  }
 }
 
 /**
