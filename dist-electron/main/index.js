@@ -4,7 +4,7 @@ import Store from "electron-store";
 import Database from "better-sqlite3";
 import { existsSync, mkdirSync, readdirSync, statSync, unlinkSync, copyFileSync, promises } from "fs";
 import electronLocalShortcut from "electron-localshortcut";
-import { autoUpdater } from "electron-updater";
+import pkg from "electron-updater";
 import __cjs_mod__ from "node:module";
 const __filename = import.meta.filename;
 const __dirname = import.meta.dirname;
@@ -1748,6 +1748,7 @@ const shortcuts = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.definePro
   updateGlobalShortcut,
   validateShortcut
 }, Symbol.toStringTag, { value: "Module" }));
+const { autoUpdater } = pkg;
 autoUpdater.autoDownload = false;
 autoUpdater.autoInstallOnAppQuit = true;
 let updateCheckInterval = null;

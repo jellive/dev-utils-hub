@@ -1,6 +1,8 @@
-import { autoUpdater } from 'electron-updater'
 import { BrowserWindow, dialog } from 'electron'
 import { settingsStore } from './ipc/settings'
+// Import electron-updater as default export (CommonJS module)
+import pkg from 'electron-updater'
+const { autoUpdater } = pkg
 
 // Configure auto-updater
 autoUpdater.autoDownload = false // Don't auto-download, let user decide
