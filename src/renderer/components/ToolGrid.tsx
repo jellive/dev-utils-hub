@@ -10,6 +10,10 @@ import {
   Hash,
   Fingerprint,
   Calendar,
+  Palette,
+  Clock,
+  FileText,
+  Ruler,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
@@ -31,6 +35,10 @@ const tools: ToolConfig[] = [
   { id: 'hash' as ToolType, icon: Hash },
   { id: 'uuid' as ToolType, icon: Fingerprint },
   { id: 'timestamp' as ToolType, icon: Calendar },
+  { id: 'color-picker' as ToolType, icon: Palette },
+  { id: 'cron-parser' as ToolType, icon: Clock },
+  { id: 'markdown-preview' as ToolType, icon: FileText },
+  { id: 'css-converter' as ToolType, icon: Ruler },
 ];
 
 export function ToolGrid() {

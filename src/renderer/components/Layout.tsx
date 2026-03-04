@@ -1,5 +1,5 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Toaster } from 'sonner';
 import { Header } from './Header';
 import { OfflineIndicator } from './OfflineIndicator';
@@ -12,6 +12,7 @@ import { usePerformanceMonitor } from '../hooks/usePerformanceMonitor';
 import { useTranslation } from 'react-i18next';
 import { useShortcutFeedback } from './ShortcutFeedback';
 import { HistorySidebar } from './history/HistorySidebar';
+import { CommandPalette } from './CommandPalette';
 
 export function Layout() {
   const { t } = useTranslation();
@@ -20,8 +21,25 @@ export function Layout() {
   const isHomePage = location.pathname === '/';
   const { showFeedback, FeedbackComponent } = useShortcutFeedback();
   const [isHistorySidebarOpen, setIsHistorySidebarOpen] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+
+  const handleCloseCommandPalette = useCallback(() => {
+    setIsCommandPaletteOpen(false);
+  }, []);
 
   usePerformanceMonitor(`Page: ${location.pathname}`);
+
+  // Global Cmd+K / Ctrl+K shortcut to open command palette
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen((open) => !open);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Extract tool name from pathname
   const getToolName = (): string => {
@@ -111,6 +129,7 @@ export function Layout() {
         isOpen={isHistorySidebarOpen}
         onOpenChange={setIsHistorySidebarOpen}
       />
+      <CommandPalette isOpen={isCommandPaletteOpen} onClose={handleCloseCommandPalette} />
     </div>
   );
 }

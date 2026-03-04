@@ -6,7 +6,7 @@ import { TwoColumnSkeleton } from './components/TwoColumnSkeleton';
 
 // Lazy load tool components for code splitting
 const JsonFormatter = lazy(() =>
-  import('./components/tools/JsonFormatter').then((module) => ({ default: module.JsonFormatter }))
+  import('./components/tools/JsonFormatter').then((module) => ({ default: module.JsonFormatterRoute }))
 );
 const JwtDecoder = lazy(() =>
   import('./components/tools/JwtDecoder').then((module) => ({ default: module.JwtDecoder }))
@@ -34,6 +34,18 @@ const TimestampConverter = lazy(() =>
 );
 const ToolGrid = lazy(() =>
   import('./components/ToolGrid').then((module) => ({ default: module.ToolGrid }))
+);
+const ColorPicker = lazy(() =>
+  import('./components/tools/ColorPicker').then((module) => ({ default: module.ColorPicker }))
+);
+const CronParser = lazy(() =>
+  import('./components/tools/CronParser').then((module) => ({ default: module.CronParser }))
+);
+const MarkdownPreview = lazy(() =>
+  import('./components/tools/MarkdownPreview').then((module) => ({ default: module.MarkdownPreview }))
+);
+const CssUnitConverter = lazy(() =>
+  import('./components/tools/CssUnitConverter').then((module) => ({ default: module.CssUnitConverter }))
 );
 
 // Helper components for Suspense with appropriate skeletons
@@ -89,6 +101,22 @@ export const router = createHashRouter([
       {
         path: 'timestamp',
         element: <TwoColumnTool><TimestampConverter /></TwoColumnTool>,
+      },
+      {
+        path: 'color-picker',
+        element: <SingleColumnTool><ColorPicker /></SingleColumnTool>,
+      },
+      {
+        path: 'cron-parser',
+        element: <SingleColumnTool><CronParser /></SingleColumnTool>,
+      },
+      {
+        path: 'markdown-preview',
+        element: <TwoColumnTool><MarkdownPreview /></TwoColumnTool>,
+      },
+      {
+        path: 'css-converter',
+        element: <SingleColumnTool><CssUnitConverter /></SingleColumnTool>,
       },
       {
         path: '*',

@@ -8,7 +8,11 @@ export type ToolType =
   | 'hash'
   | 'uuid'
   | 'timestamp'
-  | 'api';
+  | 'api'
+  | 'color-picker'
+  | 'cron-parser'
+  | 'markdown-preview'
+  | 'css-converter';
 
 export interface Tool {
   id: ToolType;

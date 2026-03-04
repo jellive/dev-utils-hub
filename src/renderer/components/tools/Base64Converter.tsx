@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useHistoryAutoSave } from '../../hooks/useHistoryAutoSave';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -32,7 +32,9 @@ import {
 export function Base64Converter() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [input, setInput] = useState('');
+  const location = useLocation();
+  const incomingState = location.state as { base64Input?: string } | null;
+  const [input, setInput] = useState(incomingState?.base64Input ?? '');
   const [output, setOutput] = useState('');
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('encode');

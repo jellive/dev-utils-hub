@@ -165,6 +165,15 @@ export function JwtDecoder() {
     toast.success(t('common.copied'));
   };
 
+  const sendToJsonFormatter = () => {
+    if (!decoded.payload) {
+      toast.error('No decoded payload to send');
+      return;
+    }
+    navigate('/json', { state: { jsonInput: decoded.payload } });
+    toast.success(t('common.sendToJsonFormatter'));
+  };
+
   const sendToAPITester = () => {
     if (!input.trim()) {
       toast.error('No JWT token to send');
@@ -207,6 +216,12 @@ export function JwtDecoder() {
             <Button onClick={handleClear} variant="outline">
               {t('common.clear')}
             </Button>
+            {decoded.payload && (
+              <Button onClick={sendToJsonFormatter} variant="secondary">
+                <Send className="mr-2 h-4 w-4" />
+                {t('common.sendToJsonFormatter')}
+              </Button>
+            )}
             {input.trim() && (
               <Button onClick={sendToAPITester} variant="secondary">
                 <Send className="mr-2 h-4 w-4" />
