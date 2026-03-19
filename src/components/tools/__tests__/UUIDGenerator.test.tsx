@@ -1,6 +1,26 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { UUIDGenerator } from '../UUIDGenerator';
+import { UUIDGenerator } from '../../../renderer/components/tools/UUIDGenerator';
+
+// Mock window.api
+vi.stubGlobal('api', {
+  history: {
+    save: vi.fn().mockResolvedValue(undefined),
+    count: vi.fn().mockResolvedValue(0),
+    get: vi.fn().mockResolvedValue([]),
+    clear: vi.fn().mockResolvedValue(undefined),
+    delete: vi.fn().mockResolvedValue(undefined),
+    export: vi.fn().mockResolvedValue(''),
+  },
+});
+
+// Mock sonner toast
+vi.mock('sonner', () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+  },
+}));
 
 describe('UUIDGenerator', () => {
   beforeEach(() => {

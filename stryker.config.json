@@ -1,0 +1,10 @@
+{
+  "testRunner": "vitest",
+  "plugins": ["@stryker-mutator/vitest-runner"],
+  "mutate": ["src/utils/diffAlgorithm.ts", "src/utils/hashUtils.ts", "src/lib/utils.ts", "!src/**/*.test.*", "!src/**/*.spec.*", "!src/**/__tests__/**"],
+  "reporters": ["clear-text", "progress"],
+  "thresholds": { "high": 80, "low": 75, "break": 75 },
+  "concurrency": 4,
+  "timeoutMS": 30000,
+  "ignorePatterns": ["dist-release/**", "dist/**", "release/**", "out/**", "node_modules/**", ".stryker-tmp/**", "**/*.app/**", "dist-electron/**", "**/*.dmg", "**/*.exe", "**/*.zip"]
+}

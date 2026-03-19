@@ -30,16 +30,23 @@ describe('RegexTester', () => {
       expect(screen.getByRole('button', { name: /clear/i })).toBeInTheDocument();
     });
 
-    it('should render preset examples dropdown', () => {
-      expect(screen.getByRole('combobox', { name: /preset examples/i })).toBeInTheDocument();
+    it('should render preset examples button', () => {
+      // Presets are in a Dialog opened by a button
+      const examplesButton = screen.getByRole('button', { name: /examples/i });
+      expect(examplesButton).toBeInTheDocument();
     });
   });
 
   describe('Preset Examples', () => {
-    it('should load email validation preset', () => {
-      const presetSelect = screen.getByRole('combobox', { name: /preset examples/i });
+    const openPresetsDialog = () => {
+      const examplesButton = screen.getByRole('button', { name: /examples/i });
+      fireEvent.click(examplesButton);
+    };
 
-      fireEvent.change(presetSelect, { target: { value: 'email' } });
+    it('should load email validation preset', () => {
+      openPresetsDialog();
+      const emailCard = screen.getByText(/email validation/i);
+      fireEvent.click(emailCard);
 
       const patternInput = screen.getByPlaceholderText(/enter regex pattern/i) as HTMLInputElement;
       const testInput = screen.getByPlaceholderText(/enter test string/i) as HTMLTextAreaElement;
@@ -49,9 +56,9 @@ describe('RegexTester', () => {
     });
 
     it('should load phone number preset', () => {
-      const presetSelect = screen.getByRole('combobox', { name: /preset examples/i });
-
-      fireEvent.change(presetSelect, { target: { value: 'phone' } });
+      openPresetsDialog();
+      const phoneCard = screen.getByText(/korean phone number/i);
+      fireEvent.click(phoneCard);
 
       const patternInput = screen.getByPlaceholderText(/enter regex pattern/i) as HTMLInputElement;
       const testInput = screen.getByPlaceholderText(/enter test string/i) as HTMLTextAreaElement;
@@ -61,9 +68,9 @@ describe('RegexTester', () => {
     });
 
     it('should load URL preset', () => {
-      const presetSelect = screen.getByRole('combobox', { name: /preset examples/i });
-
-      fireEvent.change(presetSelect, { target: { value: 'url' } });
+      openPresetsDialog();
+      const urlCard = screen.getByText(/url matching/i);
+      fireEvent.click(urlCard);
 
       const patternInput = screen.getByPlaceholderText(/enter regex pattern/i) as HTMLInputElement;
       const testInput = screen.getByPlaceholderText(/enter test string/i) as HTMLTextAreaElement;
@@ -73,9 +80,9 @@ describe('RegexTester', () => {
     });
 
     it('should load capture groups preset', () => {
-      const presetSelect = screen.getByRole('combobox', { name: /preset examples/i });
-
-      fireEvent.change(presetSelect, { target: { value: 'capture' } });
+      openPresetsDialog();
+      const captureCard = screen.getByText(/capture groups \(username/i);
+      fireEvent.click(captureCard);
 
       const patternInput = screen.getByPlaceholderText(/enter regex pattern/i) as HTMLInputElement;
 
@@ -84,12 +91,12 @@ describe('RegexTester', () => {
     });
 
     it('should set appropriate flags for email preset', () => {
-      const presetSelect = screen.getByRole('combobox', { name: /preset examples/i });
+      openPresetsDialog();
+      const emailCard = screen.getByText(/email validation/i);
+      fireEvent.click(emailCard);
 
-      fireEvent.change(presetSelect, { target: { value: 'email' } });
-
-      const globalFlag = screen.getByLabelText(/global/i) as HTMLInputElement;
-      expect(globalFlag.checked).toBe(true);
+      const globalFlag = screen.getByLabelText(/global/i);
+      expect(globalFlag.getAttribute('aria-checked') === 'true' || globalFlag.getAttribute('data-state') === 'checked').toBe(true);
     });
   });
 
@@ -227,7 +234,7 @@ describe('RegexTester', () => {
     it('should display capture groups from pattern', async () => {
       const patternInput = screen.getByPlaceholderText(/enter regex pattern/i);
       const testInput = screen.getByPlaceholderText(/enter test string/i);
-      const testButton = screen.getByRole('button', { name: /^test$/i });
+      const testButton = screen.getByRole('button', { name: /test pattern/i });
 
       fireEvent.change(patternInput, { target: { value: '(\\w+)@(\\w+)\\.(\\w+)' } });
       fireEvent.change(testInput, { target: { value: 'user@domain.org' } });
@@ -253,8 +260,8 @@ describe('RegexTester', () => {
       fireEvent.click(testButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/user/i)).toBeInTheDocument();
-        expect(screen.getByText(/domain/i)).toBeInTheDocument();
+        expect(screen.getAllByText(/user/i).length).toBeGreaterThan(0);
+        expect(screen.getAllByText(/domain/i).length).toBeGreaterThan(0);
       });
     });
   });

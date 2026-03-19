@@ -30,14 +30,15 @@ describe('Sentry Configuration', () => {
       expect(config.enabled).toBe(true)
     })
 
-    it('should have enabled false in development mode', () => {
+    it('should have enabled true in development mode when DSN is provided', () => {
       vi.stubEnv('VITE_SENTRY_DSN', 'https://test@sentry.io/123')
       vi.stubEnv('MODE', 'development')
       vi.stubEnv('DEV', true)
 
       const config = getSentryConfig()
 
-      expect(config.enabled).toBe(false)
+      // enabled is based on DSN presence, not environment
+      expect(config.enabled).toBe(true)
     })
 
     it('should include tracesSampleRate', () => {

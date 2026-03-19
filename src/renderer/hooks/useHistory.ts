@@ -78,7 +78,7 @@ export function useHistory(options: UseHistoryOptions = {}): UseHistoryReturn {
       setIsLoading(true)
       setError(null)
 
-      const entries = await window.api.history.get(toolFilter, limitCount || limit)
+      const entries = await window.api?.history?.get(toolFilter, limitCount || limit) ?? []
       setHistory(entries)
     } catch (err: any) {
       const errorMessage = `Failed to load history: ${err.message || 'Unknown error'}`

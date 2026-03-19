@@ -35,7 +35,7 @@ describe('TextDiff', () => {
       fireEvent.change(modifiedInput, { target: { value: 'Hello\nWorld' } });
       fireEvent.click(compareButton);
 
-      expect(screen.getByText(/no differences/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/no differences/i).length).toBeGreaterThan(0);
     });
 
     it('should highlight added lines', () => {
@@ -148,7 +148,7 @@ describe('TextDiff', () => {
 
       fireEvent.click(compareButton);
 
-      expect(screen.getByText(/no differences/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/no differences/i).length).toBeGreaterThan(0);
     });
   });
 });

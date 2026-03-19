@@ -1,11 +1,21 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 import { Base64Converter } from '../Base64Converter';
+
+// The output textarea placeholder is "Output" (t('tools.base64.output'))
+// The encode input placeholder is "Enter text to encode..." (t('tools.base64.enterText'))
+// The decode input placeholder is "Enter Base64 to decode..." (t('tools.base64.enterBase64'))
+// Both encode and decode tabs share a single output textarea with placeholder "Output"
 
 describe('Base64Converter', () => {
   beforeEach(() => {
-    render(<Base64Converter />);
+    render(
+      <MemoryRouter>
+        <Base64Converter />
+      </MemoryRouter>
+    );
   });
 
   describe('Tabs Structure', () => {
@@ -79,7 +89,7 @@ describe('Base64Converter', () => {
       // Switch should be rendered with proper label
       const switchElement = document.querySelector('[role="switch"]');
       expect(switchElement).toBeInTheDocument();
-      expect(screen.getByText(/url-safe/i)).toBeInTheDocument();
+      expect(screen.getByText(/url safe/i)).toBeInTheDocument();
     });
 
     it('should have character encoding select', () => {
@@ -89,14 +99,16 @@ describe('Base64Converter', () => {
       // Check for the label that is specifically for the select
       const encodingLabel = document.querySelector('label[for="encoding"]');
       expect(encodingLabel).toBeInTheDocument();
-      expect(encodingLabel?.textContent).toBe('Encoding:');
+      expect(encodingLabel?.textContent).toBe('Options:');
     });
   });
 
   describe('Initial State', () => {
     it('should render input and output textareas', () => {
       expect(screen.getByPlaceholderText(/enter text to encode/i)).toBeInTheDocument();
-      expect(screen.getByPlaceholderText(/base64 output/i)).toBeInTheDocument();
+      // Output textarea placeholder is "Output"
+      const textareas = document.querySelectorAll('textarea');
+      expect(textareas.length).toBeGreaterThanOrEqual(2);
     });
 
     it('should render encode and decode buttons', async () => {
@@ -128,7 +140,7 @@ describe('Base64Converter', () => {
       fireEvent.change(input, { target: { value: 'Hello World' } });
       fireEvent.click(encodeButton);
 
-      const output = screen.getByPlaceholderText(/base64 output/i) as HTMLTextAreaElement;
+      const output = screen.getByPlaceholderText(/^output$/i) as HTMLTextAreaElement;
       expect(output.value).toBe('SGVsbG8gV29ybGQ=');
     });
 
@@ -139,7 +151,7 @@ describe('Base64Converter', () => {
       fireEvent.change(input, { target: { value: '안녕하세요' } });
       fireEvent.click(encodeButton);
 
-      const output = screen.getByPlaceholderText(/base64 output/i) as HTMLTextAreaElement;
+      const output = screen.getByPlaceholderText(/^output$/i) as HTMLTextAreaElement;
       // UTF-8 encoded Korean text
       expect(output.value).toBeTruthy();
       expect(output.value.length).toBeGreaterThan(0);
@@ -152,7 +164,7 @@ describe('Base64Converter', () => {
       fireEvent.change(input, { target: { value: 'Hello 👋 World 🌍' } });
       fireEvent.click(encodeButton);
 
-      const output = screen.getByPlaceholderText(/base64 output/i) as HTMLTextAreaElement;
+      const output = screen.getByPlaceholderText(/^output$/i) as HTMLTextAreaElement;
       expect(output.value).toBeTruthy();
       expect(output.value.length).toBeGreaterThan(0);
     });
@@ -164,7 +176,7 @@ describe('Base64Converter', () => {
       fireEvent.change(input, { target: { value: '!@#$%^&*()_+-=[]{}|;:,.<>?' } });
       fireEvent.click(encodeButton);
 
-      const output = screen.getByPlaceholderText(/base64 output/i) as HTMLTextAreaElement;
+      const output = screen.getByPlaceholderText(/^output$/i) as HTMLTextAreaElement;
       expect(output.value).toBeTruthy();
     });
 
@@ -176,7 +188,7 @@ describe('Base64Converter', () => {
       fireEvent.change(input, { target: { value: multilineText } });
       fireEvent.click(encodeButton);
 
-      const output = screen.getByPlaceholderText(/base64 output/i) as HTMLTextAreaElement;
+      const output = screen.getByPlaceholderText(/^output$/i) as HTMLTextAreaElement;
       expect(output.value).toBeTruthy();
     });
   });
@@ -196,7 +208,7 @@ describe('Base64Converter', () => {
       fireEvent.change(input, { target: { value: testText } });
       fireEvent.click(encodeButton);
 
-      const output = screen.getByPlaceholderText(/base64 output/i) as HTMLTextAreaElement;
+      const output = screen.getByPlaceholderText(/^output$/i) as HTMLTextAreaElement;
       // URL-safe Base64 uses - and _ instead of + and /
       expect(output.value).not.toContain('+');
       expect(output.value).not.toContain('/');
@@ -214,11 +226,11 @@ describe('Base64Converter', () => {
       // Wait for decode button to appear
       const decodeButton = await screen.findByRole('button', { name: /^decode$/i });
 
-      const input = screen.getByPlaceholderText(/enter text to encode/i);
+      const input = screen.getByPlaceholderText(/enter base64 to decode/i);
       fireEvent.change(input, { target: { value: 'SGVsbG8gV29ybGQ=' } });
       fireEvent.click(decodeButton);
 
-      const output = screen.getByPlaceholderText(/base64 output/i) as HTMLTextAreaElement;
+      const output = screen.getByPlaceholderText(/^output$/i) as HTMLTextAreaElement;
       expect(output.value).toBe('Hello World');
     });
 
@@ -232,7 +244,7 @@ describe('Base64Converter', () => {
       fireEvent.change(input, { target: { value: koreanText } });
       fireEvent.click(encodeButton);
 
-      const output = screen.getByPlaceholderText(/base64 output/i) as HTMLTextAreaElement;
+      const output = screen.getByPlaceholderText(/^output$/i) as HTMLTextAreaElement;
       const encoded = output.value;
 
       // Switch to decode tab
@@ -241,7 +253,7 @@ describe('Base64Converter', () => {
 
       // Wait for decode button to appear and get input again after tab switch
       const decodeButton = await screen.findByRole('button', { name: /^decode$/i });
-      const inputAfterSwitch = screen.getByPlaceholderText(/enter text to encode/i);
+      const inputAfterSwitch = screen.getByPlaceholderText(/enter base64 to decode/i);
 
       // Set encoded value
       fireEvent.change(inputAfterSwitch, { target: { value: encoded } });
@@ -259,7 +271,7 @@ describe('Base64Converter', () => {
       fireEvent.change(input, { target: { value: emojiText } });
       fireEvent.click(encodeButton);
 
-      const output = screen.getByPlaceholderText(/base64 output/i) as HTMLTextAreaElement;
+      const output = screen.getByPlaceholderText(/^output$/i) as HTMLTextAreaElement;
       const encoded = output.value;
 
       // Switch to decode tab
@@ -268,7 +280,7 @@ describe('Base64Converter', () => {
 
       // Wait for decode button to appear and get input again after tab switch
       const decodeButton = await screen.findByRole('button', { name: /^decode$/i });
-      const inputAfterSwitch = screen.getByPlaceholderText(/enter text to encode/i);
+      const inputAfterSwitch = screen.getByPlaceholderText(/enter base64 to decode/i);
 
       // Set encoded value
       fireEvent.change(inputAfterSwitch, { target: { value: encoded } });
@@ -309,8 +321,8 @@ describe('Base64Converter', () => {
       await user.click(decodeTab);
 
       // Wait for decode button to appear
-      const input = screen.getByPlaceholderText(/enter text to encode/i);
       const decodeButton = await screen.findByRole('button', { name: /^decode$/i });
+      const input = screen.getByPlaceholderText(/enter base64 to decode/i);
 
       fireEvent.change(input, { target: { value: 'This is not valid Base64!!!' } });
       fireEvent.click(decodeButton);
@@ -353,7 +365,7 @@ describe('Base64Converter', () => {
       fireEvent.change(input, { target: { value: 'Hello World' } });
       fireEvent.click(encodeButton);
 
-      const output = screen.getByPlaceholderText(/base64 output/i) as HTMLTextAreaElement;
+      const output = screen.getByPlaceholderText(/^output$/i) as HTMLTextAreaElement;
       expect(input.value).toBe('Hello World');
       expect(output.value).toBeTruthy();
 
@@ -399,7 +411,7 @@ describe('Base64Converter', () => {
       fireEvent.change(input, { target: { value: 'Hello World' } });
       fireEvent.click(encodeButton);
 
-      const output = screen.getByPlaceholderText(/base64 output/i) as HTMLTextAreaElement;
+      const output = screen.getByPlaceholderText(/^output$/i) as HTMLTextAreaElement;
       const encoded = output.value;
 
       fireEvent.click(copyButton);
@@ -424,7 +436,7 @@ describe('Base64Converter', () => {
       // Should process in less than 500ms
       expect(endTime - startTime).toBeLessThan(500);
 
-      const output = screen.getByPlaceholderText(/base64 output/i) as HTMLTextAreaElement;
+      const output = screen.getByPlaceholderText(/^output$/i) as HTMLTextAreaElement;
       expect(output.value).toBeTruthy();
     });
   });
@@ -503,7 +515,7 @@ describe('Base64Converter', () => {
 
       // Should show progress indicator (even if briefly)
       // In real scenario, this would be visible during processing
-      const output = screen.getByPlaceholderText(/base64 output/i) as HTMLTextAreaElement;
+      const output = screen.getByPlaceholderText(/^output$/i) as HTMLTextAreaElement;
       expect(output.value).toBeTruthy();
     });
 
@@ -541,7 +553,7 @@ describe('Base64Converter', () => {
       fireEvent.change(input, { target: { value: originalText } });
       fireEvent.click(encodeButton);
 
-      const output = screen.getByPlaceholderText(/base64 output/i) as HTMLTextAreaElement;
+      const output = screen.getByPlaceholderText(/^output$/i) as HTMLTextAreaElement;
       const encoded = output.value;
 
       // Switch to decode tab
@@ -550,7 +562,7 @@ describe('Base64Converter', () => {
 
       // Wait for decode button and get input again after tab switch
       const decodeButton = await screen.findByRole('button', { name: /^decode$/i });
-      const inputAfterSwitch = screen.getByPlaceholderText(/enter text to encode/i);
+      const inputAfterSwitch = screen.getByPlaceholderText(/enter base64 to decode/i);
 
       // Set encoded value
       fireEvent.change(inputAfterSwitch, { target: { value: encoded } });

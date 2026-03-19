@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { md5, sha256, sha512, generateHash } from '../hashUtils';
+import { md5, sha256, sha512, generateHash, generateHMAC } from '../hashUtils';
 
 describe('hashUtils', () => {
   describe('md5', () => {
@@ -83,6 +83,154 @@ describe('hashUtils', () => {
     it('should handle special characters correctly', async () => {
       const result = await generateHash('!@#$%^&*()', 'sha256');
       expect(result).toMatch(/^[a-f0-9]{64}$/);
+    });
+
+    it('should produce different outputs for different algorithms on same input', async () => {
+      const input = 'test';
+      const md5Result = await generateHash(input, 'md5');
+      const sha256Result = await generateHash(input, 'sha256');
+      const sha512Result = await generateHash(input, 'sha512');
+      expect(md5Result).not.toBe(sha256Result);
+      expect(md5Result).not.toBe(sha512Result);
+      expect(sha256Result).not.toBe(sha512Result);
+    });
+
+    it('should produce correct output length for each algorithm', async () => {
+      const input = 'boundary';
+      expect((await generateHash(input, 'md5')).length).toBe(32);
+      expect((await generateHash(input, 'sha256')).length).toBe(64);
+      expect((await generateHash(input, 'sha512')).length).toBe(128);
+    });
+  });
+
+  describe('generateHMAC', () => {
+    // Exact-value tests kill string-init and loop-bound mutants in generateHMAC
+    it('should generate exact HMAC-MD5 for hello/key', async () => {
+      const result = await generateHMAC('hello', 'key', 'md5');
+      expect(result).toBe('5bb2ed191b1da123e16e2222dbe2b220');
+    });
+
+    it('should generate exact HMAC-SHA256 for hello/key', async () => {
+      const result = await generateHMAC('hello', 'key', 'sha256');
+      expect(result).toBe('6da8cd3e7e824394f27dd3ff9ec28c731eadda5cd671d3b9609176ad60ed1b75');
+    });
+
+    it('should generate exact HMAC-MD5 for empty message', async () => {
+      const result = await generateHMAC('', 'key', 'md5');
+      expect(result).toBe('f3450a19f4346b378bcdf4dcf3242a76');
+    });
+
+    it('should generate exact HMAC-MD5 for test/secret', async () => {
+      const result = await generateHMAC('test', 'secret', 'md5');
+      expect(result).toBe('d22fa71cf626a291e4240060595c002b');
+    });
+
+    it('should generate exact HMAC-SHA256 for test/secret', async () => {
+      const result = await generateHMAC('test', 'secret', 'sha256');
+      expect(result).toBe('e8630e664871f66fcfe5042cb8eeb3fa7e8f23f0d745a8b065c761d77d29c36f');
+    });
+
+    it('should generate exact HMAC-SHA512 for test/secret', async () => {
+      const result = await generateHMAC('test', 'secret', 'sha512');
+      expect(result).toBe('a50ba45b705b17d73958e7c7ca643bd9f7ff1229cba043fa09b14e4029e385cc8fdf75c6dcf8d3343a6989c723ee5549b72d475a01592e4499ab6734bad2e0c6');
+    });
+
+    it('should produce consistent output for same inputs', async () => {
+      const r1 = await generateHMAC('message', 'secret', 'md5');
+      const r2 = await generateHMAC('message', 'secret', 'md5');
+      expect(r1).toBe(r2);
+    });
+
+    it('should produce different output for different messages', async () => {
+      const r1 = await generateHMAC('message1', 'secret', 'md5');
+      const r2 = await generateHMAC('message2', 'secret', 'md5');
+      expect(r1).not.toBe(r2);
+    });
+
+    it('should produce different output for different keys', async () => {
+      const r1 = await generateHMAC('message', 'key1', 'sha256');
+      const r2 = await generateHMAC('message', 'key2', 'sha256');
+      expect(r1).not.toBe(r2);
+    });
+
+    it('should use block size 64 for md5 (key at boundary vs over boundary)', async () => {
+      // Key of exactly 64 bytes - NOT hashed before use (length === blockSize, not >)
+      const key64 = 'a'.repeat(64);
+      const result64 = await generateHMAC('test', key64, 'md5');
+      expect(result64).toMatch(/^[a-f0-9]{32}$/);
+      // Key of 65 bytes - SHOULD be hashed first (length > blockSize)
+      const key65 = 'a'.repeat(65);
+      const result65 = await generateHMAC('test', key65, 'md5');
+      expect(result65).toMatch(/^[a-f0-9]{32}$/);
+      // Results differ because key processing path differs
+      expect(result64).not.toBe(result65);
+    });
+
+    it('should use block size 128 for sha256 (key at boundary vs over boundary)', async () => {
+      const key128 = 'b'.repeat(128);
+      const result128 = await generateHMAC('test', key128, 'sha256');
+      expect(result128).toMatch(/^[a-f0-9]+$/);
+      const key129 = 'b'.repeat(129);
+      const result129 = await generateHMAC('test', key129, 'sha256');
+      expect(result129).toMatch(/^[a-f0-9]+$/);
+      expect(result128).not.toBe(result129);
+    });
+
+    it('should use block size 128 for sha512 (key at boundary vs over boundary)', async () => {
+      const key128 = 'c'.repeat(128);
+      const result128 = await generateHMAC('test', key128, 'sha512');
+      expect(result128).toMatch(/^[a-f0-9]+$/);
+      const key129 = 'c'.repeat(129);
+      const result129 = await generateHMAC('test', key129, 'sha512');
+      expect(result129).toMatch(/^[a-f0-9]+$/);
+      expect(result128).not.toBe(result129);
+    });
+
+    it('should produce different results for md5 vs sha256', async () => {
+      const r1 = await generateHMAC('message', 'key', 'md5');
+      const r2 = await generateHMAC('message', 'key', 'sha256');
+      expect(r1).not.toBe(r2);
+    });
+
+    it('should produce different results for sha256 vs sha512', async () => {
+      const r1 = await generateHMAC('message', 'key', 'sha256');
+      const r2 = await generateHMAC('message', 'key', 'sha512');
+      expect(r1).not.toBe(r2);
+    });
+
+    it('should handle empty key', async () => {
+      const result = await generateHMAC('message', '', 'md5');
+      expect(result).toMatch(/^[a-f0-9]{32}$/);
+    });
+
+    it('empty message HMAC should differ from non-empty message HMAC', async () => {
+      const r1 = await generateHMAC('', 'key', 'sha256');
+      const r2 = await generateHMAC('a', 'key', 'sha256');
+      expect(r1).not.toBe(r2);
+    });
+  });
+
+  describe('md5 output format', () => {
+    it('should always produce exactly 32 hex characters', async () => {
+      for (const input of ['', 'a', 'ab', 'abc', 'x'.repeat(55), 'x'.repeat(56), 'x'.repeat(64)]) {
+        const result = await md5(input);
+        expect(result.length).toBe(32);
+        expect(result).toMatch(/^[a-f0-9]{32}$/);
+      }
+    });
+
+    it('should produce all 4 bytes in output (wordToHex covers bytes 0-3)', async () => {
+      // This forces wordToHex to exercise all 4 byte positions
+      // The known hash of 'abc' exercises non-zero bytes across all positions
+      const result = await md5('abc');
+      expect(result).toBe('900150983cd24fb0d6963f7d28e17f72');
+      expect(result.length).toBe(32);
+    });
+
+    it('should differ for inputs that differ only by one character', async () => {
+      const r1 = await md5('hello');
+      const r2 = await md5('helo');
+      expect(r1).not.toBe(r2);
     });
   });
 });

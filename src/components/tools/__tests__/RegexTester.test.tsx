@@ -88,8 +88,8 @@ describe('RegexTester', () => {
 
       fireEvent.change(presetSelect, { target: { value: 'email' } });
 
-      const globalFlag = screen.getByLabelText(/global/i) as HTMLInputElement;
-      expect(globalFlag.checked).toBe(true);
+      const globalFlag = screen.getByLabelText(/global/i);
+      expect(globalFlag.getAttribute('aria-checked') === 'true' || globalFlag.getAttribute('data-state') === 'checked').toBe(true);
     });
   });
 
@@ -253,8 +253,8 @@ describe('RegexTester', () => {
       fireEvent.click(testButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/user/i)).toBeInTheDocument();
-        expect(screen.getByText(/domain/i)).toBeInTheDocument();
+        expect(screen.getAllByText(/user/i).length).toBeGreaterThan(0);
+        expect(screen.getAllByText(/domain/i).length).toBeGreaterThan(0);
       });
     });
   });

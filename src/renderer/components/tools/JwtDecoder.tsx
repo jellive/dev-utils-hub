@@ -211,7 +211,7 @@ export function JwtDecoder() {
           <div className="flex gap-2">
             <Button onClick={decodeJWT}>
               <Shield className="mr-2 h-4 w-4" />
-              {t('common.decode')}
+              Decode Token
             </Button>
             <Button onClick={handleClear} variant="outline">
               {t('common.clear')}

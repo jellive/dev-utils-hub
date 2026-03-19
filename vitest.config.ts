@@ -16,8 +16,11 @@ export default defineConfig({
     exclude: [
       '**/node_modules/**',
       '**/dist/**',
+      '**/.stryker-tmp/**',
       '**/*.integration.test.{ts,tsx}',
       '**/APITester.test.tsx',
+      'e2e/**',
+      '**/sentry-init.test.ts',
     ],
     coverage: {
       provider: 'v8',

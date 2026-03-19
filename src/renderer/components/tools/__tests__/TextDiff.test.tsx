@@ -5,6 +5,9 @@ import { TextDiff } from '../TextDiff';
 describe('TextDiff', () => {
   beforeEach(() => {
     render(<TextDiff />);
+    // Switch to unified view so data-testid="diff-viewer" is rendered
+    const unifiedBtn = screen.queryByRole('button', { name: /unified/i });
+    if (unifiedBtn) fireEvent.click(unifiedBtn);
   });
 
   describe('Initial State', () => {
@@ -35,7 +38,7 @@ describe('TextDiff', () => {
       fireEvent.change(modifiedInput, { target: { value: 'Hello\nWorld' } });
       fireEvent.click(compareButton);
 
-      expect(screen.getByText(/no differences/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/no differences/i).length).toBeGreaterThan(0);
     });
 
     it('should highlight added lines', () => {
@@ -148,7 +151,7 @@ describe('TextDiff', () => {
 
       fireEvent.click(compareButton);
 
-      expect(screen.getByText(/no differences/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/no differences/i).length).toBeGreaterThan(0);
     });
   });
 });

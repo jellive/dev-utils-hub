@@ -374,11 +374,22 @@ export function RegexTester() {
           <div className="flex items-center gap-2">
             <Button onClick={handleTest} className="gap-2">
               <Search className="h-4 w-4" />
-              {t('tools.regex.testPattern')}
+              {t('common.test')}
             </Button>
             <Button onClick={handleClear} variant="outline">
-              {t('tools.regex.clearAll')}
+              {t('common.clear')}
             </Button>
+            <select
+              aria-label="Preset Examples"
+              defaultValue=""
+              onChange={(e) => { if (e.target.value) loadPreset(e.target.value); }}
+              className="border rounded px-2 py-1 text-sm"
+            >
+              <option value="" disabled>{t('tools.regex.examples')}</option>
+              {Object.entries(PRESET_EXAMPLES).map(([key, preset]) => (
+                <option key={key} value={key}>{preset.description}</option>
+              ))}
+            </select>
           </div>
         </CardContent>
       </Card>
