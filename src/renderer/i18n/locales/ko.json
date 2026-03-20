@@ -209,6 +209,7 @@
       "bulk": "대량",
       "bulkGeneration": "대량 UUID 생성",
       "generateMultiple": "여러 UUID를 한 번에 생성 (1-100)",
+      "generateBulk": "대량 생성",
       "bulkCount": "개수",
       "format": "형식",
       "uppercase": "대문자",
