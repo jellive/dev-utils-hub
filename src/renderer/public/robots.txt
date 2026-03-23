@@ -1,5 +1,5 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://dev-utils-hub.vercel.app/sitemap.xml
-Host: https://dev-utils-hub.vercel.app
+Sitemap: https://dev-utils.jell.kr/sitemap.xml
+Host: https://dev-utils.jell.kr
