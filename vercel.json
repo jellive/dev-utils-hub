@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm run build",
+  "buildCommand": "npm run build && cp public/robots.txt public/sitemap.xml public/ads.txt public/googleb8b4afb92675bd22.html dist/ 2>/dev/null || true",
   "outputDirectory": "dist",
   "devCommand": "npm run dev",
   "installCommand": "npm install",
