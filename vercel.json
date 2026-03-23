@@ -4,11 +4,11 @@
   "devCommand": "npm run dev",
   "installCommand": "npm install --legacy-peer-deps",
   "framework": null,
-  "rewrites": [
-    {
-      "source": "/((?!robots\\.txt|sitemap\\.xml|ads\\.txt|googleb8b4afb92675bd22\\.html).*)",
-      "destination": "/index.html"
-    }
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ],
   "headers": [
     {
