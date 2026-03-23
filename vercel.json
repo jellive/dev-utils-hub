@@ -3,10 +3,10 @@
   "outputDirectory": "dist",
   "devCommand": "npm run dev",
   "installCommand": "npm install",
-  "framework": "vite",
+  "framework": null,
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/((?!robots\\.txt|sitemap\\.xml|ads\\.txt|googleb8b4afb92675bd22\\.html).*)",
       "destination": "/index.html"
     }
   ],
