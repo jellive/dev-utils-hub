@@ -68,3 +68,5 @@ release/
 # Project documentation files
 SENTRY_SETUP.md
 BROWSER_SUPPORT.md
+dist-release/
+.stryker-tmp/
