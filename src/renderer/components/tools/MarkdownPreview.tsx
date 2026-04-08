@@ -82,8 +82,16 @@ function inlineFormat(text: string): string {
     .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    .replace(/`([^`]+)`/g, '<code class="bg-gray-100 dark:bg-gray-800 px-1 rounded text-sm font-mono">$1</code>')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 dark:text-blue-400 underline" target="_blank" rel="noopener noreferrer">$1</a>');
+    .replace(
+      /`([^`]+)`/g,
+      '<code class="bg-gray-100 dark:bg-gray-800 px-1 rounded text-sm font-mono">$1</code>'
+    )
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, url) => {
+      const trimmed = url.trim();
+      const isSafe = /^(https?|mailto|ftp):/i.test(trimmed);
+      const safeUrl = isSafe ? trimmed : '#';
+      return `<a href="${safeUrl}" class="text-blue-600 dark:text-blue-400 underline" target="_blank" rel="noopener noreferrer">${label}</a>`;
+    });
 }
 
 /**
@@ -111,7 +119,7 @@ function parseMarkdown(md: string): string {
       }
       result.push(
         `<pre class="bg-gray-100 dark:bg-gray-900 rounded p-3 overflow-x-auto my-2">` +
-        `<code${lang ? ` class="language-${lang}"` : ''}>${codeLines.join('\n')}</code></pre>`
+          `<code${lang ? ` class="language-${lang}"` : ''}>${codeLines.join('\n')}</code></pre>`
       );
       i++;
       continue;
@@ -151,30 +159,43 @@ function parseMarkdown(md: string): string {
       }
       result.push(
         `<blockquote class="border-l-4 border-gray-400 dark:border-gray-500 pl-4 my-2 text-gray-600 dark:text-gray-400 italic">` +
-        quoteLines.join('<br/>') + `</blockquote>`
+          quoteLines.join('<br/>') +
+          `</blockquote>`
       );
       continue;
     }
 
     // Table
     if (line.includes('|') && i + 1 < lines.length && /^\|[\s|:-]+\|/.test(lines[i + 1])) {
-      const headers = line.split('|').filter((_, idx, arr) => idx > 0 && idx < arr.length - 1).map(h => h.trim());
+      const headers = line
+        .split('|')
+        .filter((_, idx, arr) => idx > 0 && idx < arr.length - 1)
+        .map(h => h.trim());
       i += 2;
       const rows: string[][] = [];
       while (i < lines.length && lines[i].includes('|')) {
-        const cells = lines[i].split('|').filter((_, idx, arr) => idx > 0 && idx < arr.length - 1).map(c => c.trim());
+        const cells = lines[i]
+          .split('|')
+          .filter((_, idx, arr) => idx > 0 && idx < arr.length - 1)
+          .map(c => c.trim());
         rows.push(cells);
         i++;
       }
-      const headerHtml = headers.map(h =>
-        `<th class="px-3 py-2 text-left border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 font-semibold">${inlineFormat(h)}</th>`
-      ).join('');
-      const rowsHtml = rows.map(row =>
-        `<tr>${row.map(c => `<td class="px-3 py-2 border border-gray-300 dark:border-gray-600">${inlineFormat(c)}</td>`).join('')}</tr>`
-      ).join('');
+      const headerHtml = headers
+        .map(
+          h =>
+            `<th class="px-3 py-2 text-left border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 font-semibold">${inlineFormat(h)}</th>`
+        )
+        .join('');
+      const rowsHtml = rows
+        .map(
+          row =>
+            `<tr>${row.map(c => `<td class="px-3 py-2 border border-gray-300 dark:border-gray-600">${inlineFormat(c)}</td>`).join('')}</tr>`
+        )
+        .join('');
       result.push(
         `<div class="overflow-x-auto my-2"><table class="w-full border-collapse text-sm">` +
-        `<thead><tr>${headerHtml}</tr></thead><tbody>${rowsHtml}</tbody></table></div>`
+          `<thead><tr>${headerHtml}</tr></thead><tbody>${rowsHtml}</tbody></table></div>`
       );
       continue;
     }
@@ -228,7 +249,7 @@ export function MarkdownPreview() {
   const rendered = parseMarkdown(markdown);
 
   const insertSnippet = useCallback((snippet: string) => {
-    setMarkdown((prev) => prev + snippet);
+    setMarkdown(prev => prev + snippet);
   }, []);
 
   const copyHtml = () => {
@@ -247,11 +268,13 @@ export function MarkdownPreview() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('tools.markdownPreview.title')}</h2>
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+        {t('tools.markdownPreview.title')}
+      </h2>
 
       {/* Toolbar */}
       <div className="flex flex-wrap gap-1 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-        {SNIPPETS.map((s) => (
+        {SNIPPETS.map(s => (
           <button
             key={s.label}
             onClick={() => insertSnippet(s.insert)}
@@ -286,13 +309,14 @@ export function MarkdownPreview() {
           </div>
           <Textarea
             value={markdown}
-            onChange={(e) => setMarkdown(e.target.value)}
+            onChange={e => setMarkdown(e.target.value)}
             placeholder={t('tools.markdownPreview.placeholder')}
             className="font-mono text-sm resize-none min-h-[420px]"
             data-testid="markdown-editor"
           />
           <div className="text-xs text-muted-foreground text-right">
-            {markdown.length} {t('tools.markdownPreview.characters')} · {markdown.split('\n').length} {t('tools.markdownPreview.lines')}
+            {markdown.length} {t('tools.markdownPreview.characters')} ·{' '}
+            {markdown.split('\n').length} {t('tools.markdownPreview.lines')}
           </div>
         </div>
 
