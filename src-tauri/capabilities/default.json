@@ -1,0 +1,16 @@
+{
+  "identifier": "default",
+  "description": "Default capabilities for Dev Utils Hub",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "store:default",
+    "dialog:default",
+    "clipboard-manager:default",
+    "global-shortcut:default",
+    "autostart:default",
+    "opener:default",
+    "log:default",
+    "fs:default"
+  ]
+}

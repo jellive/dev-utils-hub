@@ -1,93 +1,114 @@
-import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
-import type { HistoryEntry, HistoryStats } from '../../preload/index.d'
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { api, type HistoryEntry } from '../lib/tauri-api';
+
+interface HistoryStats {
+  total: number;
+  by_tool: Record<string, number>;
+  favorites: number;
+  oldest_entry: number | null;
+  newest_entry: number | null;
+}
 
 export interface UseHistoryOptions {
-  tool?: string
-  limit?: number
-  autoLoad?: boolean
+  tool?: string;
+  limit?: number;
+  autoLoad?: boolean;
 }
 
 export interface UseHistoryReturn {
   // State
-  history: HistoryEntry[]
-  isLoading: boolean
-  error: string | null
-  stats: HistoryStats | null
+  history: HistoryEntry[];
+  isLoading: boolean;
+  error: string | null;
+  stats: HistoryStats | null;
 
   // Operations
-  saveHistory: (tool: string, input: string, output?: string, metadata?: Record<string, any>) => Promise<number | null>
-  loadHistory: (tool?: string, limit?: number) => Promise<void>
-  searchHistory: (tool: string, query: string, limit?: number) => Promise<HistoryEntry[]>
-  deleteHistory: (id: number) => Promise<boolean>
-  toggleFavorite: (id: number) => Promise<boolean>
-  clearHistory: (tool: string) => Promise<boolean>
-  clearAllHistory: () => Promise<boolean>
-  getHistoryById: (id: number) => Promise<HistoryEntry | undefined>
-  loadStats: () => Promise<void>
-  refresh: () => Promise<void>
+  saveHistory: (
+    tool: string,
+    input: string,
+    output?: string,
+    metadata?: Record<string, any>
+  ) => Promise<number | null>;
+  loadHistory: (tool?: string, limit?: number) => Promise<void>;
+  searchHistory: (tool: string, query: string, limit?: number) => Promise<HistoryEntry[]>;
+  deleteHistory: (id: number) => Promise<boolean>;
+  toggleFavorite: (id: number) => Promise<boolean>;
+  clearHistory: (tool: string) => Promise<boolean>;
+  clearAllHistory: () => Promise<boolean>;
+  getHistoryById: (id: number) => Promise<HistoryEntry | null>;
+  loadStats: () => Promise<void>;
+  refresh: () => Promise<void>;
 }
 
 /**
  * React hook for managing history database operations
  */
 export function useHistory(options: UseHistoryOptions = {}): UseHistoryReturn {
-  const { tool, limit = 50, autoLoad = false } = options
+  const { tool, limit = 50, autoLoad = false } = options;
 
   // State
-  const [history, setHistory] = useState<HistoryEntry[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [stats, setStats] = useState<HistoryStats | null>(null)
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [stats, setStats] = useState<HistoryStats | null>(null);
 
   // Debounce timer ref
-  const searchTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Save history entry
   const saveHistory = useCallback(
-    async (tool: string, input: string, output?: string, metadata?: Record<string, any>): Promise<number | null> => {
+    async (
+      tool: string,
+      input: string,
+      output?: string,
+      metadata?: Record<string, any>
+    ): Promise<number | null> => {
       try {
-        setError(null)
-        const id = await window.api.history.save(tool, input, output, metadata)
+        setError(null);
+        const id = await api.history.save(tool, input, output, metadata);
 
         // Optimistically add to local state
         const newEntry: HistoryEntry = {
           id,
           tool,
           input,
-          output,
-          metadata: metadata ? JSON.stringify(metadata) : undefined,
+          output: output ?? null,
+          metadata: metadata ? JSON.stringify(metadata) : null,
           favorite: 0,
-          created_at: Date.now()
-        }
+          created_at: Date.now(),
+        };
 
-        setHistory((prev) => [newEntry, ...prev])
-        return id
+        setHistory(prev => [newEntry, ...prev]);
+        return id;
       } catch (err: any) {
-        const errorMessage = `Failed to save history: ${err.message || 'Unknown error'}`
-        setError(errorMessage)
-        console.error(errorMessage, err)
-        return null
+        const errorMessage = `Failed to save history: ${err.message || 'Unknown error'}`;
+        setError(errorMessage);
+        console.error(errorMessage, err);
+        return null;
       }
     },
     []
-  )
+  );
 
   // Load history entries
-  const loadHistory = useCallback(async (toolFilter?: string, limitCount?: number): Promise<void> => {
-    try {
-      setIsLoading(true)
-      setError(null)
+  const loadHistory = useCallback(
+    async (toolFilter?: string, limitCount?: number): Promise<void> => {
+      try {
+        setIsLoading(true);
+        setError(null);
 
-      const entries = await window.api?.history?.get(toolFilter, limitCount || limit) ?? []
-      setHistory(entries)
-    } catch (err: any) {
-      const errorMessage = `Failed to load history: ${err.message || 'Unknown error'}`
-      setError(errorMessage)
-      console.error(errorMessage, err)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [limit])
+        const entries = (await api?.history?.get(toolFilter, limitCount || limit)) ?? [];
+        setHistory(entries);
+      } catch (err: any) {
+        const errorMessage = `Failed to load history: ${err.message || 'Unknown error'}`;
+        setError(errorMessage);
+        console.error(errorMessage, err);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [limit]
+  );
 
   // Search history with debouncing
   const searchHistory = useCallback(
@@ -95,176 +116,177 @@ export function useHistory(options: UseHistoryOptions = {}): UseHistoryReturn {
       return new Promise((resolve, reject) => {
         // Clear previous timer
         if (searchTimerRef.current) {
-          clearTimeout(searchTimerRef.current)
+          clearTimeout(searchTimerRef.current);
         }
 
         // Debounce search for 300ms
         searchTimerRef.current = setTimeout(async () => {
           try {
-            setIsLoading(true)
-            setError(null)
+            setIsLoading(true);
+            setError(null);
 
-            const results = await window.api.history.search(tool, query, searchLimit || limit)
-            setHistory(results)
-            resolve(results)
+            const results = await api.history.search(tool, query, searchLimit || limit);
+            setHistory(results);
+            resolve(results);
           } catch (err: any) {
-            const errorMessage = `Failed to search history: ${err.message || 'Unknown error'}`
-            setError(errorMessage)
-            console.error(errorMessage, err)
-            reject(err)
+            const errorMessage = `Failed to search history: ${err.message || 'Unknown error'}`;
+            setError(errorMessage);
+            console.error(errorMessage, err);
+            reject(err);
           } finally {
-            setIsLoading(false)
+            setIsLoading(false);
           }
-        }, 300)
-      })
+        }, 300);
+      });
     },
     [limit]
-  )
+  );
 
   // Delete history entry with optimistic update
-  const deleteHistory = useCallback(async (id: number): Promise<boolean> => {
-    try {
-      setError(null)
-
-      // Optimistic update
-      setHistory((prev) => prev.filter((entry) => entry.id !== id))
-
-      const success = await window.api.history.delete(id)
-
-      if (!success) {
-        // Revert on failure
-        await loadHistory(tool, limit)
-        throw new Error('Failed to delete history entry')
-      }
-
-      return true
-    } catch (err: any) {
-      const errorMessage = `Failed to delete history: ${err.message || 'Unknown error'}`
-      setError(errorMessage)
-      console.error(errorMessage, err)
-      return false
-    }
-  }, [tool, limit, loadHistory])
-
-  // Toggle favorite with optimistic update
-  const toggleFavorite = useCallback(async (id: number): Promise<boolean> => {
-    try {
-      setError(null)
-
-      // Optimistic update
-      setHistory((prev) =>
-        prev.map((entry) =>
-          entry.id === id
-            ? { ...entry, favorite: entry.favorite === 1 ? 0 : 1 }
-            : entry
-        )
-      )
-
-      const success = await window.api.history.toggleFavorite(id)
-
-      if (!success) {
-        // Revert on failure
-        await loadHistory(tool, limit)
-        throw new Error('Failed to toggle favorite')
-      }
-
-      return true
-    } catch (err: any) {
-      const errorMessage = `Failed to toggle favorite: ${err.message || 'Unknown error'}`
-      setError(errorMessage)
-      console.error(errorMessage, err)
-      return false
-    }
-  }, [tool, limit, loadHistory])
-
-  // Clear history for tool
-  const clearHistory = useCallback(
-    async (toolName: string): Promise<boolean> => {
+  const deleteHistory = useCallback(
+    async (id: number): Promise<boolean> => {
       try {
-        setError(null)
-        const count = await window.api.history.clear(toolName)
+        setError(null);
 
-        // Update local state
-        setHistory((prev) => prev.filter((entry) => entry.tool !== toolName))
+        // Optimistic update
+        setHistory(prev => prev.filter(entry => entry.id !== id));
 
-        console.log(`Cleared ${count} entries for tool: ${toolName}`)
-        return true
+        const success = await api.history.delete(id);
+
+        if (!success) {
+          // Revert on failure
+          await loadHistory(tool, limit);
+          throw new Error('Failed to delete history entry');
+        }
+
+        return true;
       } catch (err: any) {
-        const errorMessage = `Failed to clear history: ${err.message || 'Unknown error'}`
-        setError(errorMessage)
-        console.error(errorMessage, err)
-        return false
+        const errorMessage = `Failed to delete history: ${err.message || 'Unknown error'}`;
+        setError(errorMessage);
+        console.error(errorMessage, err);
+        return false;
       }
     },
-    []
-  )
+    [tool, limit, loadHistory]
+  );
+
+  // Toggle favorite with optimistic update
+  const toggleFavorite = useCallback(
+    async (id: number): Promise<boolean> => {
+      try {
+        setError(null);
+
+        // Optimistic update
+        setHistory(prev =>
+          prev.map(entry =>
+            entry.id === id ? { ...entry, favorite: entry.favorite === 1 ? 0 : 1 } : entry
+          )
+        );
+
+        const success = await api.history.toggleFavorite(id);
+
+        if (!success) {
+          // Revert on failure
+          await loadHistory(tool, limit);
+          throw new Error('Failed to toggle favorite');
+        }
+
+        return true;
+      } catch (err: any) {
+        const errorMessage = `Failed to toggle favorite: ${err.message || 'Unknown error'}`;
+        setError(errorMessage);
+        console.error(errorMessage, err);
+        return false;
+      }
+    },
+    [tool, limit, loadHistory]
+  );
+
+  // Clear history for tool
+  const clearHistory = useCallback(async (toolName: string): Promise<boolean> => {
+    try {
+      setError(null);
+      const count = await api.history.clear(toolName);
+
+      // Update local state
+      setHistory(prev => prev.filter(entry => entry.tool !== toolName));
+
+      console.log(`Cleared ${count} entries for tool: ${toolName}`);
+      return true;
+    } catch (err: any) {
+      const errorMessage = `Failed to clear history: ${err.message || 'Unknown error'}`;
+      setError(errorMessage);
+      console.error(errorMessage, err);
+      return false;
+    }
+  }, []);
 
   // Clear all history
   const clearAllHistory = useCallback(async (): Promise<boolean> => {
     try {
-      setError(null)
-      const count = await window.api.history.clearAll()
+      setError(null);
+      const count = await api.history.clearAll();
 
       // Clear local state
-      setHistory([])
+      setHistory([]);
 
-      console.log(`Cleared all history: ${count} entries`)
-      return true
+      console.log(`Cleared all history: ${count} entries`);
+      return true;
     } catch (err: any) {
-      const errorMessage = `Failed to clear all history: ${err.message || 'Unknown error'}`
-      setError(errorMessage)
-      console.error(errorMessage, err)
-      return false
+      const errorMessage = `Failed to clear all history: ${err.message || 'Unknown error'}`;
+      setError(errorMessage);
+      console.error(errorMessage, err);
+      return false;
     }
-  }, [])
+  }, []);
 
   // Get history entry by ID
-  const getHistoryById = useCallback(async (id: number): Promise<HistoryEntry | undefined> => {
+  const getHistoryById = useCallback(async (id: number): Promise<HistoryEntry | null> => {
     try {
-      setError(null)
-      const entry = await window.api.history.getById(id)
-      return entry
+      setError(null);
+      const entry = await api.history.getById(id);
+      return entry;
     } catch (err: any) {
-      const errorMessage = `Failed to get history entry: ${err.message || 'Unknown error'}`
-      setError(errorMessage)
-      console.error(errorMessage, err)
-      return undefined
+      const errorMessage = `Failed to get history entry: ${err.message || 'Unknown error'}`;
+      setError(errorMessage);
+      console.error(errorMessage, err);
+      return null;
     }
-  }, [])
+  }, []);
 
   // Load statistics
   const loadStats = useCallback(async (): Promise<void> => {
     try {
-      setError(null)
-      const statistics = await window.api.history.stats()
-      setStats(statistics)
+      setError(null);
+      const statistics = await api.history.stats();
+      setStats(statistics);
     } catch (err: any) {
-      const errorMessage = `Failed to load statistics: ${err.message || 'Unknown error'}`
-      setError(errorMessage)
-      console.error(errorMessage, err)
+      const errorMessage = `Failed to load statistics: ${err.message || 'Unknown error'}`;
+      setError(errorMessage);
+      console.error(errorMessage, err);
     }
-  }, [])
+  }, []);
 
   // Refresh current view
   const refresh = useCallback(async (): Promise<void> => {
-    await loadHistory(tool, limit)
-  }, [tool, limit, loadHistory])
+    await loadHistory(tool, limit);
+  }, [tool, limit, loadHistory]);
 
   // Auto-load on mount if enabled
   useEffect(() => {
     if (autoLoad) {
-      loadHistory(tool, limit)
+      loadHistory(tool, limit);
     }
-  }, [autoLoad, tool, limit, loadHistory])
+  }, [autoLoad, tool, limit, loadHistory]);
 
   // Cleanup debounce timer on unmount
   useEffect(() => {
     return () => {
       if (searchTimerRef.current) {
-        clearTimeout(searchTimerRef.current)
+        clearTimeout(searchTimerRef.current);
       }
-    }
-  }, [])
+    };
+  }, []);
 
   // Memoize return object
   return useMemo(
@@ -282,7 +304,7 @@ export function useHistory(options: UseHistoryOptions = {}): UseHistoryReturn {
       clearAllHistory,
       getHistoryById,
       loadStats,
-      refresh
+      refresh,
     }),
     [
       history,
@@ -298,7 +320,7 @@ export function useHistory(options: UseHistoryOptions = {}): UseHistoryReturn {
       clearAllHistory,
       getHistoryById,
       loadStats,
-      refresh
+      refresh,
     ]
-  )
+  );
 }

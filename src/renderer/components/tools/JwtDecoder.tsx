@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { api } from '../../lib/tauri-api';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useHistoryAutoSave } from '../../hooks/useHistoryAutoSave';
@@ -29,7 +30,7 @@ export function JwtDecoder() {
   const [decoded, setDecoded] = useState<DecodedJWT>({
     header: '',
     payload: '',
-    signature: ''
+    signature: '',
   });
   const [error, setError] = useState('');
   const [isExpired, setIsExpired] = useState<boolean | null>(null);
@@ -79,9 +80,9 @@ export function JwtDecoder() {
   // Get total count for ExportDialog
   useEffect(() => {
     const fetchCount = async () => {
-      if (window.api?.history) {
+      if (api?.history) {
         try {
-          const count = await window.api.history.count('jwt');
+          const count = await api.history.count('jwt');
           setTotalCount(count);
         } catch (error) {
           console.error('Failed to get history count:', error);
@@ -94,10 +95,14 @@ export function JwtDecoder() {
   // Save to history when decoded output changes
   useEffect(() => {
     if (decoded.payload && !error) {
-      saveToHistory(input, JSON.stringify({ header: decoded.header, payload: decoded.payload }, null, 2), {
-        isExpired,
-        expirationDate: expirationDate?.toISOString()
-      });
+      saveToHistory(
+        input,
+        JSON.stringify({ header: decoded.header, payload: decoded.payload }, null, 2),
+        {
+          isExpired,
+          expirationDate: expirationDate?.toISOString(),
+        }
+      );
     }
   }, [decoded.payload, error, input, isExpired, expirationDate, saveToHistory]);
 
@@ -196,14 +201,12 @@ export function JwtDecoder() {
       <Card>
         <CardHeader>
           <CardTitle>{t('tools.jwt.input')}</CardTitle>
-          <CardDescription>
-            {t('tools.jwt.description')}
-          </CardDescription>
+          <CardDescription>{t('tools.jwt.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Textarea
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={e => setInput(e.target.value)}
             placeholder={t('tools.jwt.pasteToken')}
             className="min-h-[120px] font-mono text-sm"
           />
@@ -258,17 +261,12 @@ export function JwtDecoder() {
 
       {/* Expiration Alert */}
       {expirationDate && (
-        <Alert variant={isExpired ? "destructive" : "default"}>
-          {isExpired ? (
-            <AlertTriangle className="h-4 w-4" />
-          ) : (
-            <CheckCircle2 className="h-4 w-4" />
-          )}
+        <Alert variant={isExpired ? 'destructive' : 'default'}>
+          {isExpired ? <AlertTriangle className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
           <AlertDescription>
             {isExpired
               ? `Token expired on ${expirationDate.toLocaleString()}`
-              : `Token expires on ${expirationDate.toLocaleString()}`
-            }
+              : `Token expires on ${expirationDate.toLocaleString()}`}
           </AlertDescription>
         </Alert>
       )}
@@ -280,19 +278,15 @@ export function JwtDecoder() {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle>{t('tools.jwt.header')}</CardTitle>
-                <CardDescription>{t('tools.jwt.algorithm')} & {t('tools.jwt.type')}</CardDescription>
+                <CardDescription>
+                  {t('tools.jwt.algorithm')} & {t('tools.jwt.type')}
+                </CardDescription>
               </div>
               <div className="flex items-center gap-2">
                 {decoded.headerObj?.alg !== undefined && (
-                  <Badge variant="secondary">
-                    {String(decoded.headerObj.alg)}
-                  </Badge>
+                  <Badge variant="secondary">{String(decoded.headerObj.alg)}</Badge>
                 )}
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => copyToClipboard(decoded.header)}
-                >
+                <Button size="sm" variant="ghost" onClick={() => copyToClipboard(decoded.header)}>
                   <Copy className="h-4 w-4" />
                 </Button>
               </div>
@@ -300,10 +294,7 @@ export function JwtDecoder() {
           </CardHeader>
           <CardContent>
             <ScrollArea className="h-[200px] w-full rounded-md border">
-              <pre
-                data-testid="jwt-header"
-                className="p-4 text-sm font-mono"
-              >
+              <pre data-testid="jwt-header" className="p-4 text-sm font-mono">
                 {decoded.header}
               </pre>
             </ScrollArea>
@@ -322,15 +313,11 @@ export function JwtDecoder() {
               </div>
               <div className="flex items-center gap-2">
                 {isExpired !== null && (
-                  <Badge variant={isExpired ? "destructive" : "default"}>
+                  <Badge variant={isExpired ? 'destructive' : 'default'}>
                     {isExpired ? 'Expired' : 'Valid'}
                   </Badge>
                 )}
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => copyToClipboard(decoded.payload)}
-                >
+                <Button size="sm" variant="ghost" onClick={() => copyToClipboard(decoded.payload)}>
                   <Copy className="h-4 w-4" />
                 </Button>
               </div>
@@ -338,10 +325,7 @@ export function JwtDecoder() {
           </CardHeader>
           <CardContent>
             <ScrollArea className="h-[300px] w-full rounded-md border">
-              <pre
-                data-testid="jwt-payload"
-                className="p-4 text-sm font-mono"
-              >
+              <pre data-testid="jwt-payload" className="p-4 text-sm font-mono">
                 {decoded.payload}
               </pre>
             </ScrollArea>
@@ -360,11 +344,7 @@ export function JwtDecoder() {
                   Used to verify the token hasn't been tampered with
                 </CardDescription>
               </div>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => copyToClipboard(decoded.signature)}
-              >
+              <Button size="sm" variant="ghost" onClick={() => copyToClipboard(decoded.signature)}>
                 <Copy className="h-4 w-4" />
               </Button>
             </div>

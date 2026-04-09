@@ -1,12 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ExternalLink, Github } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '../ui/dialog';
+import { api } from '@/renderer/lib/tauri-api';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
 
@@ -19,30 +14,25 @@ export function AboutDialog({ open, onOpenChange }: AboutDialogProps) {
   // Get version from package.json via import.meta.env
   const appVersion = import.meta.env.VITE_APP_VERSION || '1.0.0';
 
-  // Get Electron versions via API
+  // Get platform info via API
   const [platformInfo, setPlatformInfo] = useState<{
-    electron: string;
-    chrome: string;
-    node: string;
+    platform: string;
+    arch: string;
   }>({
-    electron: 'N/A',
-    chrome: 'N/A',
-    node: 'N/A',
+    platform: 'N/A',
+    arch: 'N/A',
   });
 
   useEffect(() => {
     const loadPlatformInfo = async () => {
-      if (window.api?.getPlatformInfo) {
-        try {
-          const info = await window.api.getPlatformInfo();
-          setPlatformInfo({
-            electron: info.versions.electron || 'N/A',
-            chrome: info.versions.chrome || 'N/A',
-            node: info.versions.node || 'N/A',
-          });
-        } catch (error) {
-          console.error('Failed to get platform info:', error);
-        }
+      try {
+        const info = await api.getPlatformInfo();
+        setPlatformInfo({
+          platform: info.platform || 'N/A',
+          arch: info.arch || 'N/A',
+        });
+      } catch (error) {
+        console.error('Failed to get platform info:', error);
       }
     };
     loadPlatformInfo();
@@ -86,21 +76,21 @@ export function AboutDialog({ open, onOpenChange }: AboutDialogProps) {
 
           <Separator />
 
-          {/* Tech Stack */}
+          {/* System Info */}
           <div>
-            <h3 className="text-sm font-semibold mb-2">기술 스택</h3>
+            <h3 className="text-sm font-semibold mb-2">시스템 정보</h3>
             <div className="text-sm text-muted-foreground space-y-1">
               <div className="flex justify-between">
-                <span>Electron:</span>
-                <span className="font-mono">{platformInfo.electron}</span>
+                <span>플랫폼:</span>
+                <span className="font-mono">{platformInfo.platform}</span>
               </div>
               <div className="flex justify-between">
-                <span>Chromium:</span>
-                <span className="font-mono">{platformInfo.chrome}</span>
+                <span>아키텍처:</span>
+                <span className="font-mono">{platformInfo.arch}</span>
               </div>
               <div className="flex justify-between">
-                <span>Node.js:</span>
-                <span className="font-mono">{platformInfo.node}</span>
+                <span>엔진:</span>
+                <span className="font-mono">Tauri v2</span>
               </div>
             </div>
           </div>
@@ -109,19 +99,11 @@ export function AboutDialog({ open, onOpenChange }: AboutDialogProps) {
 
           {/* Links */}
           <div className="space-y-2">
-            <Button
-              variant="outline"
-              className="w-full justify-start"
-              onClick={handleOpenGitHub}
-            >
+            <Button variant="outline" className="w-full justify-start" onClick={handleOpenGitHub}>
               <Github className="h-4 w-4 mr-2" />
               GitHub Repository
             </Button>
-            <Button
-              variant="outline"
-              className="w-full justify-start"
-              onClick={handleReportIssue}
-            >
+            <Button variant="outline" className="w-full justify-start" onClick={handleReportIssue}>
               <ExternalLink className="h-4 w-4 mr-2" />
               Report Issue
             </Button>
@@ -130,9 +112,7 @@ export function AboutDialog({ open, onOpenChange }: AboutDialogProps) {
           <Separator />
 
           {/* Copyright */}
-          <div className="text-center text-sm text-muted-foreground">
-            © 2025 Dev Utils Hub
-          </div>
+          <div className="text-center text-sm text-muted-foreground">© 2025 Dev Utils Hub</div>
         </div>
       </DialogContent>
     </Dialog>

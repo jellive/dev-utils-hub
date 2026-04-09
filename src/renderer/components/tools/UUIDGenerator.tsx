@@ -1,8 +1,17 @@
 import { useState, useEffect } from 'react';
+import { api } from '../../lib/tauri-api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { RefreshCw, Copy, Download, Package, Clock, Upload, FileDown } from 'lucide-react';
 import { toast } from 'sonner';
@@ -12,7 +21,7 @@ import { useClipboard } from '../../hooks/useClipboard';
 import { useHistoryExportImport } from '../../hooks/useHistoryExportImport';
 import { ExportDialog } from '../dialogs/ExportDialog';
 import { ImportDialog } from '../dialogs/ImportDialog';
-import type { HistoryEntry } from '../../../preload/index.d';
+import type { HistoryEntry } from '../../lib/tauri-api';
 
 export function UUIDGenerator() {
   const { t } = useTranslation();
@@ -73,9 +82,9 @@ export function UUIDGenerator() {
   // Get total count for ExportDialog
   useEffect(() => {
     const fetchCount = async () => {
-      if (window.api?.history) {
+      if (api?.history) {
         try {
-          const count = await window.api.history.count('uuid');
+          const count = await api.history.count('uuid');
           setTotalCount(count);
         } catch (error) {
           console.error('Failed to get history count:', error);
@@ -92,8 +101,8 @@ export function UUIDGenerator() {
     // Save to integrated history immediately
     const metadata = getUUIDMetadata(uuid);
     try {
-      if (window.api?.history) {
-        await window.api.history.save(
+      if (api?.history) {
+        await api.history.save(
           'uuid',
           uuid,
           uuid,
@@ -129,11 +138,11 @@ export function UUIDGenerator() {
     setBulkUUIDs(uuids);
 
     // Save all generated UUIDs to history
-    if (window.api?.history) {
+    if (api?.history) {
       try {
         for (const uuid of uuids) {
           const metadata = getUUIDMetadata(uuid);
-          await window.api.history.save(
+          await api.history.save(
             'uuid',
             uuid,
             uuid,
@@ -194,11 +203,7 @@ export function UUIDGenerator() {
 
       {/* Generate Buttons */}
       <div className="flex gap-2">
-        <Button
-          onClick={generateUUID}
-          className="flex-1 gap-2"
-          size="lg"
-        >
+        <Button onClick={generateUUID} className="flex-1 gap-2" size="lg">
           <RefreshCw className="h-5 w-5" />
           {t('tools.uuid.generate')}
         </Button>
@@ -245,9 +250,7 @@ export function UUIDGenerator() {
           <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
               <DialogTitle>{t('tools.uuid.bulkGeneration')}</DialogTitle>
-              <DialogDescription>
-                {t('tools.uuid.generateMultiple')}
-              </DialogDescription>
+              <DialogDescription>{t('tools.uuid.generateMultiple')}</DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4">
@@ -257,7 +260,7 @@ export function UUIDGenerator() {
                   min="1"
                   max="100"
                   value={bulkCount}
-                  onChange={(e) => setBulkCount(e.target.value)}
+                  onChange={e => setBulkCount(e.target.value)}
                   placeholder="Enter quantity..."
                 />
                 <Button onClick={generateBulk}>Generate</Button>
@@ -284,11 +287,7 @@ export function UUIDGenerator() {
                           className="flex items-center justify-between p-2 rounded bg-gray-50 dark:bg-gray-700"
                         >
                           <code className="text-sm font-mono">{uuid}</code>
-                          <Button
-                            onClick={() => handleCopy(uuid)}
-                            variant="ghost"
-                            size="sm"
-                          >
+                          <Button onClick={() => handleCopy(uuid)} variant="ghost" size="sm">
                             <Copy className="h-4 w-4" />
                           </Button>
                         </div>
@@ -322,11 +321,7 @@ export function UUIDGenerator() {
               className="font-mono"
               data-testid="current-uuid"
             />
-            <Button
-              onClick={() => handleCopy(currentUUID)}
-              variant="outline"
-              size="icon"
-            >
+            <Button onClick={() => handleCopy(currentUUID)} variant="outline" size="icon">
               <Copy className="h-4 w-4" />
             </Button>
           </div>
@@ -377,8 +372,8 @@ export function UUIDGenerator() {
           UUID v4 (Random)
         </h3>
         <p className="text-sm text-blue-800 dark:text-blue-400">
-          Generates cryptographically random UUIDs following RFC 4122 standard.
-          Each UUID is 128-bit identifier displayed as 36-character hexadecimal string.
+          Generates cryptographically random UUIDs following RFC 4122 standard. Each UUID is 128-bit
+          identifier displayed as 36-character hexadecimal string.
         </p>
       </div>
     </div>

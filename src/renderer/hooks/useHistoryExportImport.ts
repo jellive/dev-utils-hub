@@ -1,13 +1,9 @@
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
-import type { HistoryEntry } from '../../preload/index.d';
+import { api, type HistoryEntry } from '../lib/tauri-api';
 import type { ExportOptions } from '../components/dialogs/ExportDialog';
 import type { ImportOptions } from '../components/dialogs/ImportDialog';
-import {
-  convertToFormat,
-  generateFileName,
-  type ExportFormat,
-} from '../utils/exportFormats';
+import { convertToFormat, generateFileName, type ExportFormat } from '../utils/exportFormats';
 
 /**
  * Hook options
@@ -18,7 +14,10 @@ export interface UseHistoryExportImportOptions {
   /** Display name for the tool (e.g., 'UUID Generator') */
   toolDisplayName: string;
   /** Custom import data parser (optional) */
-  parseImportData?: (content: string, format: ExportFormat) => Array<{ input: string; output?: string }>;
+  parseImportData?: (
+    content: string,
+    format: ExportFormat
+  ) => Array<{ input: string; output?: string }>;
 }
 
 /**
@@ -124,149 +123,156 @@ export function useHistoryExportImport(
   /**
    * Handle export operation
    */
-  const handleExport = useCallback(async (exportOptions: ExportOptions) => {
-    if (!window.api?.history) {
-      toast.error('히스토리 API를 사용할 수 없습니다');
-      return;
-    }
-
-    if (!window.api?.file) {
-      toast.error('파일 시스템 API를 사용할 수 없습니다');
-      return;
-    }
-
-    setIsExporting(true);
-
-    try {
-      // Get history entries
-      const { count, format, includeMetadata } = exportOptions;
-
-      let entries: HistoryEntry[];
-
-      if (count === 'all') {
-        entries = await window.api.history.get(tool);
-      } else {
-        entries = await window.api.history.get(tool, count);
-      }
-
-      if (entries.length === 0) {
-        toast.error('내보낼 히스토리가 없습니다');
+  const handleExport = useCallback(
+    async (exportOptions: ExportOptions) => {
+      if (!api?.history) {
+        toast.error('히스토리 API를 사용할 수 없습니다');
         return;
       }
 
-      // Convert to specified format
-      const content = convertToFormat(entries, format, includeMetadata);
-
-      // Generate file name
-      const defaultFileName = generateFileName(tool, format);
-
-      // Save file
-      const filters = [
-        { name: `${format.toUpperCase()} Files`, extensions: [format] },
-        { name: 'All Files', extensions: ['*'] },
-      ];
-
-      const result = await window.api.file.save(content, defaultFileName, filters);
-
-      if (result.success) {
-        toast.success(`${entries.length}개의 항목을 내보냈습니다`);
-        setShowExportDialog(false);
-      } else if (result.error?.code !== 'CANCELLED') {
-        throw new Error(result.error?.message || '파일 저장 실패');
+      if (!api?.file) {
+        toast.error('파일 시스템 API를 사용할 수 없습니다');
+        return;
       }
-    } catch (error) {
-      console.error('Export error:', error);
-      toast.error(`내보내기 실패: ${(error as Error).message}`);
-    } finally {
-      setIsExporting(false);
-    }
-  }, [tool]);
+
+      setIsExporting(true);
+
+      try {
+        // Get history entries
+        const { count, format, includeMetadata } = exportOptions;
+
+        let entries: HistoryEntry[];
+
+        if (count === 'all') {
+          entries = await api.history.get(tool);
+        } else {
+          entries = await api.history.get(tool, count);
+        }
+
+        if (entries.length === 0) {
+          toast.error('내보낼 히스토리가 없습니다');
+          return;
+        }
+
+        // Convert to specified format
+        const content = convertToFormat(entries, format, includeMetadata);
+
+        // Generate file name
+        const defaultFileName = generateFileName(tool, format);
+
+        // Save file
+        const filters = [
+          { name: `${format.toUpperCase()} Files`, extensions: [format] },
+          { name: 'All Files', extensions: ['*'] },
+        ];
+
+        const result = await api.file.save(content, defaultFileName, filters);
+
+        if (result.success) {
+          toast.success(`${entries.length}개의 항목을 내보냈습니다`);
+          setShowExportDialog(false);
+        } else if (result.error?.code !== 'CANCELLED') {
+          throw new Error(result.error?.message || '파일 저장 실패');
+        }
+      } catch (error) {
+        console.error('Export error:', error);
+        toast.error(`내보내기 실패: ${(error as Error).message}`);
+      } finally {
+        setIsExporting(false);
+      }
+    },
+    [tool]
+  );
 
   /**
    * Handle import operation
    */
-  const handleImport = useCallback(async (importOptions: ImportOptions) => {
-    if (!window.api?.history) {
-      toast.error('히스토리 API를 사용할 수 없습니다');
-      return;
-    }
-
-    if (!window.api?.file) {
-      toast.error('파일 시스템 API를 사용할 수 없습니다');
-      return;
-    }
-
-    setIsImporting(true);
-
-    try {
-      const { skipDuplicates, replaceExisting } = importOptions;
-
-      // Open file
-      const filters = [
-        { name: 'Supported Files', extensions: ['json', 'csv', 'txt'] },
-        { name: 'All Files', extensions: ['*'] },
-      ];
-
-      const result = await window.api.file.open(filters);
-
-      if (!result.success || !result.content || !result.filePath) {
-        if (result.error?.code !== 'CANCELLED') {
-          throw new Error(result.error?.message || '파일 열기 실패');
-        }
+  const handleImport = useCallback(
+    async (importOptions: ImportOptions) => {
+      if (!api?.history) {
+        toast.error('히스토리 API를 사용할 수 없습니다');
         return;
       }
 
-      // Detect format from file extension
-      const format = detectFormat(result.filePath);
-
-      // Parse import data
-      const parsedData = parseImportData(result.content, format);
-
-      if (parsedData.length === 0) {
-        toast.error('가져올 데이터가 없습니다');
+      if (!api?.file) {
+        toast.error('파일 시스템 API를 사용할 수 없습니다');
         return;
       }
 
-      // Replace existing data if requested
-      if (replaceExisting) {
-        await window.api.history.clear(tool);
-      }
+      setIsImporting(true);
 
-      // Get existing entries for duplicate check
-      let existingInputs = new Set<string>();
-      if (skipDuplicates) {
-        const existing = await window.api.history.get(tool);
-        existingInputs = new Set(existing.map(e => e.input));
-      }
+      try {
+        const { skipDuplicates, replaceExisting } = importOptions;
 
-      // Save data
-      let savedCount = 0;
-      let skippedCount = 0;
+        // Open file
+        const filters = [
+          { name: 'Supported Files', extensions: ['json', 'csv', 'txt'] },
+          { name: 'All Files', extensions: ['*'] },
+        ];
 
-      for (const item of parsedData) {
-        if (skipDuplicates && existingInputs.has(item.input)) {
-          skippedCount++;
-          continue;
+        const result = await api.file.open(filters);
+
+        if (!result.success || !result.content || !result.filePath) {
+          if (result.error?.code !== 'CANCELLED') {
+            throw new Error(result.error?.message || '파일 열기 실패');
+          }
+          return;
         }
 
-        await window.api.history.save(tool, item.input, item.output);
-        savedCount++;
+        // Detect format from file extension
+        const format = detectFormat(result.filePath);
+
+        // Parse import data
+        const parsedData = parseImportData(result.content, format);
+
+        if (parsedData.length === 0) {
+          toast.error('가져올 데이터가 없습니다');
+          return;
+        }
+
+        // Replace existing data if requested
+        if (replaceExisting) {
+          await api.history.clear(tool);
+        }
+
+        // Get existing entries for duplicate check
+        let existingInputs = new Set<string>();
+        if (skipDuplicates) {
+          const existing = await api.history.get(tool);
+          existingInputs = new Set(existing.map(e => e.input));
+        }
+
+        // Save data
+        let savedCount = 0;
+        let skippedCount = 0;
+
+        for (const item of parsedData) {
+          if (skipDuplicates && existingInputs.has(item.input)) {
+            skippedCount++;
+            continue;
+          }
+
+          await api.history.save(tool, item.input, item.output);
+          savedCount++;
+        }
+
+        // Show success message
+        const message =
+          skipDuplicates && skippedCount > 0
+            ? `${savedCount}개 항목을 가져왔습니다 (${skippedCount}개 건너뜀)`
+            : `${savedCount}개 항목을 가져왔습니다`;
+
+        toast.success(message);
+        setShowImportDialog(false);
+      } catch (error) {
+        console.error('Import error:', error);
+        toast.error(`가져오기 실패: ${(error as Error).message}`);
+      } finally {
+        setIsImporting(false);
       }
-
-      // Show success message
-      const message = skipDuplicates && skippedCount > 0
-        ? `${savedCount}개 항목을 가져왔습니다 (${skippedCount}개 건너뜀)`
-        : `${savedCount}개 항목을 가져왔습니다`;
-
-      toast.success(message);
-      setShowImportDialog(false);
-    } catch (error) {
-      console.error('Import error:', error);
-      toast.error(`가져오기 실패: ${(error as Error).message}`);
-    } finally {
-      setIsImporting(false);
-    }
-  }, [tool, parseImportData]);
+    },
+    [tool, parseImportData]
+  );
 
   return {
     isExporting,

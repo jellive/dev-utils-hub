@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { api } from '../../lib/tauri-api';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useHistoryAutoSave } from '../../hooks/useHistoryAutoSave';
@@ -85,9 +86,9 @@ export function Base64Converter() {
   // Get total count for ExportDialog
   useEffect(() => {
     const fetchCount = async () => {
-      if (window.api?.history) {
+      if (api?.history) {
         try {
-          const count = await window.api.history.count('base64');
+          const count = await api.history.count('base64');
           setTotalCount(count);
         } catch (error) {
           console.error('Failed to get history count:', error);
@@ -128,7 +129,7 @@ export function Base64Converter() {
   const encodeBase64 = (text: string): string => {
     const utf8Bytes = new TextEncoder().encode(text);
     let binary = '';
-    utf8Bytes.forEach((byte) => {
+    utf8Bytes.forEach(byte => {
       binary += String.fromCharCode(byte);
     });
     let encoded = btoa(binary);
@@ -166,11 +167,11 @@ export function Base64Converter() {
     setError('');
 
     // Track user interaction
-    addInteractionBreadcrumb(
-      INTERACTION_TYPES.CLICK,
-      'Encode Button',
-      { inputLength: input.length, urlSafe, encoding }
-    );
+    addInteractionBreadcrumb(INTERACTION_TYPES.CLICK, 'Encode Button', {
+      inputLength: input.length,
+      urlSafe,
+      encoding,
+    });
 
     if (!input.trim()) {
       setError('Input is empty. Please enter text to encode.');
@@ -182,20 +183,10 @@ export function Base64Converter() {
       setOutput(encoded);
 
       // Track successful conversion
-      addConversionBreadcrumb(
-        TOOLS.BASE64_CONVERTER,
-        input.length,
-        encoded.length,
-        true
-      );
+      addConversionBreadcrumb(TOOLS.BASE64_CONVERTER, input.length, encoded.length, true);
     } catch (err) {
       // Track failed conversion
-      addConversionBreadcrumb(
-        TOOLS.BASE64_CONVERTER,
-        input.length,
-        0,
-        false
-      );
+      addConversionBreadcrumb(TOOLS.BASE64_CONVERTER, input.length, 0, false);
 
       // Add error breadcrumb
       addErrorBreadcrumb(
@@ -213,11 +204,11 @@ export function Base64Converter() {
     setError('');
 
     // Track user interaction
-    addInteractionBreadcrumb(
-      INTERACTION_TYPES.CLICK,
-      'Decode Button',
-      { inputLength: input.length, urlSafe, encoding }
-    );
+    addInteractionBreadcrumb(INTERACTION_TYPES.CLICK, 'Decode Button', {
+      inputLength: input.length,
+      urlSafe,
+      encoding,
+    });
 
     if (!input.trim()) {
       setError('Input is empty. Please enter Base64 text to decode.');
@@ -229,20 +220,10 @@ export function Base64Converter() {
       setOutput(decoded);
 
       // Track successful conversion
-      addConversionBreadcrumb(
-        TOOLS.BASE64_CONVERTER,
-        input.length,
-        decoded.length,
-        true
-      );
+      addConversionBreadcrumb(TOOLS.BASE64_CONVERTER, input.length, decoded.length, true);
     } catch (err) {
       // Track failed conversion
-      addConversionBreadcrumb(
-        TOOLS.BASE64_CONVERTER,
-        input.length,
-        0,
-        false
-      );
+      addConversionBreadcrumb(TOOLS.BASE64_CONVERTER, input.length, 0, false);
 
       // Add error breadcrumb
       addErrorBreadcrumb(
@@ -265,11 +246,10 @@ export function Base64Converter() {
   const copyToClipboard = () => {
     if (output) {
       // Track copy action
-      addInteractionBreadcrumb(
-        INTERACTION_TYPES.COPY,
-        'Output Result',
-        { outputLength: output.length, mode: activeTab }
-      );
+      addInteractionBreadcrumb(INTERACTION_TYPES.COPY, 'Output Result', {
+        outputLength: output.length,
+        mode: activeTab,
+      });
 
       navigator.clipboard.writeText(output);
       toast.success(t('common.copied'));
@@ -311,7 +291,7 @@ export function Base64Converter() {
     if (files && files.length > 0) {
       const file = files[0];
       const reader = new FileReader();
-      reader.onload = (event) => {
+      reader.onload = event => {
         const content = event.target?.result as string;
         setInput(content);
       };
@@ -325,18 +305,16 @@ export function Base64Converter() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('tools.base64.title')}</h2>
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+        {t('tools.base64.title')}
+      </h2>
 
       {/* Settings Section */}
       <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-6">
           {/* URL-safe Switch */}
           <div className="flex items-center gap-2">
-            <Switch
-              id="url-safe"
-              checked={urlSafe}
-              onCheckedChange={setUrlSafe}
-            />
+            <Switch id="url-safe" checked={urlSafe} onCheckedChange={setUrlSafe} />
             <Label htmlFor="url-safe" className="cursor-pointer">
               {t('tools.base64.urlSafe')}
             </Label>
@@ -382,7 +360,7 @@ export function Base64Converter() {
             <Textarea
               id="encode-input"
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={e => setInput(e.target.value)}
               onDrop={handleFileDrop}
               onDragOver={handleDragOver}
               placeholder={t('tools.base64.enterText')}
@@ -449,7 +427,7 @@ export function Base64Converter() {
             <Textarea
               id="decode-input"
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={e => setInput(e.target.value)}
               onDrop={handleFileDrop}
               onDragOver={handleDragOver}
               placeholder={t('tools.base64.enterBase64')}

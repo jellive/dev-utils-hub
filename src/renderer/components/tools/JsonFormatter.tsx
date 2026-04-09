@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { api } from '../../lib/tauri-api';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AlertCircle, Copy, Check, Upload, FileDown, Send } from 'lucide-react';
 import { useHistoryAutoSave } from '../../hooks/useHistoryAutoSave';
@@ -11,19 +12,8 @@ import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
 import { Alert, AlertDescription } from '../ui/alert';
 import { Badge } from '../ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../ui/select';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '../ui/tooltip';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 
@@ -85,9 +75,9 @@ export function JsonFormatter({ initialInput = '', onSendToBase64 }: JsonFormatt
   // Get total count for ExportDialog
   useEffect(() => {
     const fetchCount = async () => {
-      if (window.api?.history) {
+      if (api?.history) {
         try {
-          const count = await window.api.history.count('json');
+          const count = await api.history.count('json');
           setTotalCount(count);
         } catch (error) {
           console.error('Failed to get history count:', error);
@@ -177,7 +167,6 @@ export function JsonFormatter({ initialInput = '', onSendToBase64 }: JsonFormatt
     }
   };
 
-
   return (
     <Card role="region" aria-label="JSON Formatter Tool">
       <CardHeader>
@@ -187,7 +176,10 @@ export function JsonFormatter({ initialInput = '', onSendToBase64 }: JsonFormatt
             <CardDescription>{t('tools.json.description')}</CardDescription>
           </div>
           {isValid !== null && (
-            <Badge variant={isValid ? 'default' : 'destructive'} className={isValid ? 'bg-green-500' : ''}>
+            <Badge
+              variant={isValid ? 'default' : 'destructive'}
+              className={isValid ? 'bg-green-500' : ''}
+            >
               {isValid ? t('tools.json.valid') : t('tools.json.invalid')}
             </Badge>
           )}
@@ -201,11 +193,9 @@ export function JsonFormatter({ initialInput = '', onSendToBase64 }: JsonFormatt
             <Textarea
               id="json-input"
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={e => setInput(e.target.value)}
               placeholder={t('tools.json.pasteJson')}
-              className={`h-96 font-mono text-sm resize-none ${
-                error ? 'border-destructive' : ''
-              }`}
+              className={`h-96 font-mono text-sm resize-none ${error ? 'border-destructive' : ''}`}
             />
           </div>
 
@@ -238,11 +228,7 @@ export function JsonFormatter({ initialInput = '', onSendToBase64 }: JsonFormatt
               Indent:
             </Label>
             <Select value={indentLevel} onValueChange={setIndentLevel}>
-              <SelectTrigger
-                id="indent-select"
-                aria-label="Indent Level"
-                className="w-32"
-              >
+              <SelectTrigger id="indent-select" aria-label="Indent Level" className="w-32">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -278,11 +264,7 @@ export function JsonFormatter({ initialInput = '', onSendToBase64 }: JsonFormatt
 
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button
-                    onClick={handleCopy}
-                    disabled={!output}
-                    variant="outline"
-                  >
+                  <Button onClick={handleCopy} disabled={!output} variant="outline">
                     {copied ? (
                       <Check className="h-4 w-4 mr-2" />
                     ) : (
@@ -310,11 +292,7 @@ export function JsonFormatter({ initialInput = '', onSendToBase64 }: JsonFormatt
               {onSendToBase64 && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button
-                      onClick={handleSendToBase64}
-                      disabled={!output}
-                      variant="secondary"
-                    >
+                    <Button onClick={handleSendToBase64} disabled={!output} variant="secondary">
                       <Send className="h-4 w-4 mr-2" />
                       {t('common.sendToBase64')}
                     </Button>
@@ -394,9 +372,6 @@ export function JsonFormatterRoute() {
   };
 
   return (
-    <JsonFormatter
-      initialInput={state?.jsonInput ?? ''}
-      onSendToBase64={handleSendToBase64}
-    />
+    <JsonFormatter initialInput={state?.jsonInput ?? ''} onSendToBase64={handleSendToBase64} />
   );
 }

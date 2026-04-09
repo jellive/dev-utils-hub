@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { api } from '../../lib/tauri-api';
 import { useTranslation } from 'react-i18next';
 import { useHistoryAutoSave } from '../../hooks/useHistoryAutoSave';
 import { useHistoryExportImport } from '../../hooks/useHistoryExportImport';
@@ -8,8 +9,21 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Copy, Link2, AlertCircle, CheckCircle2, HelpCircle, Upload, FileDown } from 'lucide-react';
@@ -84,9 +98,9 @@ export function URLConverter() {
   // Get total count for ExportDialog
   useEffect(() => {
     const fetchCount = async () => {
-      if (window.api?.history) {
+      if (api?.history) {
         try {
-          const count = await window.api.history.count('url');
+          const count = await api.history.count('url');
           setTotalCount(count);
         } catch (error) {
           console.error('Failed to get history count:', error);
@@ -269,7 +283,9 @@ export function URLConverter() {
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className="max-w-xs">
-                        <strong>{t('tools.url.fullUrl')}:</strong> Encodes entire URL preserving structure<br/>
+                        <strong>{t('tools.url.fullUrl')}:</strong> Encodes entire URL preserving
+                        structure
+                        <br />
                         <strong>{t('tools.url.queryOnly')}:</strong> Encodes only parameter values
                       </p>
                     </TooltipContent>
@@ -280,13 +296,16 @@ export function URLConverter() {
             <CardContent className="space-y-4">
               <Textarea
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={e => setInput(e.target.value)}
                 placeholder={t('tools.url.enterUrl')}
                 className="font-mono min-h-[120px]"
               />
 
               <div className="flex items-center gap-2">
-                <Select value={encodingMode} onValueChange={(v) => setEncodingMode(v as EncodingMode)}>
+                <Select
+                  value={encodingMode}
+                  onValueChange={v => setEncodingMode(v as EncodingMode)}
+                >
                   <SelectTrigger className="w-[200px]">
                     <SelectValue />
                   </SelectTrigger>
@@ -324,9 +343,11 @@ export function URLConverter() {
 
               {/* Examples */}
               <div className="space-y-2">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('tools.url.exampleUrls')}:</p>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {t('tools.url.exampleUrls')}:
+                </p>
                 <div className="flex flex-wrap gap-2">
-                  {exampleURLs.map((example) => (
+                  {exampleURLs.map(example => (
                     <TooltipProvider key={example.label}>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -355,7 +376,12 @@ export function URLConverter() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>{t('tools.url.output')}</CardTitle>
-                  <Button onClick={() => handleCopy(output)} variant="ghost" size="sm" className="gap-2">
+                  <Button
+                    onClick={() => handleCopy(output)}
+                    variant="ghost"
+                    size="sm"
+                    className="gap-2"
+                  >
                     <Copy className="h-4 w-4" />
                     {t('common.copy')}
                   </Button>
@@ -382,7 +408,7 @@ export function URLConverter() {
             <CardContent className="space-y-4">
               <Textarea
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={e => setInput(e.target.value)}
                 placeholder={t('tools.url.enterUrl')}
                 className="font-mono min-h-[120px]"
               />
@@ -423,7 +449,12 @@ export function URLConverter() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>{t('tools.url.output')}</CardTitle>
-                  <Button onClick={() => handleCopy(output)} variant="ghost" size="sm" className="gap-2">
+                  <Button
+                    onClick={() => handleCopy(output)}
+                    variant="ghost"
+                    size="sm"
+                    className="gap-2"
+                  >
                     <Copy className="h-4 w-4" />
                     {t('common.copy')}
                   </Button>
@@ -444,11 +475,7 @@ export function URLConverter() {
       {/* URL Validation Feedback */}
       {isValidUrl !== null && (
         <Alert variant={isValidUrl ? 'default' : 'destructive'}>
-          {isValidUrl ? (
-            <CheckCircle2 className="h-4 w-4" />
-          ) : (
-            <AlertCircle className="h-4 w-4" />
-          )}
+          {isValidUrl ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
           <AlertDescription>
             {isValidUrl ? 'Valid URL format detected' : t('tools.url.invalidUrl')}
           </AlertDescription>
@@ -466,7 +493,9 @@ export function URLConverter() {
             <div className="grid grid-cols-2 gap-3">
               {urlComponents.protocol && (
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('tools.url.protocol')}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {t('tools.url.protocol')}
+                  </p>
                   <p className="font-mono text-sm font-semibold">{urlComponents.protocol}</p>
                 </div>
               )}
@@ -496,7 +525,9 @@ export function URLConverter() {
               )}
               {urlComponents.hash && (
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('tools.url.fragment')}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {t('tools.url.fragment')}
+                  </p>
                   <p className="font-mono text-sm font-semibold">{urlComponents.hash}</p>
                 </div>
               )}

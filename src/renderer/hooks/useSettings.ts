@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react';
+import { api } from '../lib/tauri-api';
 
-// Check if running in Electron
-const isElectron = typeof window !== 'undefined' && window.api?.settings
+// Check if running in Tauri
+const isElectron = typeof window !== 'undefined' && api?.settings;
 
 /**
  * Custom hook for managing settings with electron-store or localStorage fallback
@@ -9,177 +10,173 @@ const isElectron = typeof window !== 'undefined' && window.api?.settings
  * @param defaultValue - Default value if setting doesn't exist
  */
 export function useSettings<T>(key: string, defaultValue: T) {
-  const [value, setValue] = useState<T>(defaultValue)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
+  const [value, setValue] = useState<T>(defaultValue);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   // Load setting on mount
   useEffect(() => {
     const loadSetting = async () => {
       try {
-        setLoading(true)
-        setError(null)
+        setLoading(true);
+        setError(null);
 
         if (isElectron) {
           // Use electron-store in Electron
-          const stored = await window.api.settings.get<T>(key)
+          const stored = await api.settings.get<T>(key);
           if (stored !== null && stored !== undefined) {
-            setValue(stored)
+            setValue(stored);
           } else {
-            setValue(defaultValue)
+            setValue(defaultValue);
           }
         } else {
           // Fallback to localStorage for web
-          const stored = localStorage.getItem(key)
+          const stored = localStorage.getItem(key);
           if (stored) {
             try {
-              setValue(JSON.parse(stored))
+              setValue(JSON.parse(stored));
             } catch {
-              setValue(stored as T)
+              setValue(stored as T);
             }
           } else {
-            setValue(defaultValue)
+            setValue(defaultValue);
           }
         }
       } catch (err) {
-        console.error(`Failed to load setting ${key}:`, err)
-        setError(err instanceof Error ? err : new Error('Failed to load setting'))
-        setValue(defaultValue)
+        console.error(`Failed to load setting ${key}:`, err);
+        setError(err instanceof Error ? err : new Error('Failed to load setting'));
+        setValue(defaultValue);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    loadSetting()
-  }, [key, defaultValue])
+    loadSetting();
+  }, [key, defaultValue]);
 
   // Save setting
   const setSetting = useCallback(
     async (newValue: T) => {
       try {
-        setError(null)
+        setError(null);
 
         if (isElectron) {
           // Use electron-store in Electron
-          const success = await window.api.settings.set(key, newValue)
-          if (success) {
-            setValue(newValue)
-          } else {
-            throw new Error('Failed to save setting')
-          }
+          await api.settings.set(key, newValue);
+          setValue(newValue);
         } else {
           // Fallback to localStorage for web
-          const serialized = typeof newValue === 'string' ? newValue : JSON.stringify(newValue)
-          localStorage.setItem(key, serialized)
-          setValue(newValue)
+          const serialized = typeof newValue === 'string' ? newValue : JSON.stringify(newValue);
+          localStorage.setItem(key, serialized);
+          setValue(newValue);
         }
       } catch (err) {
-        console.error(`Failed to save setting ${key}:`, err)
-        setError(err instanceof Error ? err : new Error('Failed to save setting'))
-        throw err
+        console.error(`Failed to save setting ${key}:`, err);
+        setError(err instanceof Error ? err : new Error('Failed to save setting'));
+        throw err;
       }
     },
     [key]
-  )
+  );
 
   // Delete setting
   const deleteSetting = useCallback(async () => {
     try {
-      setError(null)
+      setError(null);
 
       if (isElectron) {
         // Use electron-store in Electron
-        await window.api.settings.delete(key)
+        await api.settings.delete(key);
       } else {
         // Fallback to localStorage for web
-        localStorage.removeItem(key)
+        localStorage.removeItem(key);
       }
-      setValue(defaultValue)
+      setValue(defaultValue);
     } catch (err) {
-      console.error(`Failed to delete setting ${key}:`, err)
-      setError(err instanceof Error ? err : new Error('Failed to delete setting'))
-      throw err
+      console.error(`Failed to delete setting ${key}:`, err);
+      setError(err instanceof Error ? err : new Error('Failed to delete setting'));
+      throw err;
     }
-  }, [key, defaultValue])
+  }, [key, defaultValue]);
 
   return {
     value,
     setValue: setSetting,
     deleteSetting,
     loading,
-    error
-  }
+    error,
+  };
 }
 
 /**
  * Hook for getting all settings
  */
 export function useAllSettings() {
-  const [settings, setSettings] = useState<Record<string, any>>({})
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
+  const [settings, setSettings] = useState<Record<string, any>>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        setLoading(true)
-        setError(null)
+        setLoading(true);
+        setError(null);
 
         if (isElectron) {
-          const all = await window.api.settings.getAll()
-          setSettings(all)
+          const all = await api.settings.getAll();
+          setSettings(all);
         } else {
           // Fallback: get all from localStorage
-          const all: Record<string, any> = {}
+          const all: Record<string, any> = {};
           for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i)
+            const key = localStorage.key(i);
             if (key) {
-              const value = localStorage.getItem(key)
+              const value = localStorage.getItem(key);
               if (value) {
                 try {
-                  all[key] = JSON.parse(value)
+                  all[key] = JSON.parse(value);
                 } catch {
-                  all[key] = value
+                  all[key] = value;
                 }
               }
             }
           }
-          setSettings(all)
+          setSettings(all);
         }
       } catch (err) {
-        console.error('Failed to load all settings:', err)
-        setError(err instanceof Error ? err : new Error('Failed to load settings'))
+        console.error('Failed to load all settings:', err);
+        setError(err instanceof Error ? err : new Error('Failed to load settings'));
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    loadSettings()
-  }, [])
+    loadSettings();
+  }, []);
 
   const resetSettings = useCallback(async () => {
     try {
-      setError(null)
+      setError(null);
 
       if (isElectron) {
-        await window.api.settings.reset()
-        const all = await window.api.settings.getAll()
-        setSettings(all)
+        await api.settings.reset();
+        const all = await api.settings.getAll();
+        setSettings(all);
       } else {
-        localStorage.clear()
-        setSettings({})
+        localStorage.clear();
+        setSettings({});
       }
     } catch (err) {
-      console.error('Failed to reset settings:', err)
-      setError(err instanceof Error ? err : new Error('Failed to reset settings'))
-      throw err
+      console.error('Failed to reset settings:', err);
+      setError(err instanceof Error ? err : new Error('Failed to reset settings'));
+      throw err;
     }
-  }, [])
+  }, []);
 
   return {
     settings,
     resetSettings,
     loading,
-    error
-  }
+    error,
+  };
 }

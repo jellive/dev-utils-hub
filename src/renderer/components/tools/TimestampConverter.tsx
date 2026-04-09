@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { api } from '../../lib/tauri-api';
 import { useHistoryAutoSave } from '../../hooks/useHistoryAutoSave';
 import { useHistoryExportImport } from '../../hooks/useHistoryExportImport';
 import { ExportDialog } from '../dialogs/ExportDialog';
@@ -8,7 +9,13 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Clock, Copy, Upload, FileDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
@@ -85,9 +92,9 @@ export function TimestampConverter() {
   // Get total count for ExportDialog
   useEffect(() => {
     const fetchCount = async () => {
-      if (window.api?.history) {
+      if (api?.history) {
         try {
-          const count = await window.api.history.count('timestamp');
+          const count = await api.history.count('timestamp');
           setTotalCount(count);
         } catch (error) {
           console.error('Failed to get history count:', error);
@@ -156,12 +163,18 @@ export function TimestampConverter() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('tools.timestamp.title')}</h2>
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+        {t('tools.timestamp.title')}
+      </h2>
 
       <Tabs defaultValue="timestamp-to-date" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="timestamp-to-date">{t('tools.timestamp.timestampToDate')}</TabsTrigger>
-          <TabsTrigger value="date-to-timestamp">{t('tools.timestamp.dateToTimestamp')}</TabsTrigger>
+          <TabsTrigger value="timestamp-to-date">
+            {t('tools.timestamp.timestampToDate')}
+          </TabsTrigger>
+          <TabsTrigger value="date-to-timestamp">
+            {t('tools.timestamp.dateToTimestamp')}
+          </TabsTrigger>
         </TabsList>
 
         {/* Timestamp to Date Tab */}
@@ -176,17 +189,19 @@ export function TimestampConverter() {
                 <Input
                   type="text"
                   value={timestamp}
-                  onChange={(e) => setTimestamp(e.target.value)}
+                  onChange={e => setTimestamp(e.target.value)}
                   placeholder={t('tools.timestamp.enterTimestamp')}
                   className="flex-1"
                 />
-                <Select value={unit} onValueChange={(v) => setUnit(v as TimestampUnit)}>
+                <Select value={unit} onValueChange={v => setUnit(v as TimestampUnit)}>
                   <SelectTrigger className="w-[140px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="seconds">{t('tools.timestamp.seconds')}</SelectItem>
-                    <SelectItem value="milliseconds">{t('tools.timestamp.milliseconds')}</SelectItem>
+                    <SelectItem value="milliseconds">
+                      {t('tools.timestamp.milliseconds')}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
                 <Button onClick={handleCurrentTime} variant="outline" className="gap-2">
@@ -215,7 +230,8 @@ export function TimestampConverter() {
 
               <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                 <p className="text-sm text-blue-900 dark:text-blue-300">
-                  {t('tools.timestamp.currentTime')}: {currentTime.toLocaleString()} ({Math.floor(currentTime.getTime() / 1000)})
+                  {t('tools.timestamp.currentTime')}: {currentTime.toLocaleString()} (
+                  {Math.floor(currentTime.getTime() / 1000)})
                 </p>
               </div>
             </CardContent>
@@ -306,27 +322,39 @@ export function TimestampConverter() {
                 <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{t('tools.timestamp.year')}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {t('tools.timestamp.year')}
+                      </p>
                       <p className="text-lg font-semibold">{date.getFullYear()}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{t('tools.timestamp.month')}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {t('tools.timestamp.month')}
+                      </p>
                       <p className="text-lg font-semibold">{date.getMonth() + 1}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{t('tools.timestamp.day')}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {t('tools.timestamp.day')}
+                      </p>
                       <p className="text-lg font-semibold">{date.getDate()}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{t('tools.timestamp.hour')}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {t('tools.timestamp.hour')}
+                      </p>
                       <p className="text-lg font-semibold">{date.getHours()}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{t('tools.timestamp.minute')}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {t('tools.timestamp.minute')}
+                      </p>
                       <p className="text-lg font-semibold">{date.getMinutes()}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{t('tools.timestamp.second')}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {t('tools.timestamp.second')}
+                      </p>
                       <p className="text-lg font-semibold">{date.getSeconds()}</p>
                     </div>
                   </div>
@@ -365,7 +393,7 @@ export function TimestampConverter() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {TIMEZONES.map((tz) => (
+                      {TIMEZONES.map(tz => (
                         <SelectItem key={tz.value} value={tz.value}>
                           {tz.label}
                         </SelectItem>
@@ -383,13 +411,17 @@ export function TimestampConverter() {
                   <CardContent className="space-y-2">
                     <div className="flex items-center justify-between gap-2">
                       <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{t('tools.timestamp.seconds')}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {t('tools.timestamp.seconds')}
+                        </p>
                         <code className="text-sm font-mono">
                           {Math.floor(selectedDate.getTime() / 1000)}
                         </code>
                       </div>
                       <Button
-                        onClick={() => handleCopy(Math.floor(selectedDate.getTime() / 1000).toString())}
+                        onClick={() =>
+                          handleCopy(Math.floor(selectedDate.getTime() / 1000).toString())
+                        }
                         variant="ghost"
                         size="sm"
                       >
@@ -398,7 +430,9 @@ export function TimestampConverter() {
                     </div>
                     <div className="flex items-center justify-between gap-2">
                       <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{t('tools.timestamp.milliseconds')}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {t('tools.timestamp.milliseconds')}
+                        </p>
                         <code className="text-sm font-mono">{selectedDate.getTime()}</code>
                       </div>
                       <Button

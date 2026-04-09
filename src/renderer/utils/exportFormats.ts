@@ -1,4 +1,4 @@
-import type { HistoryEntry } from '../../preload/index.d';
+import type { HistoryEntry } from '../lib/tauri-api';
 
 /**
  * Export format types
@@ -11,7 +11,7 @@ export type ExportFormat = 'txt' | 'json' | 'csv';
  * - Replace newlines with spaces
  * - Wrap field in double quotes
  */
-function escapeCSV(value: string | undefined): string {
+function escapeCSV(value: string | null | undefined): string {
   if (value === undefined || value === null) {
     return '""';
   }
@@ -48,10 +48,7 @@ function formatDate(timestamp: number | undefined): string {
 /**
  * Convert history entries to plain text format
  */
-export function convertToText(
-  entries: HistoryEntry[],
-  includeMetadata: boolean = false
-): string {
+export function convertToText(entries: HistoryEntry[], includeMetadata: boolean = false): string {
   if (entries.length === 0) {
     return '';
   }
@@ -62,20 +59,19 @@ export function convertToText(
   }
 
   // Format with metadata: "⭐ [input] (date)"
-  return entries.map(entry => {
-    const favorite = entry.favorite === 1 ? '⭐ ' : '';
-    const date = formatDate(entry.created_at);
-    return `${favorite}${entry.input}${date ? ` (${date})` : ''}`;
-  }).join('\n');
+  return entries
+    .map(entry => {
+      const favorite = entry.favorite === 1 ? '⭐ ' : '';
+      const date = formatDate(entry.created_at);
+      return `${favorite}${entry.input}${date ? ` (${date})` : ''}`;
+    })
+    .join('\n');
 }
 
 /**
  * Convert history entries to JSON format (RFC 8259)
  */
-export function convertToJSON(
-  entries: HistoryEntry[],
-  includeMetadata: boolean = false
-): string {
+export function convertToJSON(entries: HistoryEntry[], includeMetadata: boolean = false): string {
   if (entries.length === 0) {
     return '[]';
   }
@@ -96,10 +92,7 @@ export function convertToJSON(
 /**
  * Convert history entries to CSV format (RFC 4180)
  */
-export function convertToCSV(
-  entries: HistoryEntry[],
-  includeMetadata: boolean = false
-): string {
+export function convertToCSV(entries: HistoryEntry[], includeMetadata: boolean = false): string {
   if (entries.length === 0) {
     return '';
   }
@@ -107,27 +100,31 @@ export function convertToCSV(
   if (!includeMetadata) {
     // Simple format: Input,Output
     const header = 'Input,Output\n';
-    const rows = entries.map(entry => {
-      const input = escapeCSV(entry.input);
-      const output = escapeCSV(entry.output);
-      return `${input},${output}`;
-    }).join('\n');
+    const rows = entries
+      .map(entry => {
+        const input = escapeCSV(entry.input);
+        const output = escapeCSV(entry.output);
+        return `${input},${output}`;
+      })
+      .join('\n');
 
     return header + rows;
   }
 
   // Full format: ID,Tool,Input,Output,Favorite,Created At
   const header = 'ID,Tool,Input,Output,Favorite,Created At\n';
-  const rows = entries.map(entry => {
-    const id = escapeCSV(String(entry.id || ''));
-    const tool = escapeCSV(entry.tool);
-    const input = escapeCSV(entry.input);
-    const output = escapeCSV(entry.output);
-    const favorite = escapeCSV(entry.favorite === 1 ? 'Yes' : 'No');
-    const createdAt = escapeCSV(formatDate(entry.created_at));
+  const rows = entries
+    .map(entry => {
+      const id = escapeCSV(String(entry.id || ''));
+      const tool = escapeCSV(entry.tool);
+      const input = escapeCSV(entry.input);
+      const output = escapeCSV(entry.output);
+      const favorite = escapeCSV(entry.favorite === 1 ? 'Yes' : 'No');
+      const createdAt = escapeCSV(formatDate(entry.created_at));
 
-    return `${id},${tool},${input},${output},${favorite},${createdAt}`;
-  }).join('\n');
+      return `${id},${tool},${input},${output},${favorite},${createdAt}`;
+    })
+    .join('\n');
 
   return header + rows;
 }

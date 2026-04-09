@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { api } from '../../lib/tauri-api';
 import { useHistoryAutoSave } from '../../hooks/useHistoryAutoSave';
 import { useHistoryExportImport } from '../../hooks/useHistoryExportImport';
 import { ExportDialog } from '../dialogs/ExportDialog';
@@ -73,9 +74,9 @@ export function TextDiff() {
   // Get total count for ExportDialog
   useEffect(() => {
     const fetchCount = async () => {
-      if (window.api?.history) {
+      if (api?.history) {
         try {
-          const count = await window.api.history.count('diff');
+          const count = await api.history.count('diff');
           setTotalCount(count);
         } catch (error) {
           console.error('Failed to get history count:', error);
@@ -137,13 +138,13 @@ export function TextDiff() {
 
   const getDiffStats = (results: DiffResult[]) => {
     return {
-      additions: results.filter((r) => r.type === 'insert').length,
-      deletions: results.filter((r) => r.type === 'delete').length,
-      unchanged: results.filter((r) => r.type === 'equal').length,
+      additions: results.filter(r => r.type === 'insert').length,
+      deletions: results.filter(r => r.type === 'delete').length,
+      unchanged: results.filter(r => r.type === 'equal').length,
     };
   };
 
-  const hasDifferences = diffResults.some((result) => result.type !== 'equal');
+  const hasDifferences = diffResults.some(result => result.type !== 'equal');
   const stats = getDiffStats(diffResults);
 
   // Synchronized scrolling for side-by-side view
@@ -162,7 +163,9 @@ export function TextDiff() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('tools.diff.title')}</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          {t('tools.diff.title')}
+        </h2>
 
         {hasCompared && (
           <div className="flex items-center gap-2">
@@ -195,7 +198,7 @@ export function TextDiff() {
           <CardContent>
             <Textarea
               value={originalText}
-              onChange={(e) => setOriginalText(e.target.value)}
+              onChange={e => setOriginalText(e.target.value)}
               placeholder={t('tools.diff.enterOriginal')}
               className="font-mono min-h-[200px]"
             />
@@ -222,7 +225,7 @@ export function TextDiff() {
           <CardContent>
             <Textarea
               value={modifiedText}
-              onChange={(e) => setModifiedText(e.target.value)}
+              onChange={e => setModifiedText(e.target.value)}
               placeholder={t('tools.diff.enterModified')}
               className="font-mono min-h-[200px]"
             />
@@ -267,7 +270,7 @@ export function TextDiff() {
             <div className="flex items-center gap-2">
               <Button onClick={handleCompare} disabled={isProcessing} className="gap-2">
                 <FileDiff className="h-4 w-4" />
-                {isProcessing ? t("common.loading") : t("common.compare")}
+                {isProcessing ? t('common.loading') : t('common.compare')}
               </Button>
               <Button onClick={handleClear} variant="outline">
                 {t('common.clear')}
@@ -349,8 +352,8 @@ export function TextDiff() {
                           result.type === 'insert'
                             ? 'bg-green-50 dark:bg-green-900/20'
                             : result.type === 'delete'
-                            ? 'bg-red-50 dark:bg-red-900/20'
-                            : 'bg-white dark:bg-gray-800'
+                              ? 'bg-red-50 dark:bg-red-900/20'
+                              : 'bg-white dark:bg-gray-800'
                         }`}
                       >
                         {/* Line Numbers */}
@@ -381,8 +384,8 @@ export function TextDiff() {
                               result.type === 'insert'
                                 ? 'text-green-900 dark:text-green-200'
                                 : result.type === 'delete'
-                                ? 'text-red-900 dark:text-red-200'
-                                : 'text-gray-900 dark:text-gray-100'
+                                  ? 'text-red-900 dark:text-red-200'
+                                  : 'text-gray-900 dark:text-gray-100'
                             }`}
                           >
                             {result.value}
@@ -399,9 +402,7 @@ export function TextDiff() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">{t('tools.diff.sideView')}</CardTitle>
-                <CardDescription>
-                  {t('tools.diff.compareVersions')}
-                </CardDescription>
+                <CardDescription>{t('tools.diff.compareVersions')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div data-testid="diff-viewer" className="grid grid-cols-2 gap-4">

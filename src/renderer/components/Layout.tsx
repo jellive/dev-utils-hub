@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { useShortcutFeedback } from './ShortcutFeedback';
 import { HistorySidebar } from './history/HistorySidebar';
 import { CommandPalette } from './CommandPalette';
+import { api } from '@/renderer/lib/tauri-api';
 
 export function Layout() {
   const { t } = useTranslation();
@@ -34,7 +35,7 @@ export function Layout() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        setIsCommandPaletteOpen((open) => !open);
+        setIsCommandPaletteOpen(open => !open);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -49,10 +50,7 @@ export function Layout() {
 
   // Register keyboard shortcut handlers
   useEffect(() => {
-    // Only register shortcuts in Electron environment
-    if (!window.api?.shortcuts) return;
-
-    const unsubscribeSwitchTool = window.api.shortcuts.onSwitchTool((route: string) => {
+    const unsubscribeSwitchTool = api.shortcuts.onSwitchTool((route: string) => {
       navigate(route);
 
       // Show feedback for tool switching
@@ -65,7 +63,7 @@ export function Layout() {
         'Regex Tester',
         'Text Diff',
         'Hash Generator',
-        'UUID Generator'
+        'UUID Generator',
       ];
 
       const toolIndex = [
@@ -77,7 +75,7 @@ export function Layout() {
         '/regex',
         '/diff',
         '/hash',
-        '/uuid'
+        '/uuid',
       ].indexOf(route);
 
       if (toolIndex !== -1) {
@@ -105,11 +103,7 @@ export function Layout() {
           <Outlet />
         ) : (
           <div className="space-y-4">
-            <Button
-              variant="ghost"
-              onClick={handleBackToGrid}
-              className="gap-2"
-            >
+            <Button variant="ghost" onClick={handleBackToGrid} className="gap-2">
               <ArrowLeft className="h-4 w-4" />
               {t('common.backToTools')}
             </Button>

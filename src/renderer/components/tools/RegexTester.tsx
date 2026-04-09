@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { api } from '../../lib/tauri-api';
 import { useHistoryAutoSave } from '../../hooks/useHistoryAutoSave';
 import { useHistoryExportImport } from '../../hooks/useHistoryExportImport';
 import { ExportDialog } from '../dialogs/ExportDialog';
@@ -10,7 +11,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Search, AlertCircle, HelpCircle, BookOpen, Copy, Upload, FileDown } from 'lucide-react';
 import { toast } from 'sonner';
@@ -136,9 +144,9 @@ export function RegexTester() {
   // Get total count for ExportDialog
   useEffect(() => {
     const fetchCount = async () => {
-      if (window.api?.history) {
+      if (api?.history) {
         try {
-          const count = await window.api.history.count('regex');
+          const count = await api.history.count('regex');
           setTotalCount(count);
         } catch (error) {
           console.error('Failed to get history count:', error);
@@ -151,7 +159,9 @@ export function RegexTester() {
   // Save to history when matches change
   useEffect(() => {
     if (matches.length > 0 && !error) {
-      saveToHistory(pattern, JSON.stringify({ matches: matches.length, testString }, null, 2), { flags });
+      saveToHistory(pattern, JSON.stringify({ matches: matches.length, testString }, null, 2), {
+        flags,
+      });
     }
   }, [matches, error, pattern, testString, flags, saveToHistory]);
 
@@ -198,7 +208,9 @@ export function RegexTester() {
       }
 
       setMatches(foundMatches);
-      toast.success(`Found ${foundMatches.length} ${foundMatches.length === 1 ? 'match' : 'matches'}`);
+      toast.success(
+        `Found ${foundMatches.length} ${foundMatches.length === 1 ? 'match' : 'matches'}`
+      );
     } catch (err) {
       setError('Invalid regex pattern. Please check your syntax.');
       setMatches([]);
@@ -215,7 +227,7 @@ export function RegexTester() {
   };
 
   const toggleFlag = (flag: 'g' | 'i' | 'm') => {
-    setFlags((prev) => ({ ...prev, [flag]: !prev[flag] }));
+    setFlags(prev => ({ ...prev, [flag]: !prev[flag] }));
   };
 
   const loadPreset = (presetKey: string) => {
@@ -237,7 +249,7 @@ export function RegexTester() {
     const parts: { text: string; isMatch: boolean }[] = [];
     let lastIndex = 0;
 
-    matches.forEach((match) => {
+    matches.forEach(match => {
       if (match.index > lastIndex) {
         parts.push({
           text: testString.substring(lastIndex, match.index),
@@ -296,7 +308,9 @@ export function RegexTester() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('tools.regex.title')}</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          {t('tools.regex.title')}
+        </h2>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
@@ -308,14 +322,16 @@ export function RegexTester() {
           <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{t('tools.regex.commonPatterns')}</DialogTitle>
-              <DialogDescription>
-                {t('tools.regex.clickExample')}
-              </DialogDescription>
+              <DialogDescription>{t('tools.regex.clickExample')}</DialogDescription>
             </DialogHeader>
 
             <div className="space-y-3">
               {Object.entries(PRESET_EXAMPLES).map(([key, preset]) => (
-                <Card key={key} className="cursor-pointer hover:border-primary" onClick={() => loadPreset(key)}>
+                <Card
+                  key={key}
+                  className="cursor-pointer hover:border-primary"
+                  onClick={() => loadPreset(key)}
+                >
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                       <CardTitle className="text-base">{preset.description}</CardTitle>
@@ -331,9 +347,7 @@ export function RegexTester() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {preset.explanation}
-                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{preset.explanation}</p>
                     <p className="text-xs text-gray-500 dark:text-gray-500 mt-2 font-mono">
                       Test: "{preset.testString}"
                     </p>
@@ -371,21 +385,19 @@ export function RegexTester() {
           <Input
             type="text"
             value={pattern}
-            onChange={(e) => setPattern(e.target.value)}
+            onChange={e => setPattern(e.target.value)}
             placeholder="Enter regex pattern (e.g., \d+, [a-z]+, etc.)"
             className="font-mono"
           />
 
           {/* Flags */}
           <div className="space-y-2">
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('tools.regex.flags')}</p>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              {t('tools.regex.flags')}
+            </p>
             <div className="flex flex-wrap gap-4">
               <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="flag-g"
-                  checked={flags.g}
-                  onCheckedChange={() => toggleFlag('g')}
-                />
+                <Checkbox id="flag-g" checked={flags.g} onCheckedChange={() => toggleFlag('g')} />
                 <label
                   htmlFor="flag-g"
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -394,11 +406,7 @@ export function RegexTester() {
                 </label>
               </div>
               <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="flag-i"
-                  checked={flags.i}
-                  onCheckedChange={() => toggleFlag('i')}
-                />
+                <Checkbox id="flag-i" checked={flags.i} onCheckedChange={() => toggleFlag('i')} />
                 <label
                   htmlFor="flag-i"
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -407,11 +415,7 @@ export function RegexTester() {
                 </label>
               </div>
               <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="flag-m"
-                  checked={flags.m}
-                  onCheckedChange={() => toggleFlag('m')}
-                />
+                <Checkbox id="flag-m" checked={flags.m} onCheckedChange={() => toggleFlag('m')} />
                 <label
                   htmlFor="flag-m"
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -433,7 +437,7 @@ export function RegexTester() {
         <CardContent className="space-y-4">
           <Textarea
             value={testString}
-            onChange={(e) => setTestString(e.target.value)}
+            onChange={e => setTestString(e.target.value)}
             placeholder="Enter test string to match against..."
             className="font-mono min-h-[120px]"
           />
@@ -479,7 +483,10 @@ export function RegexTester() {
       {/* Match Count Badge */}
       {!error && testString && (
         <div className="flex items-center gap-2">
-          <Badge variant={matches.length > 0 ? 'default' : 'secondary'} className="text-base px-4 py-2">
+          <Badge
+            variant={matches.length > 0 ? 'default' : 'secondary'}
+            className="text-base px-4 py-2"
+          >
             {t('tools.regex.matchesFound', { count: matches.length })}
           </Badge>
           {matches.length > 0 && (
@@ -558,11 +565,7 @@ export function RegexTester() {
                       at position {match.index}
                     </span>
                   </div>
-                  <Button
-                    onClick={() => handleCopy(match.text)}
-                    variant="ghost"
-                    size="sm"
-                  >
+                  <Button onClick={() => handleCopy(match.text)} variant="ghost" size="sm">
                     <Copy className="h-3 w-3" />
                   </Button>
                 </div>
@@ -593,15 +596,9 @@ export function RegexTester() {
                   <Badge variant="secondary" className="mb-1">
                     Group {index + 1}
                   </Badge>
-                  <p className="text-sm text-blue-800 dark:text-blue-400 font-mono mt-1">
-                    {value}
-                  </p>
+                  <p className="text-sm text-blue-800 dark:text-blue-400 font-mono mt-1">{value}</p>
                 </div>
-                <Button
-                  onClick={() => handleCopy(value)}
-                  variant="ghost"
-                  size="sm"
-                >
+                <Button onClick={() => handleCopy(value)} variant="ghost" size="sm">
                   <Copy className="h-3 w-3" />
                 </Button>
               </div>
@@ -623,11 +620,7 @@ export function RegexTester() {
                         {value}
                       </p>
                     </div>
-                    <Button
-                      onClick={() => handleCopy(value)}
-                      variant="ghost"
-                      size="sm"
-                    >
+                    <Button onClick={() => handleCopy(value)} variant="ghost" size="sm">
                       <Copy className="h-3 w-3" />
                     </Button>
                   </div>
@@ -644,12 +637,28 @@ export function RegexTester() {
           {t('tools.regex.quickReference')}
         </h3>
         <ul className="text-sm text-blue-800 dark:text-blue-400 space-y-1">
-          <li>• <code className="font-mono">\d</code> - Any digit (0-9)</li>
-          <li>• <code className="font-mono">\w</code> - Any word character (a-z, A-Z, 0-9, _)</li>
-          <li>• <code className="font-mono">\s</code> - Any whitespace character</li>
-          <li>• <code className="font-mono">+</code> - One or more | <code className="font-mono">*</code> - Zero or more | <code className="font-mono">?</code> - Zero or one</li>
-          <li>• <code className="font-mono">[abc]</code> - Any character in set | <code className="font-mono">[^abc]</code> - Any character not in set</li>
-          <li>• <code className="font-mono">(...)</code> - Capture group | <code className="font-mono">(?&lt;name&gt;...)</code> - Named capture group</li>
+          <li>
+            • <code className="font-mono">\d</code> - Any digit (0-9)
+          </li>
+          <li>
+            • <code className="font-mono">\w</code> - Any word character (a-z, A-Z, 0-9, _)
+          </li>
+          <li>
+            • <code className="font-mono">\s</code> - Any whitespace character
+          </li>
+          <li>
+            • <code className="font-mono">+</code> - One or more |{' '}
+            <code className="font-mono">*</code> - Zero or more |{' '}
+            <code className="font-mono">?</code> - Zero or one
+          </li>
+          <li>
+            • <code className="font-mono">[abc]</code> - Any character in set |{' '}
+            <code className="font-mono">[^abc]</code> - Any character not in set
+          </li>
+          <li>
+            • <code className="font-mono">(...)</code> - Capture group |{' '}
+            <code className="font-mono">(?&lt;name&gt;...)</code> - Named capture group
+          </li>
         </ul>
       </div>
 
