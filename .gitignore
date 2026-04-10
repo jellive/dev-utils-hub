@@ -70,3 +70,7 @@ SENTRY_SETUP.md
 BROWSER_SUPPORT.md
 dist-release/
 .stryker-tmp/
+
+# Tauri build artifacts
+src-tauri/target/
+src-tauri/gen/
