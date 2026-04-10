@@ -185,6 +185,7 @@ pub fn handle_menu_event(app: &AppHandle, event: &tauri::menu::MenuEvent) {
             app.emit("shortcut:toggle-history", ()).ok();
         }
         "devtools" => {
+            #[cfg(debug_assertions)]
             if let Some(window) = app.get_webview_window("main") {
                 window.open_devtools();
             }

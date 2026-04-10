@@ -37,37 +37,67 @@ const PRESETS: Preset[] = [
   { label: 'Twice daily', value: '0 0,12 * * *', description: 'Runs at midnight and noon' },
 ];
 
-function describeCronField(value: string, type: 'minute' | 'hour' | 'day' | 'month' | 'weekday'): string {
-  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const WEEKDAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+function describeCronField(
+  value: string,
+  type: 'minute' | 'hour' | 'day' | 'month' | 'weekday'
+): string {
+  const MONTHS = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   if (value === '*') {
-    const map = { minute: 'every minute', hour: 'every hour', day: 'every day', month: 'every month', weekday: 'every weekday' };
+    const map = {
+      minute: 'every minute',
+      hour: 'every hour',
+      day: 'every day',
+      month: 'every month',
+      weekday: 'every weekday',
+    };
     return map[type];
   }
 
   if (value.startsWith('*/')) {
     const step = value.slice(2);
-    const map = { minute: `every ${step} minutes`, hour: `every ${step} hours`, day: `every ${step} days`, month: `every ${step} months`, weekday: `every ${step} weekdays` };
+    const map = {
+      minute: `every ${step} minutes`,
+      hour: `every ${step} hours`,
+      day: `every ${step} days`,
+      month: `every ${step} months`,
+      weekday: `every ${step} weekdays`,
+    };
     return map[type];
   }
 
   if (value.includes('-')) {
     const [start, end] = value.split('-');
-    if (type === 'weekday') return `${WEEKDAYS[Number(start)] || start} through ${WEEKDAYS[Number(end)] || end}`;
-    if (type === 'month') return `${MONTHS[Number(start)-1] || start} through ${MONTHS[Number(end)-1] || end}`;
+    if (type === 'weekday')
+      return `${WEEKDAYS[Number(start)] || start} through ${WEEKDAYS[Number(end)] || end}`;
+    if (type === 'month')
+      return `${MONTHS[Number(start) - 1] || start} through ${MONTHS[Number(end) - 1] || end}`;
     return `${start} through ${end}`;
   }
 
   if (value.includes(',')) {
     const parts = value.split(',');
     if (type === 'weekday') return parts.map(p => WEEKDAYS[Number(p)] || p).join(', ');
-    if (type === 'month') return parts.map(p => MONTHS[Number(p)-1] || p).join(', ');
+    if (type === 'month') return parts.map(p => MONTHS[Number(p) - 1] || p).join(', ');
     return parts.join(', ');
   }
 
   if (type === 'weekday') return WEEKDAYS[Number(value)] || value;
-  if (type === 'month') return MONTHS[Number(value)-1] || value;
+  if (type === 'month') return MONTHS[Number(value) - 1] || value;
   return value;
 }
 
@@ -96,7 +126,7 @@ function describeCron(expression: string): { en: string; ko: string } | null {
     if (!isNaN(h) && !isNaN(m)) {
       const ampm = h >= 12 ? 'PM' : 'AM';
       const h12 = h % 12 || 12;
-      en += `at ${h12}:${m.toString().padStart(2,'0')} ${ampm}`;
+      en += `at ${h12}:${m.toString().padStart(2, '0')} ${ampm}`;
     } else {
       en += `at ${hourDesc}:${minuteDesc}`;
     }
@@ -118,7 +148,7 @@ function describeCron(expression: string): { en: string; ko: string } | null {
     const h = Number(hour);
     const m = minute === '*' ? 0 : Number(minute);
     if (!isNaN(h) && !isNaN(m)) {
-      ko += `${h}시 ${m.toString().padStart(2,'0')}분에 실행`;
+      ko += `${h}시 ${m.toString().padStart(2, '0')}분에 실행`;
     } else {
       ko += `${hourDesc} ${minuteDesc}분에 실행`;
     }
@@ -137,7 +167,7 @@ function getNextExecutions(expression: string, count: number): Date[] {
 
   const [minuteExpr, hourExpr, dayExpr, monthExpr, weekdayExpr] = parts;
 
-  function matches(value: number, expr: string, min: number, max: number): boolean {
+  function matches(value: number, expr: string, _min: number, _max: number): boolean {
     if (expr === '*') return true;
     if (expr.startsWith('*/')) {
       const step = Number(expr.slice(2));
@@ -230,14 +260,19 @@ export function CronParser() {
     toast.success(t('common.copied'));
   };
 
-  const fields: CronField[] = expression.trim().split(/\s+/).map((v, i) => {
-    const labels = ['Minute', 'Hour', 'Day', 'Month', 'Weekday', 'Second'];
-    return { label: labels[i] || `Field ${i+1}`, value: v };
-  });
+  const fields: CronField[] = expression
+    .trim()
+    .split(/\s+/)
+    .map((v, i) => {
+      const labels = ['Minute', 'Hour', 'Day', 'Month', 'Weekday', 'Second'];
+      return { label: labels[i] || `Field ${i + 1}`, value: v };
+    });
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('tools.cronParser.title')}</h2>
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+        {t('tools.cronParser.title')}
+      </h2>
 
       {/* Preset Selector */}
       <div className="space-y-2">
@@ -247,7 +282,7 @@ export function CronParser() {
             <SelectValue placeholder={t('tools.cronParser.selectPreset')} />
           </SelectTrigger>
           <SelectContent>
-            {PRESETS.map((p) => (
+            {PRESETS.map(p => (
               <SelectItem key={p.value} value={p.value}>
                 {p.label} — {p.description}
               </SelectItem>
@@ -263,7 +298,7 @@ export function CronParser() {
           <Input
             id="cron-input"
             value={expression}
-            onChange={(e) => setExpression(e.target.value)}
+            onChange={e => setExpression(e.target.value)}
             placeholder="* * * * *"
             className="font-mono flex-1"
             data-testid="cron-input"
@@ -278,10 +313,12 @@ export function CronParser() {
 
         {/* Field Labels */}
         <div className="flex gap-2 px-1">
-          {fields.map((f) => (
+          {fields.map(f => (
             <div key={f.label} className="flex-1 text-center">
               <div className="text-xs text-muted-foreground">{f.label}</div>
-              <div className="text-sm font-mono font-semibold text-blue-600 dark:text-blue-400">{f.value}</div>
+              <div className="text-sm font-mono font-semibold text-blue-600 dark:text-blue-400">
+                {f.value}
+              </div>
             </div>
           ))}
         </div>
@@ -297,15 +334,31 @@ export function CronParser() {
       {/* Description */}
       {description && (
         <div className="space-y-2">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('tools.cronParser.description')}</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            {t('tools.cronParser.description')}
+          </h3>
           <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg space-y-2">
             <div>
-              <span className="text-xs font-semibold text-green-700 dark:text-green-400 uppercase tracking-wide">English</span>
-              <p className="text-green-900 dark:text-green-300 font-medium" data-testid="description-en">{description.en}</p>
+              <span className="text-xs font-semibold text-green-700 dark:text-green-400 uppercase tracking-wide">
+                English
+              </span>
+              <p
+                className="text-green-900 dark:text-green-300 font-medium"
+                data-testid="description-en"
+              >
+                {description.en}
+              </p>
             </div>
             <div>
-              <span className="text-xs font-semibold text-green-700 dark:text-green-400 uppercase tracking-wide">한국어</span>
-              <p className="text-green-900 dark:text-green-300 font-medium" data-testid="description-ko">{description.ko}</p>
+              <span className="text-xs font-semibold text-green-700 dark:text-green-400 uppercase tracking-wide">
+                한국어
+              </span>
+              <p
+                className="text-green-900 dark:text-green-300 font-medium"
+                data-testid="description-ko"
+              >
+                {description.ko}
+              </p>
             </div>
           </div>
         </div>
@@ -314,15 +367,27 @@ export function CronParser() {
       {/* Next Executions */}
       {nextRuns.length > 0 && (
         <div className="space-y-2">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('tools.cronParser.nextRuns')}</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            {t('tools.cronParser.nextRuns')}
+          </h3>
           <div className="divide-y divide-gray-200 dark:divide-gray-700 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
             {nextRuns.map((date, i) => (
-              <div key={i} className="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800">
+              <div
+                key={i}
+                className="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800"
+              >
                 <span className="text-sm text-muted-foreground">#{i + 1}</span>
-                <span className="font-mono text-sm text-gray-900 dark:text-white" data-testid={`next-run-${i}`}>
+                <span
+                  className="font-mono text-sm text-gray-900 dark:text-white"
+                  data-testid={`next-run-${i}`}
+                >
                   {date.toLocaleString('ko-KR', {
-                    year: 'numeric', month: '2-digit', day: '2-digit',
-                    hour: '2-digit', minute: '2-digit', second: '2-digit',
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
                   })}
                 </span>
                 <span className="text-xs text-muted-foreground font-mono">
@@ -340,10 +405,18 @@ export function CronParser() {
           {t('tools.cronParser.reference')}
         </h3>
         <div className="grid grid-cols-2 gap-2 text-sm text-blue-800 dark:text-blue-400">
-          <div><code>*</code> — any value</div>
-          <div><code>*/n</code> — every n units</div>
-          <div><code>a-b</code> — range a to b</div>
-          <div><code>a,b,c</code> — list of values</div>
+          <div>
+            <code>*</code> — any value
+          </div>
+          <div>
+            <code>*/n</code> — every n units
+          </div>
+          <div>
+            <code>a-b</code> — range a to b
+          </div>
+          <div>
+            <code>a,b,c</code> — list of values
+          </div>
         </div>
         <p className="text-xs text-blue-700 dark:text-blue-500 mt-2">
           Format: <code className="font-mono">minute hour day month weekday</code>

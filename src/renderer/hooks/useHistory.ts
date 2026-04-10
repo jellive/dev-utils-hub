@@ -35,7 +35,7 @@ export interface UseHistoryReturn {
   toggleFavorite: (id: number) => Promise<boolean>;
   clearHistory: (tool: string) => Promise<boolean>;
   clearAllHistory: () => Promise<boolean>;
-  getHistoryById: (id: number) => Promise<HistoryEntry | null>;
+  getHistoryById: (id: number) => Promise<HistoryEntry | undefined>;
   loadStats: () => Promise<void>;
   refresh: () => Promise<void>;
 }
@@ -241,16 +241,16 @@ export function useHistory(options: UseHistoryOptions = {}): UseHistoryReturn {
   }, []);
 
   // Get history entry by ID
-  const getHistoryById = useCallback(async (id: number): Promise<HistoryEntry | null> => {
+  const getHistoryById = useCallback(async (id: number): Promise<HistoryEntry | undefined> => {
     try {
       setError(null);
       const entry = await api.history.getById(id);
-      return entry;
+      return entry ?? undefined;
     } catch (err: any) {
       const errorMessage = `Failed to get history entry: ${err.message || 'Unknown error'}`;
       setError(errorMessage);
       console.error(errorMessage, err);
-      return null;
+      return undefined;
     }
   }, []);
 
