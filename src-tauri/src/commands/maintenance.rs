@@ -80,7 +80,7 @@ pub fn maintenance_backup(
 
     let src = db_path(&app)?;
     let ts = chrono::Utc::now().format("%Y%m%d_%H%M%S");
-    let dest = dir.join(format!("history_{}.db", ts));
+    let dest = dir.join(format!("history_{ts}.db"));
 
     // Use rusqlite's online backup API — lock the connection briefly
     {
@@ -126,10 +126,10 @@ pub fn maintenance_restore(
     // Security: canonicalize and confirm the source is inside the backups dir
     let canonical_src = src
         .canonicalize()
-        .map_err(|e| format!("Cannot resolve backup path: {}", e))?;
+        .map_err(|e| format!("Cannot resolve backup path: {e}"))?;
     let canonical_dir = dir
         .canonicalize()
-        .map_err(|e| format!("Cannot resolve backups dir: {}", e))?;
+        .map_err(|e| format!("Cannot resolve backups dir: {e}"))?;
 
     if !canonical_src.starts_with(&canonical_dir) {
         return Err("Backup file must be inside the app backups directory".to_string());

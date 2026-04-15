@@ -336,7 +336,6 @@ export function MarkdownPreview() {
             ref={previewRef}
             className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 overflow-auto min-h-[420px] text-gray-900 dark:text-gray-100"
             data-testid="markdown-preview"
-            // eslint-disable-next-line react/no-danger
             dangerouslySetInnerHTML={{ __html: rendered }}
           />
         </div>

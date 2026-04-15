@@ -12,7 +12,10 @@ export type ToolType =
   | 'color-picker'
   | 'cron-parser'
   | 'markdown-preview'
-  | 'css-converter';
+  | 'css-converter'
+  | 'ai-regex'
+  | 'ai-json-schema'
+  | 'ai-code-explainer';
 
 export interface Tool {
   id: ToolType;

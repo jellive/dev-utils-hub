@@ -6,53 +6,61 @@ import { TwoColumnSkeleton } from './components/TwoColumnSkeleton';
 
 // Lazy load tool components for code splitting
 const JsonFormatter = lazy(() =>
-  import('./components/tools/JsonFormatter').then((module) => ({ default: module.JsonFormatterRoute }))
+  import('./components/tools/JsonFormatter').then(module => ({
+    default: module.JsonFormatterRoute,
+  }))
 );
 const JwtDecoder = lazy(() =>
-  import('./components/tools/JwtDecoder').then((module) => ({ default: module.JwtDecoder }))
+  import('./components/tools/JwtDecoder').then(module => ({ default: module.JwtDecoder }))
 );
 const Base64Converter = lazy(() =>
-  import('./components/tools/Base64Converter').then((module) => ({ default: module.Base64Converter }))
+  import('./components/tools/Base64Converter').then(module => ({ default: module.Base64Converter }))
 );
 const URLConverter = lazy(() =>
-  import('./components/tools/URLConverter').then((module) => ({ default: module.URLConverter }))
+  import('./components/tools/URLConverter').then(module => ({ default: module.URLConverter }))
 );
 const RegexTester = lazy(() =>
-  import('./components/tools/RegexTester').then((module) => ({ default: module.RegexTester }))
+  import('./components/tools/RegexTester').then(module => ({ default: module.RegexTester }))
 );
 const TextDiff = lazy(() =>
-  import('./components/tools/TextDiff').then((module) => ({ default: module.TextDiff }))
+  import('./components/tools/TextDiff').then(module => ({ default: module.TextDiff }))
 );
 const HashGenerator = lazy(() =>
-  import('./components/tools/HashGenerator').then((module) => ({ default: module.HashGenerator }))
+  import('./components/tools/HashGenerator').then(module => ({ default: module.HashGenerator }))
 );
 const UUIDGenerator = lazy(() =>
-  import('./components/tools/UUIDGenerator').then((module) => ({ default: module.UUIDGenerator }))
+  import('./components/tools/UUIDGenerator').then(module => ({ default: module.UUIDGenerator }))
 );
 const TimestampConverter = lazy(() =>
-  import('./components/tools/TimestampConverter').then((module) => ({ default: module.TimestampConverter }))
+  import('./components/tools/TimestampConverter').then(module => ({
+    default: module.TimestampConverter,
+  }))
 );
 const ToolGrid = lazy(() =>
-  import('./components/ToolGrid').then((module) => ({ default: module.ToolGrid }))
+  import('./components/ToolGrid').then(module => ({ default: module.ToolGrid }))
 );
 const ColorPicker = lazy(() =>
-  import('./components/tools/ColorPicker').then((module) => ({ default: module.ColorPicker }))
+  import('./components/tools/ColorPicker').then(module => ({ default: module.ColorPicker }))
 );
 const CronParser = lazy(() =>
-  import('./components/tools/CronParser').then((module) => ({ default: module.CronParser }))
+  import('./components/tools/CronParser').then(module => ({ default: module.CronParser }))
 );
 const MarkdownPreview = lazy(() =>
-  import('./components/tools/MarkdownPreview').then((module) => ({ default: module.MarkdownPreview }))
+  import('./components/tools/MarkdownPreview').then(module => ({ default: module.MarkdownPreview }))
 );
 const CssUnitConverter = lazy(() =>
-  import('./components/tools/CssUnitConverter').then((module) => ({ default: module.CssUnitConverter }))
+  import('./components/tools/CssUnitConverter').then(module => ({
+    default: module.CssUnitConverter,
+  }))
 );
 
 // Helper components for Suspense with appropriate skeletons
+// eslint-disable-next-line react-refresh/only-export-components
 const SingleColumnTool = ({ children }: { children: React.ReactNode }) => (
   <Suspense fallback={<SingleColumnSkeleton />}>{children}</Suspense>
 );
 
+// eslint-disable-next-line react-refresh/only-export-components
 const TwoColumnTool = ({ children }: { children: React.ReactNode }) => (
   <Suspense fallback={<TwoColumnSkeleton />}>{children}</Suspense>
 );
@@ -64,59 +72,115 @@ export const router = createHashRouter([
     children: [
       {
         index: true,
-        element: <Suspense fallback={<SingleColumnSkeleton />}><ToolGrid /></Suspense>,
+        element: (
+          <Suspense fallback={<SingleColumnSkeleton />}>
+            <ToolGrid />
+          </Suspense>
+        ),
       },
       {
         path: 'json',
-        element: <SingleColumnTool><JsonFormatter /></SingleColumnTool>,
+        element: (
+          <SingleColumnTool>
+            <JsonFormatter />
+          </SingleColumnTool>
+        ),
       },
       {
         path: 'jwt',
-        element: <SingleColumnTool><JwtDecoder /></SingleColumnTool>,
+        element: (
+          <SingleColumnTool>
+            <JwtDecoder />
+          </SingleColumnTool>
+        ),
       },
       {
         path: 'base64',
-        element: <SingleColumnTool><Base64Converter /></SingleColumnTool>,
+        element: (
+          <SingleColumnTool>
+            <Base64Converter />
+          </SingleColumnTool>
+        ),
       },
       {
         path: 'url',
-        element: <SingleColumnTool><URLConverter /></SingleColumnTool>,
+        element: (
+          <SingleColumnTool>
+            <URLConverter />
+          </SingleColumnTool>
+        ),
       },
       {
         path: 'regex',
-        element: <SingleColumnTool><RegexTester /></SingleColumnTool>,
+        element: (
+          <SingleColumnTool>
+            <RegexTester />
+          </SingleColumnTool>
+        ),
       },
       {
         path: 'diff',
-        element: <TwoColumnTool><TextDiff /></TwoColumnTool>,
+        element: (
+          <TwoColumnTool>
+            <TextDiff />
+          </TwoColumnTool>
+        ),
       },
       {
         path: 'hash',
-        element: <SingleColumnTool><HashGenerator /></SingleColumnTool>,
+        element: (
+          <SingleColumnTool>
+            <HashGenerator />
+          </SingleColumnTool>
+        ),
       },
       {
         path: 'uuid',
-        element: <SingleColumnTool><UUIDGenerator /></SingleColumnTool>,
+        element: (
+          <SingleColumnTool>
+            <UUIDGenerator />
+          </SingleColumnTool>
+        ),
       },
       {
         path: 'timestamp',
-        element: <TwoColumnTool><TimestampConverter /></TwoColumnTool>,
+        element: (
+          <TwoColumnTool>
+            <TimestampConverter />
+          </TwoColumnTool>
+        ),
       },
       {
         path: 'color-picker',
-        element: <SingleColumnTool><ColorPicker /></SingleColumnTool>,
+        element: (
+          <SingleColumnTool>
+            <ColorPicker />
+          </SingleColumnTool>
+        ),
       },
       {
         path: 'cron-parser',
-        element: <SingleColumnTool><CronParser /></SingleColumnTool>,
+        element: (
+          <SingleColumnTool>
+            <CronParser />
+          </SingleColumnTool>
+        ),
       },
       {
         path: 'markdown-preview',
-        element: <TwoColumnTool><MarkdownPreview /></TwoColumnTool>,
+        element: (
+          <TwoColumnTool>
+            <MarkdownPreview />
+          </TwoColumnTool>
+        ),
       },
       {
         path: 'css-converter',
-        element: <SingleColumnTool><CssUnitConverter /></SingleColumnTool>,
+        element: (
+          <SingleColumnTool>
+            <CssUnitConverter />
+          </SingleColumnTool>
+        ),
       },
       {
         path: '*',

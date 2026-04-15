@@ -38,7 +38,7 @@ export const sensitivePatterns = {
 
   // API keys, tokens, and bearer tokens (common patterns)
   get apiKey() {
-    return /\b(?:sk|pk|token|bearer)[-_][a-zA-Z0-9]{10,}\b|Bearer\s+[a-zA-Z0-9_\-\.]+|eyJ[a-zA-Z0-9_\-\.]+/gi;
+    return /\b(?:sk|pk|token|bearer)[-_][a-zA-Z0-9]{10,}\b|Bearer\s+[a-zA-Z0-9_.-]+|eyJ[a-zA-Z0-9_.-]+/gi;
   },
 };
 
@@ -74,7 +74,7 @@ export function containsSensitiveData(value: unknown): boolean {
     return false;
   }
 
-  return Object.values(sensitivePatterns).some((pattern) => pattern.test(value));
+  return Object.values(sensitivePatterns).some(pattern => pattern.test(value));
 }
 
 /**
@@ -121,7 +121,7 @@ export function filterSensitiveData(data: unknown, seen = new WeakSet()): unknow
 
   // Handle arrays
   if (Array.isArray(data)) {
-    return data.map((item) => filterSensitiveData(item, seen));
+    return data.map(item => filterSensitiveData(item, seen));
   }
 
   // Handle Error objects specially
@@ -140,7 +140,7 @@ export function filterSensitiveData(data: unknown, seen = new WeakSet()): unknow
     const lowerKey = key.toLowerCase();
 
     // Check if field name is in sensitive list - if so, always redact
-    const isSensitiveField = sensitiveFieldNames.some((fieldName) => lowerKey.includes(fieldName));
+    const isSensitiveField = sensitiveFieldNames.some(fieldName => lowerKey.includes(fieldName));
 
     if (isSensitiveField) {
       // For sensitive field names, only use specific patterns for very specific data types

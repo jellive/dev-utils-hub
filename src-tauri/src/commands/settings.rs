@@ -30,7 +30,6 @@ pub fn settings_get_all(app: AppHandle) -> Result<serde_json::Value, String> {
     let map: serde_json::Map<String, serde_json::Value> = store
         .entries()
         .into_iter()
-        .map(|(k, v)| (k, v))
         .collect();
     Ok(serde_json::Value::Object(map))
 }

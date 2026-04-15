@@ -173,7 +173,7 @@ pub fn history_search(
 ) -> Result<Vec<HistoryEntry>, String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
     let limit = limit.unwrap_or(50);
-    let pattern = format!("%{}%", query);
+    let pattern = format!("%{query}%");
 
     let mut stmt = conn
         .prepare(

@@ -14,6 +14,9 @@ import {
   Clock,
   FileText,
   Ruler,
+  Sparkles,
+  Braces,
+  BookOpenText,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
@@ -39,6 +42,9 @@ const tools: ToolConfig[] = [
   { id: 'cron-parser' as ToolType, icon: Clock },
   { id: 'markdown-preview' as ToolType, icon: FileText },
   { id: 'css-converter' as ToolType, icon: Ruler },
+  { id: 'ai-regex' as ToolType, icon: Sparkles },
+  { id: 'ai-json-schema' as ToolType, icon: Braces },
+  { id: 'ai-code-explainer' as ToolType, icon: BookOpenText },
 ];
 
 export function ToolGrid() {
@@ -46,7 +52,7 @@ export function ToolGrid() {
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredTools = tools.filter((tool) => {
+  const filteredTools = tools.filter(tool => {
     const name = t(`tools.${tool.id}.name`);
     const description = t(`tools.${tool.id}.description`);
     return (
@@ -63,7 +69,7 @@ export function ToolGrid() {
           type="text"
           placeholder={t('common.search')}
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={e => setSearchQuery(e.target.value)}
           className="w-full"
         />
       </div>
@@ -74,7 +80,7 @@ export function ToolGrid() {
         aria-label="Tool Selection Grid"
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
       >
-        {filteredTools.map((tool) => {
+        {filteredTools.map(tool => {
           const Icon = tool.icon;
           const isActive = location.pathname === `/${tool.id}`;
           const name = t(`tools.${tool.id}.name`);
@@ -92,7 +98,9 @@ export function ToolGrid() {
                 ${isActive ? 'ring-2 ring-primary shadow-lg' : ''}
               `}
             >
-              <Card className={`h-full transition-all duration-300 ${isActive ? 'border-primary bg-primary/5' : 'group-hover:border-primary/50'}`}>
+              <Card
+                className={`h-full transition-all duration-300 ${isActive ? 'border-primary bg-primary/5' : 'group-hover:border-primary/50'}`}
+              >
                 <CardHeader>
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-primary/10">
