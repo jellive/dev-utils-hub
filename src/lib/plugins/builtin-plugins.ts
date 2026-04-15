@@ -257,3 +257,35 @@ pluginRegistry.register({
     }))
   ),
 });
+
+pluginRegistry.register({
+  id: 'wasm-benchmark',
+  name: 'WebCrypto Benchmark',
+  description: 'Benchmark SHA-256, SHA-512, and Base64 across JS vs WebCrypto backends',
+  version: '1.0.0',
+  author: 'Dev Utils Hub',
+  icon: 'Zap',
+  category: 'custom',
+  builtin: true,
+  component: lazy(() =>
+    import('../../renderer/components/tools/WasmBenchmark/WasmBenchmark').then(m => ({
+      default: m.WasmBenchmark,
+    }))
+  ),
+});
+
+pluginRegistry.register({
+  id: 'diff-viewer',
+  name: 'Diff Viewer',
+  description: 'Side-by-side diff with character-level highlighting',
+  version: '1.0.0',
+  author: 'Dev Utils Hub',
+  icon: 'FileDiff',
+  category: 'formatting',
+  builtin: true,
+  component: lazy(() =>
+    import('../../renderer/components/tools/DiffViewer/DiffViewer').then(m => ({
+      default: m.DiffViewer,
+    }))
+  ),
+});

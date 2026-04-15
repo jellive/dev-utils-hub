@@ -71,6 +71,16 @@ const AICodeExplainer = lazy(() =>
     default: module.AICodeExplainer,
   }))
 );
+const WasmBenchmark = lazy(() =>
+  import('./components/tools/WasmBenchmark/WasmBenchmark').then(module => ({
+    default: module.WasmBenchmark,
+  }))
+);
+const DiffViewer = lazy(() =>
+  import('./components/tools/DiffViewer/DiffViewer').then(module => ({
+    default: module.DiffViewer,
+  }))
+);
 const PluginManager = lazy(() =>
   import('./components/PluginManager').then(module => ({ default: module.PluginManager }))
 );
@@ -225,6 +235,22 @@ export const router = createHashRouter([
           <SingleColumnTool>
             <AICodeExplainer />
           </SingleColumnTool>
+        ),
+      },
+      {
+        path: 'wasm-benchmark',
+        element: (
+          <SingleColumnTool>
+            <WasmBenchmark />
+          </SingleColumnTool>
+        ),
+      },
+      {
+        path: 'diff-viewer',
+        element: (
+          <TwoColumnTool>
+            <DiffViewer />
+          </TwoColumnTool>
         ),
       },
       {
