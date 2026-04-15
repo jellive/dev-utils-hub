@@ -18,43 +18,45 @@ import {
   Braces,
   BookOpenText,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
 import { useTranslation } from 'react-i18next';
-import type { ToolType } from '../types';
+import { pluginRegistry } from '../../lib/plugins/plugin-registry';
 
-interface ToolConfig {
-  id: ToolType;
-  icon: React.ComponentType<{ className?: string }>;
-}
-
-const tools: ToolConfig[] = [
-  { id: 'json' as ToolType, icon: FileJson },
-  { id: 'jwt' as ToolType, icon: Key },
-  { id: 'base64' as ToolType, icon: FileCode },
-  { id: 'url' as ToolType, icon: Link },
-  { id: 'regex' as ToolType, icon: Regex },
-  { id: 'diff' as ToolType, icon: FileDiff },
-  { id: 'hash' as ToolType, icon: Hash },
-  { id: 'uuid' as ToolType, icon: Fingerprint },
-  { id: 'timestamp' as ToolType, icon: Calendar },
-  { id: 'color-picker' as ToolType, icon: Palette },
-  { id: 'cron-parser' as ToolType, icon: Clock },
-  { id: 'markdown-preview' as ToolType, icon: FileText },
-  { id: 'css-converter' as ToolType, icon: Ruler },
-  { id: 'ai-regex' as ToolType, icon: Sparkles },
-  { id: 'ai-json-schema' as ToolType, icon: Braces },
-  { id: 'ai-code-explainer' as ToolType, icon: BookOpenText },
-];
+// Map icon name strings (stored in plugin manifests) to Lucide components
+const ICON_MAP: Record<string, LucideIcon> = {
+  FileJson,
+  Key,
+  FileCode,
+  Link,
+  Regex,
+  FileDiff,
+  Hash,
+  Fingerprint,
+  Calendar,
+  Palette,
+  Clock,
+  FileText,
+  Ruler,
+  Sparkles,
+  Braces,
+  BookOpenText,
+};
 
 export function ToolGrid() {
   const { t } = useTranslation();
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredTools = tools.filter(tool => {
-    const name = t(`tools.${tool.id}.name`);
-    const description = t(`tools.${tool.id}.description`);
+  const allPlugins = pluginRegistry.getEnabledPlugins();
+
+  const filteredPlugins = allPlugins.filter(plugin => {
+    // Fall back to plugin metadata when translation key is missing
+    const name = t(`tools.${plugin.id}.name`, { defaultValue: plugin.name });
+    const description = t(`tools.${plugin.id}.description`, {
+      defaultValue: plugin.description,
+    });
     return (
       name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       description.toLowerCase().includes(searchQuery.toLowerCase())
@@ -80,16 +82,19 @@ export function ToolGrid() {
         aria-label="Tool Selection Grid"
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
       >
-        {filteredTools.map(tool => {
-          const Icon = tool.icon;
-          const isActive = location.pathname === `/${tool.id}`;
-          const name = t(`tools.${tool.id}.name`);
-          const description = t(`tools.${tool.id}.description`);
+        {filteredPlugins.map(plugin => {
+          const Icon = ICON_MAP[plugin.icon] ?? FileJson;
+          const routePath = plugin.path ?? plugin.id;
+          const isActive = location.pathname === `/${routePath}`;
+          const name = t(`tools.${plugin.id}.name`, { defaultValue: plugin.name });
+          const description = t(`tools.${plugin.id}.description`, {
+            defaultValue: plugin.description,
+          });
 
           return (
             <RouterLink
-              key={tool.id}
-              to={`/${tool.id}`}
+              key={plugin.id}
+              to={`/${routePath}`}
               aria-label={name}
               className={`
                 group text-left transition-all duration-300 ease-out
@@ -119,9 +124,9 @@ export function ToolGrid() {
       </div>
 
       {/* No Results */}
-      {filteredTools.length === 0 && (
+      {filteredPlugins.length === 0 && (
         <div className="text-center py-12 text-muted-foreground">
-          <p>No tools found matching "{searchQuery}"</p>
+          <p>No tools found matching &ldquo;{searchQuery}&rdquo;</p>
         </div>
       )}
     </div>

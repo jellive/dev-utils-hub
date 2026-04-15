@@ -4,6 +4,9 @@ import { Layout } from './components/Layout';
 import { SingleColumnSkeleton } from './components/SingleColumnSkeleton';
 import { TwoColumnSkeleton } from './components/TwoColumnSkeleton';
 
+// Bootstrap plugin registry before any routes render
+import '../lib/plugins/builtin-plugins';
+
 // Lazy load tool components for code splitting
 const JsonFormatter = lazy(() =>
   import('./components/tools/JsonFormatter').then(module => ({
@@ -52,6 +55,24 @@ const CssUnitConverter = lazy(() =>
   import('./components/tools/CssUnitConverter').then(module => ({
     default: module.CssUnitConverter,
   }))
+);
+const AIRegexBuilder = lazy(() =>
+  import('./components/tools/AIRegexBuilder').then(module => ({
+    default: module.AIRegexBuilder,
+  }))
+);
+const AIJsonSchemaGenerator = lazy(() =>
+  import('./components/tools/AIJsonSchemaGenerator').then(module => ({
+    default: module.AIJsonSchemaGenerator,
+  }))
+);
+const AICodeExplainer = lazy(() =>
+  import('./components/tools/AICodeExplainer').then(module => ({
+    default: module.AICodeExplainer,
+  }))
+);
+const PluginManager = lazy(() =>
+  import('./components/PluginManager').then(module => ({ default: module.PluginManager }))
 );
 
 // Helper components for Suspense with appropriate skeletons
@@ -179,6 +200,38 @@ export const router = createHashRouter([
         element: (
           <SingleColumnTool>
             <CssUnitConverter />
+          </SingleColumnTool>
+        ),
+      },
+      {
+        path: 'ai-regex',
+        element: (
+          <SingleColumnTool>
+            <AIRegexBuilder />
+          </SingleColumnTool>
+        ),
+      },
+      {
+        path: 'ai-json-schema',
+        element: (
+          <SingleColumnTool>
+            <AIJsonSchemaGenerator />
+          </SingleColumnTool>
+        ),
+      },
+      {
+        path: 'ai-code-explainer',
+        element: (
+          <SingleColumnTool>
+            <AICodeExplainer />
+          </SingleColumnTool>
+        ),
+      },
+      {
+        path: 'plugins',
+        element: (
+          <SingleColumnTool>
+            <PluginManager />
           </SingleColumnTool>
         ),
       },
