@@ -90,6 +90,15 @@ fn main() {
             // file
             commands::file::file_save,
             commands::file::file_open,
+            // encoding / hashing (Rust-accelerated)
+            commands::encoding::encode_base64,
+            commands::encoding::encode_base64_url,
+            commands::encoding::decode_base64,
+            commands::encoding::decode_base64_url,
+            commands::encoding::hash_md5,
+            commands::encoding::hash_sha256,
+            commands::encoding::hash_sha512,
+            commands::encoding::hash_hmac,
             // app info
             commands::app::get_app_version,
             commands::app::get_platform_info,

@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowUp, ArrowDown, Send } from 'lucide-react';
+import { ArrowUp, ArrowDown, Send, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,6 +25,70 @@ import {
   TOOLS,
 } from '@/utils/sentryContext';
 
+// ---------------------------------------------------------------------------
+// Tauri IPC bridge — only available when running inside the desktop shell.
+// The try/catch lets the web build proceed without @tauri-apps/api installed.
+// ---------------------------------------------------------------------------
+type InvokeFn = <T>(cmd: string, args?: Record<string, unknown>) => Promise<T>;
+
+let tauriInvoke: InvokeFn | null = null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  tauriInvoke = require('@tauri-apps/api/core').invoke as InvokeFn;
+} catch {
+  // Running in a plain browser — JS implementations will be used.
+}
+
+// ---------------------------------------------------------------------------
+// Rust-backed helpers (fall through on any error to JS implementations)
+// ---------------------------------------------------------------------------
+async function rustEncode(text: string, urlSafe: boolean): Promise<string> {
+  if (!tauriInvoke) throw new Error('Tauri not available');
+  const cmd = urlSafe ? 'encode_base64_url' : 'encode_base64';
+  return tauriInvoke<string>(cmd, { input: text });
+}
+
+async function rustDecode(base64: string, urlSafe: boolean): Promise<string> {
+  if (!tauriInvoke) throw new Error('Tauri not available');
+  const cmd = urlSafe ? 'decode_base64_url' : 'decode_base64';
+  return tauriInvoke<string>(cmd, { input: base64 });
+}
+
+// ---------------------------------------------------------------------------
+// JS fallback helpers (preserved from original implementation)
+// ---------------------------------------------------------------------------
+function jsEncode(text: string, urlSafe: boolean): string {
+  const utf8Bytes = new TextEncoder().encode(text);
+  let binary = '';
+  utf8Bytes.forEach(byte => {
+    binary += String.fromCharCode(byte);
+  });
+  let encoded = btoa(binary);
+  if (urlSafe) {
+    encoded = encoded.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+  }
+  return encoded;
+}
+
+function jsDecode(base64: string, urlSafe: boolean): string {
+  let processed = base64;
+  if (urlSafe) {
+    processed = base64.replace(/-/g, '+').replace(/_/g, '/');
+    while (processed.length % 4) {
+      processed += '=';
+    }
+  }
+  const binary = atob(processed);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return new TextDecoder().decode(bytes);
+}
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 export function Base64Converter() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -34,13 +98,13 @@ export function Base64Converter() {
   const [activeTab, setActiveTab] = useState('encode');
   const [urlSafe, setUrlSafe] = useState(false);
   const [encoding, setEncoding] = useState('utf-8');
+  const [useRust, setUseRust] = useState(!!tauriInvoke);
+  const [lastBackend, setLastBackend] = useState<'rust' | 'js' | null>(null);
 
-  // Set feature context on mount
   useEffect(() => {
     setCurrentFeature(FEATURES.DATA_CONVERSION);
   }, []);
 
-  // Calculate human-readable file size
   const formatFileSize = (text: string): string => {
     const bytes = new TextEncoder().encode(text).length;
     if (bytes === 0) return '0 bytes';
@@ -55,53 +119,44 @@ export function Base64Converter() {
   const outputCharCount = output.length;
   const outputSize = formatFileSize(output);
 
-  // UTF-8 safe Base64 encoding
-  const encodeBase64 = (text: string): string => {
-    const utf8Bytes = new TextEncoder().encode(text);
-    let binary = '';
-    utf8Bytes.forEach((byte) => {
-      binary += String.fromCharCode(byte);
-    });
-    let encoded = btoa(binary);
-
-    // Convert to URL-safe Base64 if enabled
-    if (urlSafe) {
-      encoded = encoded.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-    }
-
-    return encoded;
-  };
-
-  // UTF-8 safe Base64 decoding
-  const decodeBase64 = (base64: string): string => {
-    let processedBase64 = base64;
-
-    // Convert URL-safe Base64 back to standard if needed
-    if (urlSafe) {
-      processedBase64 = base64.replace(/-/g, '+').replace(/_/g, '/');
-      // Add padding if needed
-      while (processedBase64.length % 4) {
-        processedBase64 += '=';
+  // Encode with Rust first, JS fallback
+  const encodeText = async (text: string): Promise<string> => {
+    if (useRust && tauriInvoke) {
+      try {
+        const result = await rustEncode(text, urlSafe);
+        setLastBackend('rust');
+        return result;
+      } catch {
+        // fall through
       }
     }
-
-    const binary = atob(processedBase64);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) {
-      bytes[i] = binary.charCodeAt(i);
-    }
-    return new TextDecoder().decode(bytes);
+    setLastBackend('js');
+    return jsEncode(text, urlSafe);
   };
 
-  const handleEncode = () => {
+  // Decode with Rust first, JS fallback
+  const decodeText = async (text: string): Promise<string> => {
+    if (useRust && tauriInvoke) {
+      try {
+        const result = await rustDecode(text, urlSafe);
+        setLastBackend('rust');
+        return result;
+      } catch {
+        // fall through
+      }
+    }
+    setLastBackend('js');
+    return jsDecode(text, urlSafe);
+  };
+
+  const handleEncode = async () => {
     setError('');
 
-    // Track user interaction
-    addInteractionBreadcrumb(
-      INTERACTION_TYPES.CLICK,
-      'Encode Button',
-      { inputLength: input.length, urlSafe, encoding }
-    );
+    addInteractionBreadcrumb(INTERACTION_TYPES.CLICK, 'Encode Button', {
+      inputLength: input.length,
+      urlSafe,
+      encoding,
+    });
 
     if (!input.trim()) {
       setError('Input is empty. Please enter text to encode.');
@@ -109,46 +164,29 @@ export function Base64Converter() {
     }
 
     try {
-      const encoded = encodeBase64(input);
+      const encoded = await encodeText(input);
       setOutput(encoded);
-
-      // Track successful conversion
-      addConversionBreadcrumb(
-        TOOLS.BASE64_CONVERTER,
-        input.length,
-        encoded.length,
-        true
-      );
+      addConversionBreadcrumb(TOOLS.BASE64_CONVERTER, input.length, encoded.length, true);
     } catch (err) {
-      // Track failed conversion
-      addConversionBreadcrumb(
-        TOOLS.BASE64_CONVERTER,
-        input.length,
-        0,
-        false
-      );
-
-      // Add error breadcrumb
+      addConversionBreadcrumb(TOOLS.BASE64_CONVERTER, input.length, 0, false);
       addErrorBreadcrumb(
         'Base64 Encoding Error',
         err instanceof Error ? err.message : 'Unknown error',
         'User attempted to encode invalid input'
       );
-
       setError('Failed to encode text. Please try again.');
       setOutput('');
     }
   };
 
-  const handleDecode = () => {
+  const handleDecode = async () => {
     setError('');
 
-    // Track user interaction
-    addInteractionBreadcrumb(
-      INTERACTION_TYPES.CLICK,
-      'Decode Button',
-      { inputLength: input.length, urlSafe, encoding }
-    );
+    addInteractionBreadcrumb(INTERACTION_TYPES.CLICK, 'Decode Button', {
+      inputLength: input.length,
+      urlSafe,
+      encoding,
+    });
 
     if (!input.trim()) {
       setError('Input is empty. Please enter Base64 text to decode.');
@@ -156,32 +194,16 @@ export function Base64Converter() {
     }
 
     try {
-      const decoded = decodeBase64(input);
+      const decoded = await decodeText(input);
       setOutput(decoded);
-
-      // Track successful conversion
-      addConversionBreadcrumb(
-        TOOLS.BASE64_CONVERTER,
-        input.length,
-        decoded.length,
-        true
-      );
+      addConversionBreadcrumb(TOOLS.BASE64_CONVERTER, input.length, decoded.length, true);
     } catch (err) {
-      // Track failed conversion
-      addConversionBreadcrumb(
-        TOOLS.BASE64_CONVERTER,
-        input.length,
-        0,
-        false
-      );
-
-      // Add error breadcrumb
+      addConversionBreadcrumb(TOOLS.BASE64_CONVERTER, input.length, 0, false);
       addErrorBreadcrumb(
         'Base64 Decoding Error',
         err instanceof Error ? err.message : 'Unknown error',
         'User attempted to decode invalid Base64'
       );
-
       setError('Invalid Base64 format. Please check your input.');
       setOutput('');
     }
@@ -191,17 +213,15 @@ export function Base64Converter() {
     setInput('');
     setOutput('');
     setError('');
+    setLastBackend(null);
   };
 
   const copyToClipboard = () => {
     if (output) {
-      // Track copy action
-      addInteractionBreadcrumb(
-        INTERACTION_TYPES.COPY,
-        'Output Result',
-        { outputLength: output.length, mode: activeTab }
-      );
-
+      addInteractionBreadcrumb(INTERACTION_TYPES.COPY, 'Output Result', {
+        outputLength: output.length,
+        mode: activeTab,
+      });
       navigator.clipboard.writeText(output);
       toast.success(t('common.copied'));
     }
@@ -213,23 +233,13 @@ export function Base64Converter() {
       return;
     }
 
-    // If encoding, send as Basic Auth header
-    // Format should be "username:password" before encoding
     if (activeTab === 'encode') {
       navigate('/api-tester', {
-        state: {
-          authType: 'basic',
-          basicAuthEncoded: output,
-        },
+        state: { authType: 'basic', basicAuthEncoded: output },
       });
       toast.success('Base64 sent to API Tester for Basic Auth');
     } else {
-      // If decoding, just send the decoded value
-      navigate('/api-tester', {
-        state: {
-          body: output,
-        },
-      });
+      navigate('/api-tester', { state: { body: output } });
       toast.success('Decoded value sent to API Tester');
     }
   };
@@ -237,12 +247,11 @@ export function Base64Converter() {
   const handleFileDrop = (e: React.DragEvent<HTMLTextAreaElement>) => {
     e.preventDefault();
     if (!e.dataTransfer) return;
-
     const files = e.dataTransfer.files;
     if (files && files.length > 0) {
       const file = files[0];
       const reader = new FileReader();
-      reader.onload = (event) => {
+      reader.onload = event => {
         const content = event.target?.result as string;
         setInput(content);
       };
@@ -256,18 +265,33 @@ export function Base64Converter() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('tools.base64.title')}</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          {t('tools.base64.title')}
+        </h2>
+        {/* Rust / JS backend toggle */}
+        {tauriInvoke && (
+          <button
+            onClick={() => setUseRust(v => !v)}
+            title={useRust ? 'Using Rust backend (fast)' : 'Using JS fallback'}
+            className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
+              useRust
+                ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 border border-orange-300 dark:border-orange-700'
+                : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400 border border-gray-300 dark:border-gray-600'
+            }`}
+          >
+            <Zap className="h-3 w-3" />
+            {useRust ? 'Rust' : 'JS'}
+          </button>
+        )}
+      </div>
 
       {/* Settings Section */}
       <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-6">
           {/* URL-safe Switch */}
           <div className="flex items-center gap-2">
-            <Switch
-              id="url-safe"
-              checked={urlSafe}
-              onCheckedChange={setUrlSafe}
-            />
+            <Switch id="url-safe" checked={urlSafe} onCheckedChange={setUrlSafe} />
             <Label htmlFor="url-safe" className="cursor-pointer">
               {t('tools.base64.urlSafe')}
             </Label>
@@ -302,7 +326,6 @@ export function Base64Converter() {
         </TabsList>
 
         <TabsContent value="encode" className="space-y-4">
-          {/* Input Section */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="encode-input">{t('tools.base64.input')}</Label>
@@ -313,7 +336,7 @@ export function Base64Converter() {
             <Textarea
               id="encode-input"
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={e => setInput(e.target.value)}
               onDrop={handleFileDrop}
               onDragOver={handleDragOver}
               placeholder={t('tools.base64.enterText')}
@@ -321,7 +344,6 @@ export function Base64Converter() {
             />
           </div>
 
-          {/* Action Buttons */}
           <div className="flex gap-2">
             <button
               onClick={handleEncode}
@@ -351,7 +373,6 @@ export function Base64Converter() {
         </TabsContent>
 
         <TabsContent value="decode" className="space-y-4">
-          {/* Input Section */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="decode-input">{t('tools.base64.input')}</Label>
@@ -362,7 +383,7 @@ export function Base64Converter() {
             <Textarea
               id="decode-input"
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={e => setInput(e.target.value)}
               onDrop={handleFileDrop}
               onDragOver={handleDragOver}
               placeholder={t('tools.base64.enterBase64')}
@@ -370,7 +391,6 @@ export function Base64Converter() {
             />
           </div>
 
-          {/* Action Buttons */}
           <div className="flex gap-2">
             <button
               onClick={handleDecode}
@@ -410,7 +430,20 @@ export function Base64Converter() {
       {/* Output Section */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label htmlFor="output">{t('tools.base64.output')}</Label>
+          <div className="flex items-center gap-2">
+            <Label htmlFor="output">{t('tools.base64.output')}</Label>
+            {lastBackend && output && (
+              <span
+                className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                  lastBackend === 'rust'
+                    ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'
+                    : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
+                }`}
+              >
+                {lastBackend === 'rust' ? 'Rust' : 'JS'}
+              </span>
+            )}
+          </div>
           {output && (
             <span className="text-sm text-muted-foreground">
               {outputCharCount} characters ({outputSize})

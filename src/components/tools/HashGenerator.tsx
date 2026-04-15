@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { AlertCircle, Upload, X, HelpCircle, Check, X as XCircle, Send } from 'lucide-react';
+import { AlertCircle, Upload, X, HelpCircle, Check, X as XCircle, Send, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 
@@ -16,6 +16,31 @@ interface AlgorithmOption {
   value: HashAlgorithm;
   label: string;
   bits: string;
+}
+
+// Try to import Tauri invoke — only available when running inside the Tauri shell.
+let tauriInvoke: (<T>(cmd: string, args?: Record<string, unknown>) => Promise<T>) | null = null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  tauriInvoke = require('@tauri-apps/api/core').invoke;
+} catch {
+  // Running in a browser without Tauri — fall back to JS implementations.
+}
+
+async function generateHashRust(input: string, algorithm: HashAlgorithm): Promise<string> {
+  if (!tauriInvoke) throw new Error('Tauri not available');
+  const cmd =
+    algorithm === 'md5' ? 'hash_md5' : algorithm === 'sha256' ? 'hash_sha256' : 'hash_sha512';
+  return tauriInvoke<string>(cmd, { input });
+}
+
+async function generateHMACRust(
+  input: string,
+  key: string,
+  algorithm: HashAlgorithm
+): Promise<string> {
+  if (!tauriInvoke) throw new Error('Tauri not available');
+  return tauriInvoke<string>('hash_hmac', { input, key, algorithm });
 }
 
 export function HashGenerator() {
@@ -31,6 +56,8 @@ export function HashGenerator() {
   const [isHmacMode, setIsHmacMode] = useState(false);
   const [hmacKey, setHmacKey] = useState('');
   const [comparisonHash, setComparisonHash] = useState('');
+  const [useRust, setUseRust] = useState(!!tauriInvoke);
+  const [lastBackend, setLastBackend] = useState<'rust' | 'js' | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const algorithms: AlgorithmOption[] = [
@@ -39,10 +66,29 @@ export function HashGenerator() {
     { value: 'sha512', label: 'SHA-512', bits: '512-bit' },
   ];
 
+  const computeHash = async (text: string): Promise<string> => {
+    if (useRust && tauriInvoke) {
+      try {
+        const result = isHmacMode
+          ? await generateHMACRust(text, hmacKey, algorithm)
+          : await generateHashRust(text, algorithm);
+        setLastBackend('rust');
+        return result;
+      } catch {
+        // Fall through to JS fallback
+      }
+    }
+    const result = isHmacMode
+      ? await generateHMAC(text, hmacKey, algorithm)
+      : await generateHash(text, algorithm);
+    setLastBackend('js');
+    return result;
+  };
+
   const handleGenerate = async () => {
     setError('');
     setHashResult('');
-    setComparisonHash(''); // Clear comparison when generating new hash
+    setComparisonHash('');
 
     if (!input.trim()) {
       setError('Input is empty. Please enter text to hash.');
@@ -56,11 +102,9 @@ export function HashGenerator() {
 
     try {
       setIsProcessing(true);
-      const hash = isHmacMode
-        ? await generateHMAC(input, hmacKey, algorithm)
-        : await generateHash(input, algorithm);
+      const hash = await computeHash(input);
       setHashResult(hash);
-    } catch (err) {
+    } catch {
       setError('Failed to generate hash. Please try again.');
     } finally {
       setIsProcessing(false);
@@ -72,13 +116,14 @@ export function HashGenerator() {
     setHashResult('');
     setError('');
     setAlgorithm('md5');
+    setLastBackend(null);
   };
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(hashResult);
       toast.success(t('common.copied'));
-    } catch (err) {
+    } catch {
       toast.error(t('common.copyFailed'));
     }
   };
@@ -97,11 +142,9 @@ export function HashGenerator() {
       setIsProcessing(true);
       const reader = new FileReader();
 
-      reader.onload = async (e) => {
+      reader.onload = async e => {
         const content = e.target?.result as string;
-        const hash = isHmacMode
-          ? await generateHMAC(content, hmacKey, algorithm)
-          : await generateHash(content, algorithm);
+        const hash = await computeHash(content);
         setHashResult(hash);
         setIsProcessing(false);
       };
@@ -112,7 +155,7 @@ export function HashGenerator() {
       };
 
       reader.readAsText(file);
-    } catch (err) {
+    } catch {
       setError('Failed to hash file. Please try again.');
       setIsProcessing(false);
     }
@@ -128,7 +171,6 @@ export function HashGenerator() {
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragOver(false);
-
     const file = e.dataTransfer.files[0];
     if (file) {
       handleFileSelect(file);
@@ -165,15 +207,18 @@ export function HashGenerator() {
       return;
     }
 
-    // Send the hash as a custom header value for API signature
     navigate('/api-tester', {
       state: {
-        body: JSON.stringify({
-          hash: hashResult,
-          algorithm: algorithm,
-          hmacMode: isHmacMode,
-          message: input,
-        }, null, 2),
+        body: JSON.stringify(
+          {
+            hash: hashResult,
+            algorithm: algorithm,
+            hmacMode: isHmacMode,
+            message: input,
+          },
+          null,
+          2
+        ),
       },
     });
     toast.success('Hash sent to API Tester');
@@ -181,7 +226,26 @@ export function HashGenerator() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('tools.hash.title')}</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          {t('tools.hash.title')}
+        </h2>
+        {/* Rust / JS backend toggle */}
+        {tauriInvoke && (
+          <button
+            onClick={() => setUseRust(v => !v)}
+            title={useRust ? 'Using Rust backend (fast)' : 'Using JS fallback'}
+            className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
+              useRust
+                ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 border border-orange-300 dark:border-orange-700'
+                : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400 border border-gray-300 dark:border-gray-600'
+            }`}
+          >
+            <Zap className="h-3 w-3" />
+            {useRust ? 'Rust' : 'JS'}
+          </button>
+        )}
+      </div>
 
       {/* Algorithm Selector */}
       <div className="space-y-2">
@@ -189,7 +253,7 @@ export function HashGenerator() {
           {t('tools.hash.selectAlgorithm')}
         </label>
         <div className="flex flex-wrap gap-2">
-          {algorithms.map((algo) => (
+          {algorithms.map(algo => (
             <Button
               key={algo.value}
               variant={algorithm === algo.value ? 'default' : 'outline'}
@@ -210,7 +274,7 @@ export function HashGenerator() {
       <select
         id="hash-algorithm"
         value={algorithm}
-        onChange={(e) => setAlgorithm(e.target.value as HashAlgorithm)}
+        onChange={e => setAlgorithm(e.target.value as HashAlgorithm)}
         className="hidden"
         aria-label="Hash Algorithm"
       >
@@ -224,7 +288,8 @@ export function HashGenerator() {
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            <strong>Security Warning:</strong> MD5 is not cryptographically secure and should not be used for security-sensitive applications. Consider using SHA-256 or SHA-512 instead.
+            <strong>Security Warning:</strong> MD5 is not cryptographically secure and should not be
+            used for security-sensitive applications. Consider using SHA-256 or SHA-512 instead.
           </AlertDescription>
         </Alert>
       )}
@@ -236,7 +301,7 @@ export function HashGenerator() {
             type="checkbox"
             id="hmac-mode"
             checked={isHmacMode}
-            onChange={(e) => {
+            onChange={e => {
               setIsHmacMode(e.target.checked);
               if (!e.target.checked) {
                 setHmacKey('');
@@ -258,13 +323,11 @@ export function HashGenerator() {
             <TooltipContent className="max-w-sm">
               <p className="font-semibold mb-1">HMAC (Hash-based Message Authentication Code)</p>
               <p className="text-sm">
-                HMAC은 메시지와 비밀 키를 사용하여 메시지 인증 코드를 생성합니다.
-                메시지의 무결성과 진위를 확인하는 데 사용되며, API 인증,
-                데이터 서명 등에 활용됩니다.
+                HMAC은 메시지와 비밀 키를 사용하여 메시지 인증 코드를 생성합니다. 메시지의 무결성과
+                진위를 확인하는 데 사용되며, API 인증, 데이터 서명 등에 활용됩니다.
               </p>
               <p className="text-sm mt-2">
-                <strong>사용 예시:</strong> API 요청 서명, JWT 토큰 검증,
-                파일 무결성 확인
+                <strong>사용 예시:</strong> API 요청 서명, JWT 토큰 검증, 파일 무결성 확인
               </p>
             </TooltipContent>
           </Tooltip>
@@ -280,7 +343,7 @@ export function HashGenerator() {
           <Input
             type="text"
             value={hmacKey}
-            onChange={(e) => setHmacKey(e.target.value)}
+            onChange={e => setHmacKey(e.target.value)}
             placeholder="Enter HMAC key..."
             className="font-mono"
           />
@@ -329,9 +392,7 @@ export function HashGenerator() {
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   Drag and drop a file here
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  or click to browse
-                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">or click to browse</p>
               </div>
               <input
                 ref={fileInputRef}
@@ -358,8 +419,8 @@ export function HashGenerator() {
         </label>
         <textarea
           value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder={isHmacMode ? "Enter message to authenticate..." : "Enter text to hash..."}
+          onChange={e => setInput(e.target.value)}
+          placeholder={isHmacMode ? 'Enter message to authenticate...' : 'Enter text to hash...'}
           className="w-full h-32 p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white font-mono text-sm"
         />
       </div>
@@ -371,7 +432,11 @@ export function HashGenerator() {
           disabled={isProcessing}
           className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isProcessing ? t('tools.hash.generating') : (isHmacMode ? t('tools.hash.generateHmac') : t('tools.hash.generateHash'))}
+          {isProcessing
+            ? t('tools.hash.generating')
+            : isHmacMode
+              ? t('tools.hash.generateHmac')
+              : t('tools.hash.generateHash')}
         </button>
         <button
           onClick={handleClear}
@@ -401,9 +466,22 @@ export function HashGenerator() {
       {hashResult && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              {isHmacMode ? t('tools.hash.hmacResult') : t('tools.hash.hashResult')}
-            </label>
+            <div className="flex items-center gap-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                {isHmacMode ? t('tools.hash.hmacResult') : t('tools.hash.hashResult')}
+              </label>
+              {lastBackend && (
+                <span
+                  className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                    lastBackend === 'rust'
+                      ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'
+                      : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
+                  }`}
+                >
+                  {lastBackend === 'rust' ? 'Rust' : 'JS'}
+                </span>
+              )}
+            </div>
             <div className="flex gap-2">
               <button
                 onClick={handleCopy}
@@ -436,7 +514,7 @@ export function HashGenerator() {
         <Input
           type="text"
           value={comparisonHash}
-          onChange={(e) => setComparisonHash(e.target.value)}
+          onChange={e => setComparisonHash(e.target.value)}
           placeholder="Enter hash to compare..."
           className="font-mono"
         />
@@ -452,9 +530,7 @@ export function HashGenerator() {
             ) : (
               <Alert variant="destructive">
                 <XCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Hashes do not match
-                </AlertDescription>
+                <AlertDescription>Hashes do not match</AlertDescription>
               </Alert>
             )}
           </div>
@@ -467,9 +543,16 @@ export function HashGenerator() {
           Hash Algorithms:
         </h3>
         <ul className="text-sm text-blue-800 dark:text-blue-400 space-y-1">
-          <li>• <strong>MD5</strong>: 128-bit hash (32 hex characters) - Fast but not cryptographically secure</li>
-          <li>• <strong>SHA-256</strong>: 256-bit hash (64 hex characters) - Cryptographically secure</li>
-          <li>• <strong>SHA-512</strong>: 512-bit hash (128 hex characters) - Most secure</li>
+          <li>
+            • <strong>MD5</strong>: 128-bit hash (32 hex characters) - Fast but not
+            cryptographically secure
+          </li>
+          <li>
+            • <strong>SHA-256</strong>: 256-bit hash (64 hex characters) - Cryptographically secure
+          </li>
+          <li>
+            • <strong>SHA-512</strong>: 512-bit hash (128 hex characters) - Most secure
+          </li>
         </ul>
       </div>
     </div>
