@@ -20,12 +20,15 @@ interface AlgorithmOption {
 
 // Try to import Tauri invoke — only available when running inside the Tauri shell.
 let tauriInvoke: (<T>(cmd: string, args?: Record<string, unknown>) => Promise<T>) | null = null;
-try {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  tauriInvoke = require('@tauri-apps/api/core').invoke;
-} catch {
-  // Running in a browser without Tauri — fall back to JS implementations.
-}
+// Dynamic import so this module works in both Tauri and plain browser contexts.
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
+import('@tauri-apps/api/core')
+  .then(m => {
+    tauriInvoke = m.invoke;
+  })
+  .catch(() => {
+    // Running in a browser without Tauri — fall back to JS implementations.
+  });
 
 async function generateHashRust(input: string, algorithm: HashAlgorithm): Promise<string> {
   if (!tauriInvoke) throw new Error('Tauri not available');

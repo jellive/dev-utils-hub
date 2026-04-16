@@ -32,12 +32,15 @@ import {
 type InvokeFn = <T>(cmd: string, args?: Record<string, unknown>) => Promise<T>;
 
 let tauriInvoke: InvokeFn | null = null;
-try {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  tauriInvoke = require('@tauri-apps/api/core').invoke as InvokeFn;
-} catch {
-  // Running in a plain browser — JS implementations will be used.
-}
+// Dynamic import so this module works in both Tauri and plain browser contexts.
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
+import('@tauri-apps/api/core')
+  .then(m => {
+    tauriInvoke = m.invoke as InvokeFn;
+  })
+  .catch(() => {
+    // Running in a plain browser — JS implementations will be used.
+  });
 
 // ---------------------------------------------------------------------------
 // Rust-backed helpers (fall through on any error to JS implementations)
