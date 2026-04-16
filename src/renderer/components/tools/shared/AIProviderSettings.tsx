@@ -5,21 +5,31 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Settings, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAIProviderStore } from '@/hooks/useAIProvider';
 
+const PROVIDER_LABELS: Record<string, string> = {
+  openai: 'OpenAI',
+  google: 'Google (Gemini)',
+  ollama: 'Ollama (local)',
+};
+
 export function AIProviderSettings() {
   const [open, setOpen] = useState(false);
   const {
     providerType,
     openaiApiKey,
+    googleApiKey,
     ollamaBaseUrl,
     ollamaModel,
     setProviderType,
     setOpenAIApiKey,
+    setGoogleApiKey,
     setOllamaBaseUrl,
     setOllamaModel,
   } = useAIProviderStore();
 
   const isConfigured =
-    providerType === 'ollama' || (providerType === 'openai' && openaiApiKey.length > 0);
+    providerType === 'ollama' ||
+    (providerType === 'openai' && openaiApiKey.length > 0) ||
+    (providerType === 'google' && googleApiKey.length > 0);
 
   return (
     <Card
@@ -34,10 +44,7 @@ export function AIProviderSettings() {
           <div className="flex items-center gap-2">
             <Settings className="h-4 w-4 text-gray-500" />
             <CardTitle className="text-sm font-medium">
-              AI Provider:{' '}
-              <span className="text-primary">
-                {providerType === 'openai' ? 'OpenAI' : 'Ollama (local)'}
-              </span>
+              AI Provider: <span className="text-primary">{PROVIDER_LABELS[providerType]}</span>
             </CardTitle>
             {!isConfigured && (
               <span className="text-xs text-yellow-600 dark:text-yellow-400">
@@ -64,6 +71,13 @@ export function AIProviderSettings() {
             </Button>
             <Button
               size="sm"
+              variant={providerType === 'google' ? 'default' : 'outline'}
+              onClick={() => setProviderType('google')}
+            >
+              Google
+            </Button>
+            <Button
+              size="sm"
               variant={providerType === 'ollama' ? 'default' : 'outline'}
               onClick={() => setProviderType('ollama')}
             >
@@ -79,6 +93,19 @@ export function AIProviderSettings() {
                 value={openaiApiKey}
                 onChange={e => setOpenAIApiKey(e.target.value)}
                 placeholder="sk-..."
+                className="font-mono text-sm"
+              />
+            </div>
+          )}
+
+          {providerType === 'google' && (
+            <div className="space-y-1">
+              <label className="text-xs text-gray-600 dark:text-gray-400">Google AI API Key</label>
+              <Input
+                type="password"
+                value={googleApiKey}
+                onChange={e => setGoogleApiKey(e.target.value)}
+                placeholder="AIza..."
                 className="font-mono text-sm"
               />
             </div>
