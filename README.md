@@ -197,6 +197,8 @@ The most full-featured tool in the suite.
 
 **Request history:** Saved to `localStorage` under key `api-tester-history`. Persists across sessions; cleared per-browser-profile. Max entries managed in-memory.
 
+[자세히 보기](docs/API-TESTER.md)
+
 ### AI-Powered
 
 > **🤖 AI** tools require an AI provider to be configured. Supported providers: **OpenAI**, **Google (Gemini)**, **Ollama (local)**. API keys are stored in `localStorage` via Zustand persist.
