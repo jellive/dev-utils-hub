@@ -32,7 +32,7 @@ graph TB
         SENTRY["Sentry<br/>Error monitoring"]
     end
 
-    subgraph Tools["Developer Tools (10)"]
+    subgraph Tools["Developer Tools (19)"]
         JSON["JSON Formatter"]
         JWT["JWT Decoder"]
         B64["Base64 Converter"]
@@ -40,9 +40,17 @@ graph TB
         UUID["UUID Generator"]
         URL["URL Encoder/Decoder"]
         TS["Timestamp Converter"]
-        API["API Tester"]
         REGEX["Regex Tester"]
         DIFF["Text Diff"]
+        COLOR["Color Picker"]
+        CRON["Cron Parser"]
+        MD["Markdown Preview"]
+        CSS["CSS Unit Converter"]
+        DIFFV["Diff Viewer"]
+        WASM["WASM Benchmark"]
+        AICODE["🤖 Code Explainer"]
+        AIJSON["🤖 JSON Schema Generator"]
+        AIREGEX["🤖 Regex Builder"]
     end
 
     subgraph Storage["Local Storage"]
@@ -96,38 +104,108 @@ xychart-beta
 ![SQLite](https://img.shields.io/badge/SQLite-better--sqlite3-003B57?logo=sqlite)
 ![Sentry](https://img.shields.io/badge/Sentry-monitoring-362D59?logo=sentry)
 
-| Category | Technology | Notes |
-|---|---|---|
-| Desktop | Electron 32 | Cross-platform (macOS, Windows, Linux) |
-| Bundler | electron-vite 4 + Vite 7 | HMR in dev, optimized builds |
-| UI | React 19 | Concurrent features |
-| Styling | Tailwind CSS 3 + shadcn/ui | Radix UI primitives |
-| State | Zustand 5 | Theme and preferences |
-| Routing | React Router 7 | Client-side navigation |
-| Database | better-sqlite3 | Local data persistence |
-| i18n | react-i18next | Multi-language support |
-| Monitoring | Sentry 10 | Error tracking + breadcrumbs |
-| Testing (Unit) | Vitest 4 | 162 tests |
-| Testing (E2E) | Playwright | Cross-browser |
-| CI/CD | GitHub Actions | Lint, type-check, test |
-| Distribution | electron-builder | macOS, Windows, Linux |
+| Category       | Technology                 | Notes                                  |
+| -------------- | -------------------------- | -------------------------------------- |
+| Desktop        | Electron 32                | Cross-platform (macOS, Windows, Linux) |
+| Bundler        | electron-vite 4 + Vite 7   | HMR in dev, optimized builds           |
+| UI             | React 19                   | Concurrent features                    |
+| Styling        | Tailwind CSS 3 + shadcn/ui | Radix UI primitives                    |
+| State          | Zustand 5                  | Theme and preferences                  |
+| Routing        | React Router 7             | Client-side navigation                 |
+| Database       | better-sqlite3             | Local data persistence                 |
+| i18n           | react-i18next              | Multi-language support                 |
+| Monitoring     | Sentry 10                  | Error tracking + breadcrumbs           |
+| Testing (Unit) | Vitest 4                   | 162 tests                              |
+| Testing (E2E)  | Playwright                 | Cross-browser                          |
+| CI/CD          | GitHub Actions             | Lint, type-check, test                 |
+| Distribution   | electron-builder           | macOS, Windows, Linux                  |
 
 ---
 
 ## Tools
 
-| Tool | Description | Web APIs Used |
-|---|---|---|
-| **JSON Formatter** | Format, validate, and minify JSON | — |
-| **JWT Decoder** | Decode header, payload, verify expiry | — |
-| **Base64 Converter** | Encode/decode Base64 (UTF-8 support) | — |
-| **Hash Generator** | MD5, SHA-256, SHA-512 hashes | Web Crypto API |
+### Converters
+
+| Tool                    | Description                                 | Web APIs Used |
+| ----------------------- | ------------------------------------------- | ------------- |
+| **Base64 Converter**    | Encode/decode Base64 (UTF-8 support)        | —             |
+| **URL Encoder/Decoder** | URL encode/decode with special char support | —             |
+| **Timestamp Converter** | Unix timestamp ↔ human-readable date        | —             |
+
+### Generators
+
+| Tool               | Description                      | Web APIs Used  |
+| ------------------ | -------------------------------- | -------------- |
 | **UUID Generator** | Cryptographically secure UUID v4 | Web Crypto API |
-| **URL Encoder/Decoder** | URL encode/decode with special char support | — |
-| **Timestamp Converter** | Unix timestamp ↔ human-readable date | — |
-| **API Tester** | HTTP request builder with response viewer | Fetch API |
-| **Regex Tester** | Live regex testing with match highlighting | — |
-| **Text Diff** | Side-by-side text comparison | — |
+| **Hash Generator** | MD5, SHA-256, SHA-512 hashes     | Web Crypto API |
+
+### Formatters & Validators
+
+| Tool               | Description                                | Web APIs Used |
+| ------------------ | ------------------------------------------ | ------------- |
+| **JSON Formatter** | Format, validate, and minify JSON          | —             |
+| **JWT Decoder**    | Decode header, payload, verify expiry      | —             |
+| **Regex Tester**   | Live regex testing with match highlighting | —             |
+
+### Text Utilities
+
+| Tool          | Description                  | Web APIs Used |
+| ------------- | ---------------------------- | ------------- |
+| **Text Diff** | Side-by-side text comparison | —             |
+
+### Formatters & Viewers
+
+| Tool                 | Description                                           | Web APIs Used |
+| -------------------- | ----------------------------------------------------- | ------------- |
+| **Markdown Preview** | Live Markdown → HTML preview with syntax highlighting | —             |
+| **Diff Viewer**      | Rich side-by-side diff with syntax highlighting       | —             |
+
+### Design Utilities
+
+| Tool                   | Description                                 | Web APIs Used |
+| ---------------------- | ------------------------------------------- | ------------- |
+| **Color Picker**       | HSL/RGB/HEX picker with clipboard copy      | —             |
+| **CSS Unit Converter** | px ↔ rem ↔ em ↔ vw/vh with base-font config | —             |
+
+### Developer Utilities
+
+| Tool               | Description                                              | Web APIs Used   |
+| ------------------ | -------------------------------------------------------- | --------------- |
+| **Cron Parser**    | Parse and explain cron expressions with next-run preview | —               |
+| **WASM Benchmark** | Measure WebAssembly vs JS performance                    | WebAssembly API |
+
+### Network
+
+| Tool           | Description                               | Web APIs Used |
+| -------------- | ----------------------------------------- | ------------- |
+| **API Tester** | HTTP request builder with response viewer | Fetch API     |
+
+#### API Tester — Details
+
+The most full-featured tool in the suite.
+
+**Supported HTTP methods:** GET · POST · PUT · DELETE · PATCH · HEAD · OPTIONS
+
+**Authentication types:**
+
+| Type         | Details                                            |
+| ------------ | -------------------------------------------------- |
+| None         | No auth header added                               |
+| Bearer Token | `Authorization: Bearer <token>`                    |
+| Basic Auth   | Username + password, Base64-encoded                |
+| API Key      | Custom key/value — added to header or query string |
+
+**Request history:** Saved to `localStorage` under key `api-tester-history`. Persists across sessions; cleared per-browser-profile. Max entries managed in-memory.
+
+### AI-Powered
+
+> **🤖 AI** tools require an AI provider to be configured. Supported providers: **OpenAI**, **Google (Gemini)**, **Ollama (local)**. API keys are stored in `localStorage` via Zustand persist.
+
+| Tool                      | Description                                                                     | Providers                         |
+| ------------------------- | ------------------------------------------------------------------------------- | --------------------------------- |
+| **Code Explainer**        | Line-by-line code explanation with complexity analysis                          | OpenAI · Google (Gemini) · Ollama |
+| **JSON Schema Generator** | Generate TypeScript interface, Zod schema, and JSON Schema from sample JSON     | OpenAI · Google (Gemini) · Ollama |
+| **Regex Builder**         | Describe a pattern in plain English, get a regex with explanation and live test | OpenAI · Google (Gemini) · Ollama |
 
 ---
 
@@ -143,7 +221,7 @@ dev-utils-hub/
 │   └── renderer/                # React app
 │       ├── src/
 │       │   ├── components/
-│       │   │   ├── tools/       # 10 tool components
+│       │   │   ├── tools/       # 19 tool components
 │       │   │   │   ├── JsonFormatter.tsx
 │       │   │   │   ├── JwtDecoder.tsx
 │       │   │   │   ├── Base64Converter.tsx
@@ -152,7 +230,16 @@ dev-utils-hub/
 │       │   │   │   ├── TimestampConverter.tsx
 │       │   │   │   ├── TextDiff.tsx
 │       │   │   │   ├── RegexTester.tsx
-│       │   │   │   ├── APITester/
+│       │   │   │   ├── UUIDGenerator.tsx
+│       │   │   │   ├── ColorPicker.tsx
+│       │   │   │   ├── CronParser.tsx
+│       │   │   │   ├── MarkdownPreview.tsx
+│       │   │   │   ├── CssUnitConverter.tsx
+│       │   │   │   ├── AICodeExplainer/
+│       │   │   │   ├── AIJsonSchemaGenerator/
+│       │   │   │   ├── AIRegexBuilder/
+│       │   │   │   ├── DiffViewer/
+│       │   │   │   ├── WasmBenchmark/
 │       │   │   │   └── SentryToolkit/
 │       │   │   └── ui/          # Shared UI primitives (shadcn)
 │       │   ├── hooks/           # Custom React hooks
@@ -238,21 +325,21 @@ SENTRY_PROJECT="your-project"
 
 ## Scripts Reference
 
-| Script | Description |
-|---|---|
-| `npm run dev` | Electron dev with HMR |
-| `npm run dev:web` | Web-only dev server |
-| `npm run build` | Electron production build |
-| `npm run build:web` | Web-only production build |
-| `npm run type-check` | TypeScript check (all targets) |
-| `npm run lint` | ESLint |
-| `npm test` | Vitest unit tests |
-| `npm run test:coverage` | Tests with coverage report |
-| `npm run test:e2e` | Playwright E2E tests |
-| `npm run lighthouse` | Lighthouse performance audit |
-| `npm run dist:mac` | macOS distribution build |
-| `npm run dist:win` | Windows distribution build |
-| `npm run dist:linux` | Linux distribution build |
+| Script                  | Description                    |
+| ----------------------- | ------------------------------ |
+| `npm run dev`           | Electron dev with HMR          |
+| `npm run dev:web`       | Web-only dev server            |
+| `npm run build`         | Electron production build      |
+| `npm run build:web`     | Web-only production build      |
+| `npm run type-check`    | TypeScript check (all targets) |
+| `npm run lint`          | ESLint                         |
+| `npm test`              | Vitest unit tests              |
+| `npm run test:coverage` | Tests with coverage report     |
+| `npm run test:e2e`      | Playwright E2E tests           |
+| `npm run lighthouse`    | Lighthouse performance audit   |
+| `npm run dist:mac`      | macOS distribution build       |
+| `npm run dist:win`      | Windows distribution build     |
+| `npm run dist:linux`    | Linux distribution build       |
 
 ---
 
@@ -271,7 +358,7 @@ npm run test:ui
 npm run test:coverage
 ```
 
-**Coverage**: 162 unit tests covering all 10 tool components and utility functions.
+**Coverage**: 162 unit tests covering all 19 tool components and utility functions.
 
 ### E2E Tests (Playwright)
 
@@ -292,18 +379,20 @@ npx playwright test --project=chromium
 
 ## Performance
 
-| Metric | Before | After | Improvement |
-|---|---|---|---|
-| Total bundle | 310.78 KiB | 244.42 KiB | **-21%** |
-| HashGenerator | 75.16 KiB | 7.85 KiB | **-90%** |
+| Metric        | Before     | After      | Improvement |
+| ------------- | ---------- | ---------- | ----------- |
+| Total bundle  | 310.78 KiB | 244.42 KiB | **-21%**    |
+| HashGenerator | 75.16 KiB  | 7.85 KiB   | **-90%**    |
 
 **Optimizations applied:**
+
 - **Native MD5** implementation — removed crypto-js (saves 75 KB)
 - **Code splitting** via `React.lazy()` — 32% initial bundle reduction
 - **Tree shaking** — unused code eliminated at build time
 - **Terser minification** — production code compression
 
 **Lighthouse targets:**
+
 - Performance: 95–100
 - Accessibility: 95–100
 - Best Practices: 95–100
@@ -313,22 +402,22 @@ npx playwright test --project=chromium
 
 ## Browser Support
 
-| Browser | Minimum Version |
-|---|---|
-| Chrome | 87+ |
-| Firefox | 78+ |
-| Safari | 14+ |
-| Edge | 88+ |
-| iOS Safari | 14+ |
-| Android Chrome | 87+ |
+| Browser        | Minimum Version |
+| -------------- | --------------- |
+| Chrome         | 87+             |
+| Firefox        | 78+             |
+| Safari         | 14+             |
+| Edge           | 88+             |
+| iOS Safari     | 14+             |
+| Android Chrome | 87+             |
 
 ---
 
 ## Roadmap
 
-- [ ] Color Picker tool
-- [ ] Cron Expression builder/validator
-- [ ] Markdown preview
+- [x] Color Picker tool
+- [x] Cron Expression parser
+- [x] Markdown preview
 - [ ] HTTP mock server (local)
 - [ ] QR code generator/decoder
 - [ ] Password strength checker
