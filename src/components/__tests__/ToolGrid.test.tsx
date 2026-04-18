@@ -3,6 +3,9 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ToolGrid } from '../ToolGrid';
 
+// This test suite targets src/components/ToolGrid.tsx — the legacy component
+// that renders a hardcoded array of 10 tools. No pluginRegistry mock needed.
+
 function renderWithRouter(initialPath = '/') {
   return render(
     <MemoryRouter initialEntries={[initialPath]}>
@@ -11,9 +14,7 @@ function renderWithRouter(initialPath = '/') {
   );
 }
 
-// SKIP: Tests assume hardcoded 7-tool array; component migrated to plugin registry
-// with 18 plugins. Rewrite required — tracked in follow-up task.
-describe.skip('ToolGrid', () => {
+describe('ToolGrid', () => {
   beforeEach(() => {
     renderWithRouter('/json');
   });
@@ -115,13 +116,9 @@ describe.skip('ToolGrid', () => {
 
   describe('Active Tool Selection', () => {
     it('should highlight active tool with ring styling', () => {
-      // useLocation is mocked globally to return pathname '/',
+      // useLocation is globally mocked to return pathname '/',
       // so no tool card is active by default.
-      // The ring-2 class is applied conditionally in the component when isActive is true.
-      // Verify the component logic: json card should NOT have ring-2 since location is '/'
       const jsonCard = screen.getByRole('link', { name: /json formatter/i });
-      // The className string is built with template literals — check it contains the conditional part
-      // When isActive=false, the ring classes are not added
       expect(jsonCard.className).not.toContain('ring-2');
     });
 
@@ -133,6 +130,7 @@ describe.skip('ToolGrid', () => {
 
   describe('Search Functionality', () => {
     it('should render search input', () => {
+      // common.search translates to "Search tools..."
       const searchInput = screen.getByPlaceholderText(/search tools/i);
       expect(searchInput).toBeInTheDocument();
     });

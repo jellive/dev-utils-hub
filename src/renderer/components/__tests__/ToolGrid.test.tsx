@@ -1,7 +1,56 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ToolGrid } from '../ToolGrid';
+import type { DevUtilPlugin } from '../../../lib/plugins/plugin-types';
+import React from 'react';
+
+// Mock pluginRegistry with a controlled set of 3 plugins.
+// Using a minimal but realistic fixture so assertions don't depend on live registry state.
+const MOCK_PLUGINS: DevUtilPlugin[] = [
+  {
+    id: 'json',
+    name: 'JSON Formatter',
+    description: 'Format and validate JSON data',
+    version: '1.0.0',
+    author: 'test',
+    icon: 'FileJson',
+    category: 'formatting',
+    component: React.lazy(() => Promise.resolve({ default: () => null })),
+    path: 'json',
+    enabled: true,
+  },
+  {
+    id: 'jwt',
+    name: 'JWT Decoder',
+    description: 'Decode and inspect JWT tokens',
+    version: '1.0.0',
+    author: 'test',
+    icon: 'Key',
+    category: 'security',
+    component: React.lazy(() => Promise.resolve({ default: () => null })),
+    path: 'jwt',
+    enabled: true,
+  },
+  {
+    id: 'hash',
+    name: 'Hash Generator',
+    description: 'Generate MD5, SHA hashes',
+    version: '1.0.0',
+    author: 'test',
+    icon: 'Hash',
+    category: 'security',
+    component: React.lazy(() => Promise.resolve({ default: () => null })),
+    path: 'hash',
+    enabled: true,
+  },
+];
+
+vi.mock('../../../lib/plugins/plugin-registry', () => ({
+  pluginRegistry: {
+    getEnabledPlugins: () => MOCK_PLUGINS,
+  },
+}));
 
 function renderWithRouter(initialPath = '/') {
   return render(
@@ -11,9 +60,7 @@ function renderWithRouter(initialPath = '/') {
   );
 }
 
-// SKIP: Tests assume hardcoded 7-tool array; component migrated to plugin registry
-// with 18 plugins. Rewrite required — tracked in follow-up task.
-describe.skip('ToolGrid', () => {
+describe('ToolGrid', () => {
   beforeEach(() => {
     renderWithRouter('/json');
   });
@@ -35,11 +82,9 @@ describe.skip('ToolGrid', () => {
   });
 
   describe('Tool Cards', () => {
-    it('should render all 7 tool cards', () => {
-      const links = screen.getAllByRole('link', {
-        name: /formatter|decoder|converter|encoder|tester|diff|generator/i,
-      });
-      expect(links.length).toBeGreaterThanOrEqual(7);
+    it('should render all mock plugin cards', () => {
+      const links = screen.getAllByRole('link');
+      expect(links).toHaveLength(MOCK_PLUGINS.length);
     });
 
     it('should render JSON Formatter card', () => {
@@ -50,29 +95,13 @@ describe.skip('ToolGrid', () => {
       expect(screen.getByRole('link', { name: /jwt decoder/i })).toBeInTheDocument();
     });
 
-    it('should render Base64 Converter card', () => {
-      expect(screen.getByRole('link', { name: /base64 converter/i })).toBeInTheDocument();
-    });
-
-    it('should render URL Encoder/Decoder card', () => {
-      expect(screen.getByRole('link', { name: /url.*encoder/i })).toBeInTheDocument();
-    });
-
-    it('should render Regex Tester card', () => {
-      expect(screen.getByRole('link', { name: /regex tester/i })).toBeInTheDocument();
-    });
-
-    it('should render Text Diff card', () => {
-      expect(screen.getByRole('link', { name: /text diff/i })).toBeInTheDocument();
-    });
-
     it('should render Hash Generator card', () => {
       expect(screen.getByRole('link', { name: /hash generator/i })).toBeInTheDocument();
     });
   });
 
   describe('Card Content', () => {
-    it('should display card title', () => {
+    it('should display card title text', () => {
       expect(screen.getByText('JSON Formatter')).toBeInTheDocument();
     });
 
@@ -80,7 +109,7 @@ describe.skip('ToolGrid', () => {
       expect(screen.getByText(/format.*validate.*json/i)).toBeInTheDocument();
     });
 
-    it('should render lucide-react icon', () => {
+    it('should render lucide-react icon inside card', () => {
       const jsonCard = screen.getByRole('link', { name: /json formatter/i });
       const icon = jsonCard.querySelector('svg');
       expect(icon).toBeInTheDocument();
@@ -109,36 +138,33 @@ describe.skip('ToolGrid', () => {
       expect(card.className).toContain('active:scale-[0.98]');
     });
 
-    it('should call setActiveTool when card is clicked', () => {
+    it('should navigate to tool path when card is clicked', () => {
       const jwtCard = screen.getByRole('link', { name: /jwt decoder/i });
-      // Link navigation works via href, verify the link is there
       expect(jwtCard).toHaveAttribute('href', '/jwt');
     });
   });
 
   describe('Active Tool Selection', () => {
-    it('should highlight active tool with ring styling', () => {
-      // useLocation is mocked globally to return pathname '/',
-      // so no tool card is active by default.
-      // The ring-2 class is applied conditionally when isActive is true.
-      // When isActive=false, the ring classes are not added.
+    it('should not highlight inactive tools (pathname is / in global mock)', () => {
+      // useLocation is globally mocked to return pathname '/'
+      // so no plugin is active; ring-2 class must be absent
       const jsonCard = screen.getByRole('link', { name: /json formatter/i });
       expect(jsonCard.className).not.toContain('ring-2');
     });
 
-    it('should not highlight inactive tools', () => {
+    it('should not highlight jwt card when root is active', () => {
       const inactiveCard = screen.getByRole('link', { name: /jwt decoder/i });
       expect(inactiveCard.className).not.toContain('ring-2');
     });
   });
 
   describe('Search Functionality', () => {
-    it('should render search input using Command component', () => {
+    it('should render search input', () => {
       const searchInput = screen.getByRole('textbox');
       expect(searchInput).toBeInTheDocument();
     });
 
-    it('should filter tools based on search query', () => {
+    it('should filter cards to only matching tools', () => {
       const searchInput = screen.getByRole('textbox');
 
       fireEvent.change(searchInput, { target: { value: 'json' } });
@@ -164,26 +190,33 @@ describe.skip('ToolGrid', () => {
       expect(screen.getByRole('link', { name: /json formatter/i })).toBeInTheDocument();
     });
 
-    it('should show all tools when search is cleared', () => {
+    it('should restore all tools when search is cleared', () => {
       const searchInput = screen.getByRole('textbox');
 
       fireEvent.change(searchInput, { target: { value: 'json' } });
       fireEvent.change(searchInput, { target: { value: '' } });
 
-      const links = screen.getAllByRole('link', {
-        name: /formatter|decoder|converter|encoder|tester|diff|generator/i,
-      });
-      expect(links.length).toBeGreaterThanOrEqual(7);
+      const links = screen.getAllByRole('link');
+      expect(links).toHaveLength(MOCK_PLUGINS.length);
+    });
+
+    it('should show no-results message for unmatched query', () => {
+      const searchInput = screen.getByRole('textbox');
+
+      fireEvent.change(searchInput, { target: { value: 'zzznomatch' } });
+
+      expect(screen.queryAllByRole('link')).toHaveLength(0);
+      expect(screen.getByText(/no tools found/i)).toBeInTheDocument();
     });
   });
 
   describe('Accessibility', () => {
-    it('should have proper ARIA labels on grid', () => {
+    it('should have proper ARIA label on grid', () => {
       const grid = screen.getByRole('grid', { name: /tool selection/i });
       expect(grid).toHaveAttribute('aria-label', 'Tool Selection Grid');
     });
 
-    it('should support keyboard navigation', () => {
+    it('should support keyboard navigation by focusing card link', () => {
       const firstCard = screen.getByRole('link', { name: /json formatter/i });
       firstCard.focus();
       expect(document.activeElement).toBe(firstCard);
