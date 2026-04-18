@@ -66,10 +66,13 @@ function defaultParseImportData(
         if (!Array.isArray(data)) {
           throw new Error('JSON must be an array');
         }
-        return data.map((item: any) => ({
-          input: String(item.input || ''),
-          output: item.output ? String(item.output) : undefined,
-        }));
+        return data.map((item: unknown) => {
+          const record = item as Record<string, unknown>;
+          return {
+            input: String(record.input || ''),
+            output: record.output ? String(record.output) : undefined,
+          };
+        });
       } catch (error) {
         throw new Error(`Failed to parse JSON: ${(error as Error).message}`);
       }

@@ -43,7 +43,7 @@ export function useHistoryAutoSave(options: UseHistoryAutoSaveOptions) {
   }, []);
 
   const saveToHistory = useCallback(
-    (input: string, output?: string, metadata?: Record<string, any>) => {
+    (input: string, output?: string, metadata?: Record<string, unknown>) => {
       // Skip if disabled or no input
       if (!enabled || !input || !input.trim()) {
         return;

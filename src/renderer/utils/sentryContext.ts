@@ -5,6 +5,21 @@
 
 import * as Sentry from '@sentry/react';
 
+/** Chrome-only memory info (non-standard) */
+interface PerformanceMemory {
+  usedJSHeapSize: number;
+  totalJSHeapSize: number;
+  jsHeapSizeLimit: number;
+}
+
+/** Network Information API (non-standard) */
+interface NetworkInformation {
+  effectiveType?: string;
+  downlink?: number;
+  rtt?: number;
+  saveData?: boolean;
+}
+
 /**
  * Tool names that match the router paths
  */
@@ -120,7 +135,7 @@ export function addNavigationBreadcrumb(from: string, to: string): void {
 export function addInteractionBreadcrumb(
   type: InteractionType,
   target: string,
-  details?: Record<string, unknown>,
+  details?: Record<string, unknown>
 ): void {
   if (!Sentry.isInitialized()) return;
 
@@ -144,7 +159,7 @@ export function addAPIBreadcrumb(
   method: string,
   url: string,
   statusCode?: number,
-  duration?: number,
+  duration?: number
 ): void {
   if (!Sentry.isInitialized()) return;
 
@@ -169,7 +184,7 @@ export function addConversionBreadcrumb(
   tool: Tool,
   inputSize: number,
   outputSize: number,
-  success: boolean,
+  success: boolean
 ): void {
   if (!Sentry.isInitialized()) return;
 
@@ -190,7 +205,11 @@ export function addConversionBreadcrumb(
 /**
  * Add a breadcrumb for error events
  */
-export function addErrorBreadcrumb(errorType: string, errorMessage: string, context?: string): void {
+export function addErrorBreadcrumb(
+  errorType: string,
+  errorMessage: string,
+  context?: string
+): void {
   if (!Sentry.isInitialized()) return;
 
   Sentry.addBreadcrumb({
@@ -284,11 +303,11 @@ export function setPerformanceContext(): void {
         type: getNavigationType(navigation.type),
         redirectCount: navigation.redirectCount,
       },
-      memory: (performance as any).memory
+      memory: (performance as unknown as { memory?: PerformanceMemory }).memory
         ? {
-            used: (performance as any).memory.usedJSHeapSize,
-            total: (performance as any).memory.totalJSHeapSize,
-            limit: (performance as any).memory.jsHeapSizeLimit,
+            used: (performance as unknown as { memory: PerformanceMemory }).memory.usedJSHeapSize,
+            total: (performance as unknown as { memory: PerformanceMemory }).memory.totalJSHeapSize,
+            limit: (performance as unknown as { memory: PerformanceMemory }).memory.jsHeapSizeLimit,
           }
         : undefined,
     };
@@ -303,8 +322,7 @@ export function setPerformanceContext(): void {
 
     if (paintEntries.length > 0 || navigationEntries.length > 0) {
       Sentry.setContext('web-vitals', {
-        fcp:
-          paintEntries.find((entry) => entry.name === 'first-contentful-paint')?.startTime || null,
+        fcp: paintEntries.find(entry => entry.name === 'first-contentful-paint')?.startTime || null,
         paint_entries: paintEntries.length,
         navigation_entries: navigationEntries.length,
       });
@@ -374,7 +392,13 @@ function isDesktopDevice(): boolean {
  * Helper: Get connection information
  */
 function getConnectionInfo() {
-  const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
+  type NavigatorWithConnection = Navigator & {
+    connection?: NetworkInformation;
+    mozConnection?: NetworkInformation;
+    webkitConnection?: NetworkInformation;
+  };
+  const nav = navigator as NavigatorWithConnection;
+  const connection = nav.connection || nav.mozConnection || nav.webkitConnection;
 
   if (!connection) return null;
 
@@ -390,7 +414,7 @@ function getConnectionInfo() {
  * Helper: Get memory information (Chrome only)
  */
 function getMemoryInfo() {
-  const memory = (performance as any).memory;
+  const memory = (performance as unknown as { memory?: PerformanceMemory }).memory;
 
   if (!memory) return null;
 

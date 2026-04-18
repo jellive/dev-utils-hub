@@ -112,7 +112,7 @@ export function useSettings<T>(key: string, defaultValue: T) {
  * Hook for getting all settings
  */
 export function useAllSettings() {
-  const [settings, setSettings] = useState<Record<string, any>>({});
+  const [settings, setSettings] = useState<Record<string, unknown>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -127,7 +127,7 @@ export function useAllSettings() {
           setSettings(all);
         } else {
           // Fallback: get all from localStorage
-          const all: Record<string, any> = {};
+          const all: Record<string, unknown> = {};
           for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
             if (key) {

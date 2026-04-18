@@ -50,10 +50,13 @@ export function JsonFormatter({ initialInput = '', onSendToBase64 }: JsonFormatt
       if (format === 'json') {
         const data = JSON.parse(content);
         if (!Array.isArray(data)) throw new Error('JSON must be an array');
-        return data.map((item: any) => ({
-          input: String(item.input || ''),
-          output: item.output ? String(item.output) : undefined,
-        }));
+        return data.map((item: unknown) => {
+          const record = item as Record<string, unknown>;
+          return {
+            input: String(record.input || ''),
+            output: record.output ? String(record.output) : undefined,
+          };
+        });
       } else if (format === 'csv') {
         const lines = content.split('\n').filter(line => line.trim());
         const dataLines = lines.slice(1); // Skip header

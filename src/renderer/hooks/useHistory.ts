@@ -27,7 +27,7 @@ export interface UseHistoryReturn {
     tool: string,
     input: string,
     output?: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   ) => Promise<number | null>;
   loadHistory: (tool?: string, limit?: number) => Promise<void>;
   searchHistory: (tool: string, query: string, limit?: number) => Promise<HistoryEntry[]>;
@@ -61,7 +61,7 @@ export function useHistory(options: UseHistoryOptions = {}): UseHistoryReturn {
       tool: string,
       input: string,
       output?: string,
-      metadata?: Record<string, any>
+      metadata?: Record<string, unknown>
     ): Promise<number | null> => {
       try {
         setError(null);
@@ -80,8 +80,8 @@ export function useHistory(options: UseHistoryOptions = {}): UseHistoryReturn {
 
         setHistory(prev => [newEntry, ...prev]);
         return id;
-      } catch (err: any) {
-        const errorMessage = `Failed to save history: ${err.message || 'Unknown error'}`;
+      } catch (err: unknown) {
+        const errorMessage = `Failed to save history: ${err instanceof Error ? err.message : 'Unknown error'}`;
         setError(errorMessage);
         console.error(errorMessage, err);
         return null;
@@ -99,8 +99,8 @@ export function useHistory(options: UseHistoryOptions = {}): UseHistoryReturn {
 
         const entries = (await api?.history?.get(toolFilter, limitCount || limit)) ?? [];
         setHistory(entries);
-      } catch (err: any) {
-        const errorMessage = `Failed to load history: ${err.message || 'Unknown error'}`;
+      } catch (err: unknown) {
+        const errorMessage = `Failed to load history: ${err instanceof Error ? err.message : 'Unknown error'}`;
         setError(errorMessage);
         console.error(errorMessage, err);
       } finally {
@@ -128,8 +128,8 @@ export function useHistory(options: UseHistoryOptions = {}): UseHistoryReturn {
             const results = await api.history.search(tool, query, searchLimit || limit);
             setHistory(results);
             resolve(results);
-          } catch (err: any) {
-            const errorMessage = `Failed to search history: ${err.message || 'Unknown error'}`;
+          } catch (err: unknown) {
+            const errorMessage = `Failed to search history: ${err instanceof Error ? err.message : 'Unknown error'}`;
             setError(errorMessage);
             console.error(errorMessage, err);
             reject(err);
@@ -160,8 +160,8 @@ export function useHistory(options: UseHistoryOptions = {}): UseHistoryReturn {
         }
 
         return true;
-      } catch (err: any) {
-        const errorMessage = `Failed to delete history: ${err.message || 'Unknown error'}`;
+      } catch (err: unknown) {
+        const errorMessage = `Failed to delete history: ${err instanceof Error ? err.message : 'Unknown error'}`;
         setError(errorMessage);
         console.error(errorMessage, err);
         return false;
@@ -192,8 +192,8 @@ export function useHistory(options: UseHistoryOptions = {}): UseHistoryReturn {
         }
 
         return true;
-      } catch (err: any) {
-        const errorMessage = `Failed to toggle favorite: ${err.message || 'Unknown error'}`;
+      } catch (err: unknown) {
+        const errorMessage = `Failed to toggle favorite: ${err instanceof Error ? err.message : 'Unknown error'}`;
         setError(errorMessage);
         console.error(errorMessage, err);
         return false;
@@ -213,8 +213,8 @@ export function useHistory(options: UseHistoryOptions = {}): UseHistoryReturn {
 
       console.log(`Cleared ${count} entries for tool: ${toolName}`);
       return true;
-    } catch (err: any) {
-      const errorMessage = `Failed to clear history: ${err.message || 'Unknown error'}`;
+    } catch (err: unknown) {
+      const errorMessage = `Failed to clear history: ${err instanceof Error ? err.message : 'Unknown error'}`;
       setError(errorMessage);
       console.error(errorMessage, err);
       return false;
@@ -232,8 +232,8 @@ export function useHistory(options: UseHistoryOptions = {}): UseHistoryReturn {
 
       console.log(`Cleared all history: ${count} entries`);
       return true;
-    } catch (err: any) {
-      const errorMessage = `Failed to clear all history: ${err.message || 'Unknown error'}`;
+    } catch (err: unknown) {
+      const errorMessage = `Failed to clear all history: ${err instanceof Error ? err.message : 'Unknown error'}`;
       setError(errorMessage);
       console.error(errorMessage, err);
       return false;
@@ -246,8 +246,8 @@ export function useHistory(options: UseHistoryOptions = {}): UseHistoryReturn {
       setError(null);
       const entry = await api.history.getById(id);
       return entry ?? undefined;
-    } catch (err: any) {
-      const errorMessage = `Failed to get history entry: ${err.message || 'Unknown error'}`;
+    } catch (err: unknown) {
+      const errorMessage = `Failed to get history entry: ${err instanceof Error ? err.message : 'Unknown error'}`;
       setError(errorMessage);
       console.error(errorMessage, err);
       return undefined;
@@ -260,8 +260,8 @@ export function useHistory(options: UseHistoryOptions = {}): UseHistoryReturn {
       setError(null);
       const statistics = await api.history.stats();
       setStats(statistics);
-    } catch (err: any) {
-      const errorMessage = `Failed to load statistics: ${err.message || 'Unknown error'}`;
+    } catch (err: unknown) {
+      const errorMessage = `Failed to load statistics: ${err instanceof Error ? err.message : 'Unknown error'}`;
       setError(errorMessage);
       console.error(errorMessage, err);
     }
