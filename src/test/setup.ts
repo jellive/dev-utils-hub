@@ -1,5 +1,10 @@
+import React from 'react';
 import { afterEach, vi, expect } from 'vitest';
 import { cleanup } from '@testing-library/react';
+
+// React must be available as a global for JSX in test files (react-jsx transform
+// does not inject it automatically in the happy-dom environment)
+(globalThis as typeof globalThis & { React: typeof React }).React = React;
 import '@testing-library/jest-dom/vitest';
 import { toHaveNoViolations } from 'jest-axe';
 import i18n from 'i18next';
