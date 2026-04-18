@@ -6,7 +6,11 @@ import { Base64Converter } from '../Base64Converter';
 
 describe('Base64Converter', () => {
   beforeEach(() => {
-    render(<MemoryRouter><Base64Converter /></MemoryRouter>);
+    render(
+      <MemoryRouter>
+        <Base64Converter />
+      </MemoryRouter>
+    );
   });
 
   describe('Tabs Structure', () => {
@@ -58,8 +62,8 @@ describe('Base64Converter', () => {
       const labels = document.querySelectorAll('label');
       expect(labels.length).toBeGreaterThan(0);
       // shadcn/ui Label has specific classes from labelVariants
-      const hasLabelClasses = Array.from(labels).some(label =>
-        label.className.includes('text-sm') && label.className.includes('font-medium')
+      const hasLabelClasses = Array.from(labels).some(
+        label => label.className.includes('text-sm') && label.className.includes('font-medium')
       );
       expect(hasLabelClasses).toBe(true);
     });
@@ -68,10 +72,11 @@ describe('Base64Converter', () => {
       const textareas = document.querySelectorAll('textarea');
       expect(textareas.length).toBeGreaterThan(0);
       // shadcn/ui Textarea has specific classes like rounded-md, border, etc.
-      const hasTextareaClasses = Array.from(textareas).some(textarea =>
-        textarea.className.includes('rounded-md') &&
-        textarea.className.includes('border') &&
-        textarea.className.includes('min-h-')
+      const hasTextareaClasses = Array.from(textareas).some(
+        textarea =>
+          textarea.className.includes('rounded-md') &&
+          textarea.className.includes('border') &&
+          textarea.className.includes('min-h-')
       );
       expect(hasTextareaClasses).toBe(true);
     });
@@ -122,7 +127,7 @@ describe('Base64Converter', () => {
   });
 
   describe('Base64 Encoding', () => {
-    it('should encode plain ASCII text', () => {
+    it('should encode plain ASCII text', async () => {
       const input = screen.getByPlaceholderText(/enter text to encode/i);
       const encodeButton = screen.getByRole('button', { name: /^encode$/i });
 
@@ -130,10 +135,10 @@ describe('Base64Converter', () => {
       fireEvent.click(encodeButton);
 
       const output = screen.getByPlaceholderText(/^output$/i) as HTMLTextAreaElement;
-      expect(output.value).toBe('SGVsbG8gV29ybGQ=');
+      await waitFor(() => expect(output.value).toBe('SGVsbG8gV29ybGQ='));
     });
 
-    it('should encode Korean text (UTF-8)', () => {
+    it('should encode Korean text (UTF-8)', async () => {
       const input = screen.getByPlaceholderText(/enter text to encode/i);
       const encodeButton = screen.getByRole('button', { name: /^encode$/i });
 
@@ -142,11 +147,13 @@ describe('Base64Converter', () => {
 
       const output = screen.getByPlaceholderText(/^output$/i) as HTMLTextAreaElement;
       // UTF-8 encoded Korean text
-      expect(output.value).toBeTruthy();
-      expect(output.value.length).toBeGreaterThan(0);
+      await waitFor(() => {
+        expect(output.value).toBeTruthy();
+        expect(output.value.length).toBeGreaterThan(0);
+      });
     });
 
-    it('should encode text with emojis', () => {
+    it('should encode text with emojis', async () => {
       const input = screen.getByPlaceholderText(/enter text to encode/i);
       const encodeButton = screen.getByRole('button', { name: /^encode$/i });
 
@@ -154,11 +161,13 @@ describe('Base64Converter', () => {
       fireEvent.click(encodeButton);
 
       const output = screen.getByPlaceholderText(/^output$/i) as HTMLTextAreaElement;
-      expect(output.value).toBeTruthy();
-      expect(output.value.length).toBeGreaterThan(0);
+      await waitFor(() => {
+        expect(output.value).toBeTruthy();
+        expect(output.value.length).toBeGreaterThan(0);
+      });
     });
 
-    it('should encode special characters', () => {
+    it('should encode special characters', async () => {
       const input = screen.getByPlaceholderText(/enter text to encode/i);
       const encodeButton = screen.getByRole('button', { name: /^encode$/i });
 
@@ -166,10 +175,10 @@ describe('Base64Converter', () => {
       fireEvent.click(encodeButton);
 
       const output = screen.getByPlaceholderText(/^output$/i) as HTMLTextAreaElement;
-      expect(output.value).toBeTruthy();
+      await waitFor(() => expect(output.value).toBeTruthy());
     });
 
-    it('should handle multiline text', () => {
+    it('should handle multiline text', async () => {
       const input = screen.getByPlaceholderText(/enter text to encode/i);
       const encodeButton = screen.getByRole('button', { name: /^encode$/i });
 
@@ -178,7 +187,7 @@ describe('Base64Converter', () => {
       fireEvent.click(encodeButton);
 
       const output = screen.getByPlaceholderText(/^output$/i) as HTMLTextAreaElement;
-      expect(output.value).toBeTruthy();
+      await waitFor(() => expect(output.value).toBeTruthy());
     });
   });
 
@@ -221,7 +230,7 @@ describe('Base64Converter', () => {
       fireEvent.click(decodeButton);
 
       const output = screen.getByPlaceholderText(/^output$/i) as HTMLTextAreaElement;
-      expect(output.value).toBe('Hello World');
+      await waitFor(() => expect(output.value).toBe('Hello World'));
     });
 
     it('should decode Base64 to Korean text', async () => {
@@ -235,6 +244,8 @@ describe('Base64Converter', () => {
       fireEvent.click(encodeButton);
 
       const output = screen.getByPlaceholderText(/^output$/i) as HTMLTextAreaElement;
+      // Wait for encode to complete before reading the value
+      await waitFor(() => expect(output.value).toBeTruthy());
       const encoded = output.value;
 
       // Switch to decode tab
@@ -250,7 +261,7 @@ describe('Base64Converter', () => {
       fireEvent.change(inputAfterSwitch, { target: { value: encoded } });
       await user.click(decodeButton);
 
-      expect(output.value).toBe(koreanText);
+      await waitFor(() => expect(output.value).toBe(koreanText));
     });
 
     it('should decode Base64 with emojis', async () => {
@@ -263,6 +274,8 @@ describe('Base64Converter', () => {
       fireEvent.click(encodeButton);
 
       const output = screen.getByPlaceholderText(/^output$/i) as HTMLTextAreaElement;
+      // Wait for encode to complete before reading the value
+      await waitFor(() => expect(output.value).toBeTruthy());
       const encoded = output.value;
 
       // Switch to decode tab
@@ -278,7 +291,7 @@ describe('Base64Converter', () => {
       fireEvent.change(inputAfterSwitch, { target: { value: encoded } });
       await user.click(decodeButton);
 
-      expect(output.value).toBe(emojiText);
+      await waitFor(() => expect(output.value).toBe(emojiText));
     });
   });
 
@@ -319,7 +332,7 @@ describe('Base64Converter', () => {
       fireEvent.change(input, { target: { value: 'This is not valid Base64!!!' } });
       fireEvent.click(decodeButton);
 
-      expect(screen.getByText(/invalid base64/i)).toBeInTheDocument();
+      await waitFor(() => expect(screen.getByText(/invalid base64/i)).toBeInTheDocument());
     });
 
     it('should clear error when valid operation performed', async () => {
@@ -349,7 +362,7 @@ describe('Base64Converter', () => {
   });
 
   describe('Clear Functionality', () => {
-    it('should clear both input and output', () => {
+    it('should clear both input and output', async () => {
       const input = screen.getByPlaceholderText(/enter text to encode/i) as HTMLTextAreaElement;
       const encodeButton = screen.getByRole('button', { name: /^encode$/i });
       const clearButton = screen.getByRole('button', { name: /clear/i });
@@ -359,7 +372,8 @@ describe('Base64Converter', () => {
 
       const output = screen.getByPlaceholderText(/^output$/i) as HTMLTextAreaElement;
       expect(input.value).toBe('Hello World');
-      expect(output.value).toBeTruthy();
+      // Wait for async encode to complete
+      await waitFor(() => expect(output.value).toBeTruthy());
 
       fireEvent.click(clearButton);
 
@@ -404,6 +418,8 @@ describe('Base64Converter', () => {
       fireEvent.click(encodeButton);
 
       const output = screen.getByPlaceholderText(/^output$/i) as HTMLTextAreaElement;
+      // Wait for async encode before reading the value
+      await waitFor(() => expect(output.value).toBeTruthy());
       const encoded = output.value;
 
       fireEvent.click(copyButton);
@@ -413,7 +429,7 @@ describe('Base64Converter', () => {
   });
 
   describe('Performance', () => {
-    it('should handle large text (10KB+)', () => {
+    it('should handle large text (10KB+)', async () => {
       const input = screen.getByPlaceholderText(/enter text to encode/i);
       const encodeButton = screen.getByRole('button', { name: /^encode$/i });
 
@@ -429,7 +445,7 @@ describe('Base64Converter', () => {
       expect(endTime - startTime).toBeLessThan(500);
 
       const output = screen.getByPlaceholderText(/^output$/i) as HTMLTextAreaElement;
-      expect(output.value).toBeTruthy();
+      await waitFor(() => expect(output.value).toBeTruthy());
     });
   });
 
@@ -443,7 +459,7 @@ describe('Base64Converter', () => {
       // Mock FileReader
       const originalFileReader = (globalThis as any).FileReader;
       const mockFileReaderInstance = {
-        readAsText: vi.fn(function(this: any, _blob: Blob) {
+        readAsText: vi.fn(function (this: any, _blob: Blob) {
           // Simulate async file reading
           setTimeout(() => {
             if (this.onload) {
@@ -454,7 +470,7 @@ describe('Base64Converter', () => {
         onload: null as any,
       };
 
-      (globalThis as any).FileReader = function() {
+      (globalThis as any).FileReader = function () {
         return mockFileReaderInstance;
       } as any;
 
@@ -485,7 +501,7 @@ describe('Base64Converter', () => {
       expect(screen.getByText(/11 characters/i)).toBeInTheDocument();
     });
 
-    it('should display character count for output after encoding', () => {
+    it('should display character count for output after encoding', async () => {
       const input = screen.getByPlaceholderText(/enter text to encode/i);
       const encodeButton = screen.getByRole('button', { name: /^encode$/i });
 
@@ -493,7 +509,7 @@ describe('Base64Converter', () => {
       fireEvent.click(encodeButton);
 
       // Should show output character count (8 characters for "Hello" in Base64)
-      expect(screen.getByText(/8 characters/i)).toBeInTheDocument();
+      await waitFor(() => expect(screen.getByText(/8 characters/i)).toBeInTheDocument());
     });
 
     it('should show progress indicator during large file processing', async () => {
@@ -508,7 +524,7 @@ describe('Base64Converter', () => {
       // Should show progress indicator (even if briefly)
       // In real scenario, this would be visible during processing
       const output = screen.getByPlaceholderText(/^output$/i) as HTMLTextAreaElement;
-      expect(output.value).toBeTruthy();
+      await waitFor(() => expect(output.value).toBeTruthy());
     });
 
     it('should display file size in human-readable format', () => {
@@ -546,6 +562,8 @@ describe('Base64Converter', () => {
       fireEvent.click(encodeButton);
 
       const output = screen.getByPlaceholderText(/^output$/i) as HTMLTextAreaElement;
+      // Wait for async encode to complete before reading the value
+      await waitFor(() => expect(output.value).toBeTruthy());
       const encoded = output.value;
 
       // Switch to decode tab
@@ -560,7 +578,7 @@ describe('Base64Converter', () => {
       fireEvent.change(inputAfterSwitch, { target: { value: encoded } });
       await user.click(decodeButton);
 
-      expect(output.value).toBe(originalText);
+      await waitFor(() => expect(output.value).toBe(originalText));
     });
   });
 });

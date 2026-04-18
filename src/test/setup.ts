@@ -71,9 +71,11 @@ Object.defineProperty(window, 'api', {
 });
 
 // Mock @tauri-apps/api/core (transformCallback is used internally by @tauri-apps/api/event)
+// invoke rejects so components with a Tauri/JS fallback (e.g. HashGenerator) fall
+// through to their JS implementation instead of resolving to undefined.
 vi.mock('@tauri-apps/api/core', () => ({
   transformCallback: vi.fn((_cb: unknown) => Date.now()),
-  invoke: vi.fn().mockResolvedValue(undefined),
+  invoke: vi.fn().mockRejectedValue(new Error('Tauri not available in test environment')),
   Channel: vi.fn(),
 }));
 
