@@ -257,6 +257,28 @@ dev-utils-hub/
 
 ---
 
+## Download
+
+Prebuilt binaries are published to [GitHub Releases](https://github.com/jellive/dev-utils-hub/releases).
+
+| Platform | Asset                                         |
+| -------- | --------------------------------------------- |
+| macOS    | `Dev-Utils-Hub_x.y.z_universal.dmg`           |
+| Windows  | `Dev-Utils-Hub_x.y.z_x64-setup.exe`           |
+| Linux    | `Dev-Utils-Hub_x.y.z_amd64.AppImage` + `.deb` |
+
+### macOS — First Launch
+
+Early releases are **not yet notarized** by Apple. On first launch you may see _"Dev Utils Hub is damaged and can't be opened"_. Bypass with:
+
+```bash
+xattr -cr "/Applications/Dev Utils Hub.app"
+```
+
+Then open normally. Code signing + notarization will be enabled in a future release.
+
+---
+
 ## Getting Started
 
 ### Prerequisites
