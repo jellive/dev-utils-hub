@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.4] - 2026-04-21
+
+### Changed
+
+- i18n consistency: replaced 19 hardcoded Korean UI strings with `t()` calls across `Base64Converter`, `HashGenerator`, `URLConverter`, and `JwtDecoder`. New keys grouped under `tools.{base64,hash,url,jwt}.history` and `tools.hash.hmac` namespaces.
+- `CronParser` intentionally left as-is — its `describeCron()` helper produces side-by-side `{ en, ko }` output as a feature, not a missed translation.
+
+### Added
+
+- 19 i18n keys per locale (en + ko both at 469, fully synced).
+
 ## [1.0.3] - 2026-04-21
 
 ### Changed
@@ -55,7 +66,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tauri plugins wired: store, updater, dialog, fs, clipboard-manager, global-shortcut, log, opener, autostart.
 - PWA support via `vite-plugin-pwa` for browser-mode offline use.
 
-[Unreleased]: https://github.com/jellive/dev-utils-hub/compare/v1.0.3...HEAD
+[Unreleased]: https://github.com/jellive/dev-utils-hub/compare/v1.0.4...HEAD
+[1.0.4]: https://github.com/jellive/dev-utils-hub/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/jellive/dev-utils-hub/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/jellive/dev-utils-hub/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/jellive/dev-utils-hub/compare/v1.0.0...v1.0.1

@@ -42,7 +42,13 @@
       "audience": "Audience",
       "expiresAt": "Expires At",
       "issuedAt": "Issued At",
-      "notBefore": "Not Before"
+      "notBefore": "Not Before",
+      "history": {
+        "exportTitle": "Export JWT History",
+        "exportDescription": "Select the number of JWT history entries and file format to export",
+        "importTitle": "Import JWT File",
+        "importDescription": "Select a JWT file to add to history. Supported formats: TXT, JSON, CSV"
+      }
     },
     "base64": {
       "name": "Base64 Converter",
@@ -56,7 +62,13 @@
       "decodeTab": "Decode",
       "options": "Options",
       "urlSafe": "URL Safe",
-      "removeLineBreaks": "Remove Line Breaks"
+      "removeLineBreaks": "Remove Line Breaks",
+      "history": {
+        "exportTitle": "Export Base64 History",
+        "exportDescription": "Select the number of Base64 history entries and file format to export",
+        "importTitle": "Import Base64 File",
+        "importDescription": "Select a Base64 file to add to history. Supported formats: TXT, JSON, CSV"
+      }
     },
     "url": {
       "name": "URL Encoder/Decoder",
@@ -81,7 +93,13 @@
       "fullUrl": "Full URL",
       "queryOnly": "Query Parameters Only",
       "exampleUrls": "Example URLs",
-      "invalidUrl": "Invalid URL format"
+      "invalidUrl": "Invalid URL format",
+      "history": {
+        "exportTitle": "Export URL History",
+        "exportDescription": "Select the number of URL history entries and file format to export",
+        "importTitle": "Import URL File",
+        "importDescription": "Select a URL file to add to history. Supported formats: TXT, JSON, CSV"
+      }
     },
     "regex": {
       "name": "Regex Tester",
@@ -189,7 +207,18 @@
       "hashesMatch": "Hashes Match!",
       "hashesIdentical": "The hashes are identical",
       "hashesDifferent": "Hashes Don't Match",
-      "hashesDiff": "The hashes are different"
+      "hashesDiff": "The hashes are different",
+      "hmac": {
+        "description": "HMAC generates a message authentication code using a message and a secret key. It is used to verify the integrity and authenticity of a message, and is applied in API authentication, data signing, and more.",
+        "exampleLabel": "Use cases:",
+        "exampleValue": "API request signing, JWT token verification, file integrity checks"
+      },
+      "history": {
+        "exportTitle": "Export Hash History",
+        "exportDescription": "Select the number of hash history entries and file format to export",
+        "importTitle": "Import Hash File",
+        "importDescription": "Select a hash file to add to history. Supported formats: TXT, JSON, CSV"
+      }
     },
     "uuid": {
       "name": "UUID Generator",

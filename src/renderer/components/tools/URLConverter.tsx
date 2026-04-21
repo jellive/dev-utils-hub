@@ -583,8 +583,8 @@ export function URLConverter() {
         onOpenChange={setShowExportDialog}
         onExport={handleExport}
         totalCount={totalCount}
-        title="URL 히스토리 내보내기"
-        description="내보낼 URL 히스토리 개수와 파일 형식을 선택하세요"
+        title={t('tools.url.history.exportTitle')}
+        description={t('tools.url.history.exportDescription')}
       />
 
       {/* Import Dialog */}
@@ -592,8 +592,8 @@ export function URLConverter() {
         open={showImportDialog}
         onOpenChange={setShowImportDialog}
         onImport={handleImport}
-        title="URL 파일 가져오기"
-        description="URL 파일을 선택하여 히스토리에 추가하세요. 지원 형식: TXT, JSON, CSV"
+        title={t('tools.url.history.importTitle')}
+        description={t('tools.url.history.importDescription')}
       />
     </div>
   );

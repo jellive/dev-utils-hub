@@ -42,7 +42,13 @@
       "audience": "대상",
       "expiresAt": "만료 시간",
       "issuedAt": "발급 시간",
-      "notBefore": "유효 시작 시간"
+      "notBefore": "유효 시작 시간",
+      "history": {
+        "exportTitle": "JWT 히스토리 내보내기",
+        "exportDescription": "내보낼 JWT 히스토리 개수와 파일 형식을 선택하세요",
+        "importTitle": "JWT 파일 가져오기",
+        "importDescription": "JWT 파일을 선택하여 히스토리에 추가하세요. 지원 형식: TXT, JSON, CSV"
+      }
     },
     "base64": {
       "name": "Base64 변환기",
@@ -56,7 +62,13 @@
       "decodeTab": "디코딩",
       "options": "옵션",
       "urlSafe": "URL 안전",
-      "removeLineBreaks": "줄 바꿈 제거"
+      "removeLineBreaks": "줄 바꿈 제거",
+      "history": {
+        "exportTitle": "Base64 히스토리 내보내기",
+        "exportDescription": "내보낼 Base64 히스토리 개수와 파일 형식을 선택하세요",
+        "importTitle": "Base64 파일 가져오기",
+        "importDescription": "Base64 파일을 선택하여 히스토리에 추가하세요. 지원 형식: TXT, JSON, CSV"
+      }
     },
     "url": {
       "name": "URL 인코더/디코더",
@@ -81,7 +93,13 @@
       "fullUrl": "전체 URL",
       "queryOnly": "쿼리 매개변수만",
       "exampleUrls": "예제 URL",
-      "invalidUrl": "유효하지 않은 URL 형식"
+      "invalidUrl": "유효하지 않은 URL 형식",
+      "history": {
+        "exportTitle": "URL 히스토리 내보내기",
+        "exportDescription": "내보낼 URL 히스토리 개수와 파일 형식을 선택하세요",
+        "importTitle": "URL 파일 가져오기",
+        "importDescription": "URL 파일을 선택하여 히스토리에 추가하세요. 지원 형식: TXT, JSON, CSV"
+      }
     },
     "regex": {
       "name": "정규식 테스터",
@@ -189,7 +207,18 @@
       "hashesMatch": "해시 일치!",
       "hashesIdentical": "해시가 동일합니다",
       "hashesDifferent": "해시 불일치",
-      "hashesDiff": "해시가 다릅니다"
+      "hashesDiff": "해시가 다릅니다",
+      "hmac": {
+        "description": "HMAC은 메시지와 비밀 키를 사용하여 메시지 인증 코드를 생성합니다. 메시지의 무결성과 진위를 확인하는 데 사용되며, API 인증, 데이터 서명 등에 활용됩니다.",
+        "exampleLabel": "사용 예시:",
+        "exampleValue": "API 요청 서명, JWT 토큰 검증, 파일 무결성 확인"
+      },
+      "history": {
+        "exportTitle": "해시 히스토리 내보내기",
+        "exportDescription": "내보낼 해시 히스토리 개수와 파일 형식을 선택하세요",
+        "importTitle": "해시 파일 가져오기",
+        "importDescription": "해시 파일을 선택하여 히스토리에 추가하세요. 지원 형식: TXT, JSON, CSV"
+      }
     },
     "uuid": {
       "name": "UUID 생성기",

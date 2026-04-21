@@ -518,8 +518,8 @@ export function Base64Converter() {
         onOpenChange={setShowExportDialog}
         onExport={handleExport}
         totalCount={totalCount}
-        title="Base64 히스토리 내보내기"
-        description="내보낼 Base64 히스토리 개수와 파일 형식을 선택하세요"
+        title={t('tools.base64.history.exportTitle')}
+        description={t('tools.base64.history.exportDescription')}
       />
 
       {/* Import Dialog */}
@@ -527,8 +527,8 @@ export function Base64Converter() {
         open={showImportDialog}
         onOpenChange={setShowImportDialog}
         onImport={handleImport}
-        title="Base64 파일 가져오기"
-        description="Base64 파일을 선택하여 히스토리에 추가하세요. 지원 형식: TXT, JSON, CSV"
+        title={t('tools.base64.history.importTitle')}
+        description={t('tools.base64.history.importDescription')}
       />
     </div>
   );

@@ -369,8 +369,8 @@ export function JwtDecoder() {
         onOpenChange={setShowExportDialog}
         onExport={handleExport}
         totalCount={totalCount}
-        title="JWT 히스토리 내보내기"
-        description="내보낼 JWT 히스토리 개수와 파일 형식을 선택하세요"
+        title={t('tools.jwt.history.exportTitle')}
+        description={t('tools.jwt.history.exportDescription')}
       />
 
       {/* Import Dialog */}
@@ -378,8 +378,8 @@ export function JwtDecoder() {
         open={showImportDialog}
         onOpenChange={setShowImportDialog}
         onImport={handleImport}
-        title="JWT 파일 가져오기"
-        description="JWT 파일을 선택하여 히스토리에 추가하세요. 지원 형식: TXT, JSON, CSV"
+        title={t('tools.jwt.history.importTitle')}
+        description={t('tools.jwt.history.importDescription')}
       />
     </div>
   );

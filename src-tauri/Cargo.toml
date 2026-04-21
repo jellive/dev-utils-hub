@@ -1,6 +1,6 @@
 [package]
 name = "dev-utils-hub"
-version = "1.0.3"
+version = "1.0.4"
 description = "A collection of developer utilities for daily tasks"
 authors = ["Jell"]
 edition = "2021"

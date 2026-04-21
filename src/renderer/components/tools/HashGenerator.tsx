@@ -343,12 +343,10 @@ export function HashGenerator() {
             </TooltipTrigger>
             <TooltipContent className="max-w-sm">
               <p className="font-semibold mb-1">HMAC (Hash-based Message Authentication Code)</p>
-              <p className="text-sm">
-                HMAC은 메시지와 비밀 키를 사용하여 메시지 인증 코드를 생성합니다. 메시지의 무결성과
-                진위를 확인하는 데 사용되며, API 인증, 데이터 서명 등에 활용됩니다.
-              </p>
+              <p className="text-sm">{t('tools.hash.hmac.description')}</p>
               <p className="text-sm mt-2">
-                <strong>사용 예시:</strong> API 요청 서명, JWT 토큰 검증, 파일 무결성 확인
+                <strong>{t('tools.hash.hmac.exampleLabel')}</strong>{' '}
+                {t('tools.hash.hmac.exampleValue')}
               </p>
             </TooltipContent>
           </Tooltip>
@@ -588,8 +586,8 @@ export function HashGenerator() {
         onOpenChange={setShowExportDialog}
         onExport={handleExport}
         totalCount={totalCount}
-        title="해시 히스토리 내보내기"
-        description="내보낼 해시 히스토리 개수와 파일 형식을 선택하세요"
+        title={t('tools.hash.history.exportTitle')}
+        description={t('tools.hash.history.exportDescription')}
       />
 
       {/* Import Dialog */}
@@ -597,8 +595,8 @@ export function HashGenerator() {
         open={showImportDialog}
         onOpenChange={setShowImportDialog}
         onImport={handleImport}
-        title="해시 파일 가져오기"
-        description="해시 파일을 선택하여 히스토리에 추가하세요. 지원 형식: TXT, JSON, CSV"
+        title={t('tools.hash.history.importTitle')}
+        description={t('tools.hash.history.importDescription')}
       />
     </div>
   );
