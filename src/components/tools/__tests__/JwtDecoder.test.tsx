@@ -28,7 +28,8 @@ describe('JwtDecoder', () => {
       const decodeButton = screen.getByRole('button', { name: /decode token/i });
 
       // Standard JWT: header.payload.signature
-      const jwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
+      const jwt =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
 
       fireEvent.change(input, { target: { value: jwt } });
       fireEvent.click(decodeButton);
@@ -47,7 +48,8 @@ describe('JwtDecoder', () => {
       const decodeButton = screen.getByRole('button', { name: /decode token/i });
 
       // JWT with Korean name
-      const jwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoi7ZmN6ri464-ZIn0.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ';
+      const jwt =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoi7ZmN6ri464-ZIn0.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ';
 
       fireEvent.change(input, { target: { value: jwt } });
       fireEvent.click(decodeButton);
@@ -155,7 +157,7 @@ describe('JwtDecoder', () => {
   });
 
   describe('Copy Functionality', () => {
-    it.skip('should have copy buttons for header and payload', () => {
+    it('should have copy buttons for header and payload', () => {
       const input = screen.getByRole('textbox');
       const decodeButton = screen.getByRole('button', { name: /decode token/i });
 
@@ -166,8 +168,8 @@ describe('JwtDecoder', () => {
 
       // Should have copy buttons for header, payload, and signature (3 total)
       const allButtons = screen.getAllByRole('button');
-      const copyButtons = allButtons.filter(btn =>
-        btn.querySelector('svg[class*="lucide-copy"]') !== null
+      const copyButtons = allButtons.filter(
+        btn => btn.querySelector('svg[class*="lucide-copy"]') !== null
       );
       expect(copyButtons.length).toBe(3);
     });

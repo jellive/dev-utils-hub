@@ -60,7 +60,7 @@ describe('httpClient', () => {
       expect(result.statusText).toBe('OK');
       expect(result.body).toBe('{"data": "test"}');
       expect(result.headers['Content-Type'] || result.headers['content-type']).toBe(
-        'application/json',
+        'application/json'
       );
       expect(result.time).toBeGreaterThanOrEqual(0);
       expect(result.size).toBe(16);
@@ -88,7 +88,7 @@ describe('httpClient', () => {
         expect.objectContaining({
           method: 'POST',
           body: requestBody,
-        }),
+        })
       );
     });
 
@@ -291,7 +291,8 @@ describe('httpClient', () => {
   });
 
   describe('sendRequest - Timeout handling', () => {
-    // Skipping this test due to complexity with fake/real timers - timeout logic is covered by integration tests
+    // TODO(timers): fake/real timer interaction with AbortController is unstable in Vitest 4.
+    // Timeout behavior is already verified by APITester integration tests; revisit when vi.useFakeTimers + AbortController work reliably.
     it.skip('should throw timeout error when request exceeds timeout', async () => {
       vi.useRealTimers(); // Use real timers for this test
 
@@ -348,7 +349,8 @@ describe('httpClient', () => {
   });
 
   describe('sendRequest - Cancellation', () => {
-    // Skipping this test due to complexity with fake/real timers - cancel logic is covered by integration tests
+    // TODO(timers): same fake/real timer + AbortController issue as the timeout test above.
+    // Cancel behavior is verified by APITester integration tests.
     it.skip('should support cancellation via cancel method', async () => {
       vi.useRealTimers(); // Use real timers for this test
 
@@ -357,7 +359,7 @@ describe('httpClient', () => {
           new Promise((resolve, reject) => {
             // Simulate a long-running request with AbortSignal
             setTimeout(() => resolve(new Response('ok')), 5000);
-          }),
+          })
       );
       global.fetch = mockFetch;
 
@@ -424,7 +426,7 @@ describe('httpClient', () => {
   describe('sendRequest - HTTP methods', () => {
     it.each(['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'] as const)(
       'should send %s request',
-      async (method) => {
+      async method => {
         const mockResponse = new Response('ok', { status: 200 });
         const mockFetch = vi.fn().mockResolvedValue(mockResponse);
         global.fetch = mockFetch;
@@ -437,9 +439,9 @@ describe('httpClient', () => {
 
         expect(mockFetch).toHaveBeenCalledWith(
           'https://api.example.com/',
-          expect.objectContaining({ method }),
+          expect.objectContaining({ method })
         );
-      },
+      }
     );
   });
 

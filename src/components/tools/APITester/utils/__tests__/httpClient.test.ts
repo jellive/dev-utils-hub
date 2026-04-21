@@ -17,7 +17,7 @@ describe('httpClient', () => {
     it('should send a successful GET request', async () => {
       // Mock performance.now for consistent timing
       vi.spyOn(performance, 'now')
-        .mockReturnValueOnce(0)  // startTime
+        .mockReturnValueOnce(0) // startTime
         .mockReturnValueOnce(100); // endTime
 
       const mockResponse = { data: 'test' };
@@ -80,13 +80,15 @@ describe('httpClient', () => {
     });
 
     it.skip('should handle timeout - needs fix', async () => {
-      // TODO: Fix fake timers integration with AbortController
+      // TODO(timers): vi.useFakeTimers() does not advance the AbortController signal used by httpClient,
+      // so the rejection never fires. Covered by integration tests in src/components/tools/APITester/__tests__.
       vi.useFakeTimers();
 
       globalThis.fetch = vi.fn().mockImplementation(
-        () => new Promise(() => {
-          // Never resolves - simulating slow request
-        })
+        () =>
+          new Promise(() => {
+            // Never resolves - simulating slow request
+          })
       );
 
       const config: RequestConfig = {
@@ -108,9 +110,7 @@ describe('httpClient', () => {
     });
 
     it('should have cancel method', () => {
-      globalThis.fetch = vi.fn().mockImplementation(
-        () => new Promise(() => {})
-      );
+      globalThis.fetch = vi.fn().mockImplementation(() => new Promise(() => {}));
 
       const config: RequestConfig = {
         method: 'GET',
@@ -481,9 +481,7 @@ describe('httpClient', () => {
     it('should measure request time', async () => {
       const startTime = 1000;
       const endTime = 1250;
-      vi.spyOn(performance, 'now')
-        .mockReturnValueOnce(startTime)
-        .mockReturnValueOnce(endTime);
+      vi.spyOn(performance, 'now').mockReturnValueOnce(startTime).mockReturnValueOnce(endTime);
 
       globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,

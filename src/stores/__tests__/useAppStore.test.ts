@@ -88,7 +88,7 @@ describe('useAppStore', () => {
         result.current.addFavorite('base64');
       });
 
-      expect(result.current.favorites.filter((f) => f === 'base64').length).toBe(1);
+      expect(result.current.favorites.filter(f => f === 'base64').length).toBe(1);
     });
 
     it('should remove favorite', () => {
@@ -170,7 +170,7 @@ describe('useAppStore', () => {
   });
 
   describe('Performance', () => {
-    it.skip('should handle rapid state changes efficiently', () => {
+    it('should handle rapid state changes efficiently', () => {
       const { result } = renderHook(() => useAppStore());
 
       const startTime = performance.now();
