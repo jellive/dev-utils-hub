@@ -1,14 +1,14 @@
 # Dev Utils Hub
 
-> 개발자를 위한 올인원 유틸리티 — Electron 데스크톱 앱 + 오프라인 PWA
-> All-in-one developer utilities — cross-platform Electron desktop app with offline PWA support
+> 개발자를 위한 올인원 유틸리티 — Tauri 데스크톱 앱 + 오프라인 PWA
+> All-in-one developer utilities — cross-platform Tauri desktop app with offline PWA support
 
-[![CI](https://github.com/jellive/dev-utils-hub/actions/workflows/ci.yml/badge.svg)](https://github.com/jellive/dev-utils-hub/actions/workflows/ci.yml)
+[![CI](https://github.com/jellive/dev-utils-hub/actions/workflows/release.yml/badge.svg)](https://github.com/jellive/dev-utils-hub/actions/workflows/release.yml)
 [![Node.js](https://img.shields.io/badge/Node.js-20%2B-brightgreen?logo=node.js)](https://nodejs.org)
-[![Electron](https://img.shields.io/badge/Electron-32-47848F?logo=electron)](https://www.electronjs.org)
+[![Tauri](https://img.shields.io/badge/Tauri-2.10.1-FFC131?logo=tauri)](https://tauri.app)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript)](https://www.typescriptlang.org)
-[![Vitest](https://img.shields.io/badge/Vitest-162%20tests-6E9F18?logo=vitest)](https://vitest.dev)
+[![Vitest](https://img.shields.io/badge/Vitest-641%20tests-6E9F18?logo=vitest)](https://vitest.dev)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 ---
@@ -17,19 +17,20 @@
 
 ```mermaid
 graph TB
-    subgraph App["Electron App (electron-vite)"]
-        MAIN["Main Process<br/>electron + better-sqlite3<br/>electron-store · auto-updater"]
-        PRELOAD["Preload Script<br/>Context bridge (IPC)"]
-        RENDERER["Renderer Process<br/>React 19 + Vite"]
+    subgraph App["Tauri App"]
+        CORE["Tauri Core (Rust)<br/>app lifecycle · system tray · auto-update"]
+        PLUGINS["Tauri Plugins (Rust)<br/>store · updater · dialog · fs<br/>clipboard · global-shortcut · log · opener · autostart"]
+        WEBVIEW["WebView (OS native)<br/>WKWebView / WebView2 / WebKitGTK"]
     end
 
-    subgraph Renderer["Renderer — React 19"]
+    subgraph Frontend["Frontend — React 19"]
         ROUTER["React Router 7<br/>Client-side routing"]
         TOOLS["Tool Components<br/>Lazy-loaded per tool"]
         STATE["Zustand 5<br/>Theme + global state"]
-        I18N["react-i18next<br/>Internationalization"]
+        I18N["react-i18next<br/>ko / en"]
         UI["shadcn/ui + Radix UI<br/>Tailwind CSS 3"]
         SENTRY["Sentry<br/>Error monitoring"]
+        PWA["vite-plugin-pwa<br/>Offline PWA support"]
     end
 
     subgraph Tools["Developer Tools (19)"]
@@ -48,24 +49,17 @@ graph TB
         CSS["CSS Unit Converter"]
         DIFFV["Diff Viewer"]
         WASM["WASM Benchmark"]
+        SENTRY_T["Sentry Toolkit"]
         AICODE["🤖 Code Explainer"]
         AIJSON["🤖 JSON Schema Generator"]
         AIREGEX["🤖 Regex Builder"]
     end
 
-    subgraph Storage["Local Storage"]
-        SQLITE[("SQLite<br/>better-sqlite3")]
-        ESTORE["electron-store<br/>Settings/preferences"]
-    end
-
-    MAIN <-->|IPC| PRELOAD
-    PRELOAD <-->|Context bridge| RENDERER
-    RENDERER --> ROUTER
-    ROUTER --> TOOLS
-    MAIN --> SQLITE
-    MAIN --> ESTORE
-
-    Tools --> RENDERER
+    CORE <-->|Tauri IPC (invoke/event)| WEBVIEW
+    PLUGINS <-->|Rust plugin API| CORE
+    WEBVIEW --> ROUTER
+    ROUTER -->|lazy()| TOOLS
+    Tools --> Frontend
 ```
 
 ### Tool Loading (Code Splitting)
@@ -76,7 +70,7 @@ flowchart LR
     ROUTER -->|lazy()| T1["JsonFormatter<br/>chunk"]
     ROUTER -->|lazy()| T2["JwtDecoder<br/>chunk"]
     ROUTER -->|lazy()| T3["HashGenerator<br/>chunk"]
-    ROUTER -->|lazy()| T4["...7 more<br/>chunks"]
+    ROUTER -->|lazy()| T4["...16 more<br/>chunks"]
     T1 & T2 & T3 & T4 --> SUSPENSE["Suspense<br/>loading fallback"]
 ```
 
@@ -95,30 +89,30 @@ xychart-beta
 
 ## Tech Stack
 
-![Electron](https://img.shields.io/badge/Electron-32-47848F?logo=electron)
+![Tauri](https://img.shields.io/badge/Tauri-2.10.1-FFC131?logo=tauri)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-06B6D4?logo=tailwindcss)
-![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite)
+![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite)
 ![Zustand](https://img.shields.io/badge/Zustand-5-black)
-![SQLite](https://img.shields.io/badge/SQLite-better--sqlite3-003B57?logo=sqlite)
 ![Sentry](https://img.shields.io/badge/Sentry-monitoring-362D59?logo=sentry)
 
-| Category       | Technology                 | Notes                                  |
-| -------------- | -------------------------- | -------------------------------------- |
-| Desktop        | Electron 32                | Cross-platform (macOS, Windows, Linux) |
-| Bundler        | electron-vite 4 + Vite 7   | HMR in dev, optimized builds           |
-| UI             | React 19                   | Concurrent features                    |
-| Styling        | Tailwind CSS 3 + shadcn/ui | Radix UI primitives                    |
-| State          | Zustand 5                  | Theme and preferences                  |
-| Routing        | React Router 7             | Client-side navigation                 |
-| Database       | better-sqlite3             | Local data persistence                 |
-| i18n           | react-i18next              | Multi-language support                 |
-| Monitoring     | Sentry 10                  | Error tracking + breadcrumbs           |
-| Testing (Unit) | Vitest 4                   | 162 tests                              |
-| Testing (E2E)  | Playwright                 | Cross-browser                          |
-| CI/CD          | GitHub Actions             | Lint, type-check, test                 |
-| Distribution   | electron-builder           | macOS, Windows, Linux                  |
+| Category       | Technology                                                                                          | Notes                                   |
+| -------------- | --------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| Desktop        | Tauri 2.10.1 (Rust)                                                                                 | Cross-platform (macOS, Windows, Linux)  |
+| Bundler        | Vite 8 + tauri-cli                                                                                  | HMR in dev, optimized production builds |
+| UI             | React 19                                                                                            | Concurrent features                     |
+| Styling        | Tailwind CSS 3 + shadcn/ui                                                                          | Radix UI primitives                     |
+| State          | Zustand 5                                                                                           | Theme and preferences                   |
+| Routing        | React Router 7                                                                                      | Client-side navigation                  |
+| i18n           | react-i18next                                                                                       | Korean + English (ko, en)               |
+| Native plugins | tauri-plugin-store · updater · dialog · fs · clipboard · global-shortcut · log · opener · autostart | Rust-backed native APIs                 |
+| PWA            | vite-plugin-pwa                                                                                     | Offline support, installable            |
+| Monitoring     | Sentry 10                                                                                           | Error tracking + breadcrumbs            |
+| Testing (Unit) | Vitest 4                                                                                            | 641 tests                               |
+| Testing (E2E)  | Playwright                                                                                          | Cross-browser                           |
+| CI/CD          | GitHub Actions                                                                                      | Matrix build + signed/notarized macOS   |
+| Distribution   | Tauri bundler                                                                                       | DMG, MSI/NSIS, AppImage, deb            |
 
 ---
 
@@ -126,82 +120,53 @@ xychart-beta
 
 ### Converters
 
-| Tool                    | Description                                 | Web APIs Used |
-| ----------------------- | ------------------------------------------- | ------------- |
-| **Base64 Converter**    | Encode/decode Base64 (UTF-8 support)        | —             |
-| **URL Encoder/Decoder** | URL encode/decode with special char support | —             |
-| **Timestamp Converter** | Unix timestamp ↔ human-readable date        | —             |
+| Tool                    | Description                                 |
+| ----------------------- | ------------------------------------------- |
+| **Base64 Converter**    | Encode/decode Base64 (UTF-8 support)        |
+| **URL Encoder/Decoder** | URL encode/decode with special char support |
+| **Timestamp Converter** | Unix timestamp ↔ human-readable date        |
+| **CSS Unit Converter**  | px ↔ rem ↔ em ↔ vw/vh with base-font config |
 
 ### Generators
 
-| Tool               | Description                      | Web APIs Used  |
-| ------------------ | -------------------------------- | -------------- |
-| **UUID Generator** | Cryptographically secure UUID v4 | Web Crypto API |
-| **Hash Generator** | MD5, SHA-256, SHA-512 hashes     | Web Crypto API |
+| Tool               | Description                      |
+| ------------------ | -------------------------------- |
+| **UUID Generator** | Cryptographically secure UUID v4 |
+| **Hash Generator** | MD5, SHA-256, SHA-512 hashes     |
 
 ### Formatters & Validators
 
-| Tool               | Description                                | Web APIs Used |
-| ------------------ | ------------------------------------------ | ------------- |
-| **JSON Formatter** | Format, validate, and minify JSON          | —             |
-| **JWT Decoder**    | Decode header, payload, verify expiry      | —             |
-| **Regex Tester**   | Live regex testing with match highlighting | —             |
+| Tool               | Description                                              |
+| ------------------ | -------------------------------------------------------- |
+| **JSON Formatter** | Format, validate, and minify JSON                        |
+| **JWT Decoder**    | Decode header, payload, verify expiry                    |
+| **Regex Tester**   | Live regex testing with match highlighting               |
+| **Cron Parser**    | Parse and explain cron expressions with next-run preview |
 
-### Text Utilities
+### Text & Diff Utilities
 
-| Tool          | Description                  | Web APIs Used |
-| ------------- | ---------------------------- | ------------- |
-| **Text Diff** | Side-by-side text comparison | —             |
-
-### Formatters & Viewers
-
-| Tool                 | Description                                           | Web APIs Used |
-| -------------------- | ----------------------------------------------------- | ------------- |
-| **Markdown Preview** | Live Markdown → HTML preview with syntax highlighting | —             |
-| **Diff Viewer**      | Rich side-by-side diff with syntax highlighting       | —             |
+| Tool                 | Description                                           |
+| -------------------- | ----------------------------------------------------- |
+| **Text Diff**        | Side-by-side text comparison                          |
+| **Diff Viewer**      | Rich side-by-side diff with syntax highlighting       |
+| **Markdown Preview** | Live Markdown → HTML preview with syntax highlighting |
 
 ### Design Utilities
 
-| Tool                   | Description                                 | Web APIs Used |
-| ---------------------- | ------------------------------------------- | ------------- |
-| **Color Picker**       | HSL/RGB/HEX picker with clipboard copy      | —             |
-| **CSS Unit Converter** | px ↔ rem ↔ em ↔ vw/vh with base-font config | —             |
+| Tool             | Description                            |
+| ---------------- | -------------------------------------- |
+| **Color Picker** | HSL/RGB/HEX picker with clipboard copy |
 
 ### Developer Utilities
 
-| Tool               | Description                                              | Web APIs Used   |
-| ------------------ | -------------------------------------------------------- | --------------- |
-| **Cron Parser**    | Parse and explain cron expressions with next-run preview | —               |
-| **WASM Benchmark** | Measure WebAssembly vs JS performance                    | WebAssembly API |
-
-### Network
-
-| Tool           | Description                               | Web APIs Used |
-| -------------- | ----------------------------------------- | ------------- |
-| **API Tester** | HTTP request builder with response viewer | Fetch API     |
-
-#### API Tester — Details
-
-The most full-featured tool in the suite.
-
-**Supported HTTP methods:** GET · POST · PUT · DELETE · PATCH · HEAD · OPTIONS
-
-**Authentication types:**
-
-| Type         | Details                                            |
-| ------------ | -------------------------------------------------- |
-| None         | No auth header added                               |
-| Bearer Token | `Authorization: Bearer <token>`                    |
-| Basic Auth   | Username + password, Base64-encoded                |
-| API Key      | Custom key/value — added to header or query string |
-
-**Request history:** Saved to `localStorage` under key `api-tester-history`. Persists across sessions; cleared per-browser-profile. Max entries managed in-memory.
-
-[자세히 보기](docs/API-TESTER.md)
+| Tool               | Description                                 |
+| ------------------ | ------------------------------------------- |
+| **WASM Benchmark** | Measure WebAssembly vs JS performance       |
+| **Sentry Toolkit** | Sentry integration helpers and event viewer |
 
 ### AI-Powered
 
-> **🤖 AI** tools require an AI provider to be configured. Supported providers: **OpenAI**, **Google (Gemini)**, **Ollama (local)**. API keys are stored in `localStorage` via Zustand persist.
+> **🤖 AI** tools require an AI provider to be configured. Supported providers: **OpenAI**, **Google (Gemini)**, **Ollama (local)**. API keys are stored via Zustand persist.
 
 | Tool                      | Description                                                                     | Providers                         |
 | ------------------------- | ------------------------------------------------------------------------------- | --------------------------------- |
@@ -215,42 +180,42 @@ The most full-featured tool in the suite.
 
 ```
 dev-utils-hub/
-├── src/
-│   ├── main/                    # Electron main process
-│   │   └── index.ts             # App lifecycle, IPC handlers
-│   ├── preload/                 # Context bridge
-│   │   └── index.ts             # Exposed APIs to renderer
-│   └── renderer/                # React app
-│       ├── src/
-│       │   ├── components/
-│       │   │   ├── tools/       # 19 tool components
-│       │   │   │   ├── JsonFormatter.tsx
-│       │   │   │   ├── JwtDecoder.tsx
-│       │   │   │   ├── Base64Converter.tsx
-│       │   │   │   ├── HashGenerator.tsx
-│       │   │   │   ├── URLConverter.tsx
-│       │   │   │   ├── TimestampConverter.tsx
-│       │   │   │   ├── TextDiff.tsx
-│       │   │   │   ├── RegexTester.tsx
-│       │   │   │   ├── UUIDGenerator.tsx
-│       │   │   │   ├── ColorPicker.tsx
-│       │   │   │   ├── CronParser.tsx
-│       │   │   │   ├── MarkdownPreview.tsx
-│       │   │   │   ├── CssUnitConverter.tsx
-│       │   │   │   ├── AICodeExplainer/
-│       │   │   │   ├── AIJsonSchemaGenerator/
-│       │   │   │   ├── AIRegexBuilder/
-│       │   │   │   ├── DiffViewer/
-│       │   │   │   ├── WasmBenchmark/
-│       │   │   │   └── SentryToolkit/
-│       │   │   └── ui/          # Shared UI primitives (shadcn)
-│       │   ├── hooks/           # Custom React hooks
-│       │   ├── store/           # Zustand stores
-│       │   ├── lib/             # Utilities
-│       │   └── App.tsx          # Root component + routing
+├── src/                         # React frontend (Vite)
+│   ├── components/
+│   │   ├── tools/               # 19 tool components
+│   │   │   ├── JsonFormatter.tsx
+│   │   │   ├── JwtDecoder.tsx
+│   │   │   ├── Base64Converter.tsx
+│   │   │   ├── HashGenerator.tsx
+│   │   │   ├── URLConverter.tsx
+│   │   │   ├── TimestampConverter.tsx
+│   │   │   ├── TextDiff.tsx
+│   │   │   ├── RegexTester.tsx
+│   │   │   ├── UUIDGenerator.tsx
+│   │   │   ├── ColorPicker.tsx
+│   │   │   ├── CronParser.tsx
+│   │   │   ├── MarkdownPreview.tsx
+│   │   │   ├── CssUnitConverter.tsx
+│   │   │   ├── AICodeExplainer/
+│   │   │   ├── AIJsonSchemaGenerator/
+│   │   │   ├── AIRegexBuilder/
+│   │   │   ├── DiffViewer/
+│   │   │   ├── WasmBenchmark/
+│   │   │   └── SentryToolkit/
+│   │   └── ui/                  # Shared UI primitives (shadcn)
+│   ├── hooks/                   # Custom React hooks
+│   ├── store/                   # Zustand stores
+│   ├── lib/                     # Utilities
+│   └── App.tsx                  # Root component + routing
+├── src-tauri/                   # Tauri / Rust layer
+│   ├── src/
+│   │   └── main.rs              # Tauri app entry, plugin registration
+│   ├── Cargo.toml               # Rust dependencies
+│   └── tauri.conf.json          # Tauri configuration
 ├── e2e/                         # Playwright E2E tests
-├── electron-builder.yml         # Distribution config
-├── electron.vite.config.ts      # electron-vite config
+├── .github/workflows/
+│   └── release.yml              # Matrix build + macOS notarization
+├── vite.config.ts               # Vite config (web + PWA)
 ├── vitest.config.ts
 └── package.json
 ```
@@ -269,13 +234,11 @@ Prebuilt binaries are published to [GitHub Releases](https://github.com/jellive/
 
 ### macOS — First Launch
 
-Early releases are **not yet notarized** by Apple. On first launch you may see _"Dev Utils Hub is damaged and can't be opened"_. Bypass with:
+The macOS release is **signed and notarized** via GitHub Actions CI. If you encounter a Gatekeeper warning on older releases, bypass with:
 
 ```bash
 xattr -cr "/Applications/Dev Utils Hub.app"
 ```
-
-Then open normally. Code signing + notarization will be enabled in a future release.
 
 ---
 
@@ -284,7 +247,9 @@ Then open normally. Code signing + notarization will be enabled in a future rele
 ### Prerequisites
 
 - **Node.js** 20+
-- **npm** (bundled with Node.js)
+- **Rust** (stable toolchain) — [rustup.rs](https://rustup.rs)
+- **Tauri CLI** — installed automatically via `npm install`
+- Platform build deps: [tauri.app/start/prerequisites](https://tauri.app/start/prerequisites/)
 
 ### Install
 
@@ -297,43 +262,33 @@ npm install
 ### Development
 
 ```bash
-# Electron app (full desktop with IPC)
+# Tauri desktop app (Rust core + React frontend, full native APIs)
 npm run dev
 
-# Web-only mode (browser, no Electron APIs)
+# Web-only mode (browser, no Tauri APIs)
 npm run dev:web
 ```
 
-Open **http://localhost:5173** for web mode, or the Electron window opens automatically.
+`npm run dev` launches the Tauri window with hot-reload. `npm run dev:web` opens a plain Vite dev server at **http://localhost:5173** — useful for rapid UI iteration without compiling Rust.
 
 ### Production Build
 
 ```bash
-# Build Electron app
+# Tauri desktop build (outputs to src-tauri/target/release/bundle/)
 npm run build
 
-# Build web-only bundle
+# Web-only bundle (outputs to dist/)
 npm run build:web
 
 # Preview web build
 npm run preview
 ```
 
-### Distribution Packages
+### Distribution
 
-```bash
-# All platforms
-npm run dist
+Distribution packages are built and published automatically via **GitHub Actions** on every tagged release (`release.yml`). The CI matrix covers macOS (universal), Windows (x64), and Linux (x64).
 
-# macOS (.dmg + .zip)
-npm run dist:mac
-
-# Windows (.exe installer)
-npm run dist:win
-
-# Linux (.AppImage + .deb)
-npm run dist:linux
-```
+To trigger a release: push a version tag (`git tag v1.x.x && git push --tags`).
 
 ### Environment Variables (optional)
 
@@ -349,21 +304,23 @@ SENTRY_PROJECT="your-project"
 
 ## Scripts Reference
 
-| Script                  | Description                    |
-| ----------------------- | ------------------------------ |
-| `npm run dev`           | Electron dev with HMR          |
-| `npm run dev:web`       | Web-only dev server            |
-| `npm run build`         | Electron production build      |
-| `npm run build:web`     | Web-only production build      |
-| `npm run type-check`    | TypeScript check (all targets) |
-| `npm run lint`          | ESLint                         |
-| `npm test`              | Vitest unit tests              |
-| `npm run test:coverage` | Tests with coverage report     |
-| `npm run test:e2e`      | Playwright E2E tests           |
-| `npm run lighthouse`    | Lighthouse performance audit   |
-| `npm run dist:mac`      | macOS distribution build       |
-| `npm run dist:win`      | Windows distribution build     |
-| `npm run dist:linux`    | Linux distribution build       |
+| Script                     | Description                          |
+| -------------------------- | ------------------------------------ |
+| `npm run dev`              | Tauri dev (Rust + React, HMR)        |
+| `npm run dev:web`          | Web-only Vite dev server             |
+| `npm run build`            | Tauri production build               |
+| `npm run build:web`        | Web-only production bundle           |
+| `npm run type-check`       | TypeScript check                     |
+| `npm run lint`             | ESLint                               |
+| `npm test`                 | Vitest unit tests (641 tests)        |
+| `npm run test:ui`          | Vitest with interactive UI           |
+| `npm run test:coverage`    | Tests with coverage report           |
+| `npm run test:integration` | Integration tests                    |
+| `npm run test:bench`       | Vitest benchmarks                    |
+| `npm run test:a11y`        | Accessibility tests                  |
+| `npm run test:e2e`         | Playwright E2E tests                 |
+| `npm run test:e2e:ui`      | Playwright interactive UI            |
+| `npm run lighthouse`       | Build + Lighthouse performance audit |
 
 ---
 
@@ -372,26 +329,25 @@ SENTRY_PROJECT="your-project"
 ### Unit Tests (Vitest)
 
 ```bash
-# Run all 162 unit tests
+# Run all 641 unit tests
 npm test
 
-# Watch mode
+# Watch mode with UI
 npm run test:ui
 
 # Coverage report
 npm run test:coverage
 ```
 
-**Coverage**: 162 unit tests covering all 19 tool components and utility functions.
+**Coverage**: 641 unit tests covering all 19 tool components, utility functions, accessibility, and property-based tests.
 
 ### E2E Tests (Playwright)
 
 ```bash
-# Run E2E tests
 npm run test:e2e
 
 # Interactive UI
-npx playwright test --ui
+npm run test:e2e:ui
 
 # Specific browser
 npx playwright test --project=chromium
@@ -442,10 +398,11 @@ npx playwright test --project=chromium
 - [x] Color Picker tool
 - [x] Cron Expression parser
 - [x] Markdown preview
+- [x] Tauri migration (Electron → Tauri 2)
+- [x] Auto-update via tauri-plugin-updater
 - [ ] HTTP mock server (local)
 - [ ] QR code generator/decoder
 - [ ] Password strength checker
-- [ ] Auto-update via electron-updater (in progress)
 
 ---
 

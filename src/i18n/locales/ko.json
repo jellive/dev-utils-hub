@@ -199,6 +199,7 @@
       "bulk": "대량",
       "bulkGeneration": "대량 UUID 생성",
       "generateMultiple": "여러 UUID를 한 번에 생성 (1-100)",
+      "generateBulk": "대량 생성",
       "bulkCount": "개수",
       "format": "형식",
       "uppercase": "대문자",
@@ -257,6 +258,55 @@
       "weeksAgo": "{{count}}주 전",
       "monthsAgo": "{{count}}개월 전",
       "yearsAgo": "{{count}}년 전"
+    },
+    "colorPicker": {
+      "name": "색상 선택기",
+      "description": "HEX, RGB, HSL 간 색상 선택 및 변환",
+      "title": "색상 선택기 & 변환기",
+      "palette": "색상 팔레트",
+      "info": "색상 값",
+      "complementary": "보색",
+      "analogous": "유사색",
+      "triadic": "삼각 배색"
+    },
+    "cronParser": {
+      "name": "Cron 파서",
+      "description": "Cron 표현식 파싱 및 다음 실행 시간 미리보기",
+      "title": "Cron 표현식 파서",
+      "expression": "Cron 표현식",
+      "presets": "프리셋",
+      "selectPreset": "프리셋 선택...",
+      "description2": "설명",
+      "nextRuns": "다음 5회 실행 시간",
+      "reference": "빠른 참조",
+      "invalidExpression": "유효하지 않은 Cron 표현식입니다. 5개 또는 6개 필드(분 시 일 월 요일)가 필요합니다."
+    },
+    "markdownPreview": {
+      "name": "Markdown 미리보기",
+      "description": "실시간 Markdown 편집기 및 HTML 미리보기",
+      "title": "Markdown 미리보기",
+      "editor": "Markdown 편집기",
+      "preview": "미리보기",
+      "copyHtml": "HTML 복사",
+      "htmlCopied": "HTML이 복사되었습니다!",
+      "placeholder": "여기에 Markdown을 입력하세요...",
+      "characters": "문자",
+      "lines": "줄"
+    },
+    "cssConverter": {
+      "name": "CSS 단위 변환기",
+      "description": "px, rem, em, vh, vw, % 간 단위 변환",
+      "title": "CSS 단위 변환기",
+      "config": "설정",
+      "baseFontSize": "기본 폰트 크기",
+      "viewportWidth": "뷰포트 너비 (px)",
+      "viewportHeight": "뷰포트 높이 (px)",
+      "parentFontSize": "부모 폰트 크기 (px)",
+      "parentSize": "부모 요소 크기 (px)",
+      "convert": "변환",
+      "fromUnit": "변환 전 단위",
+      "table": "변환 표 (px 기준)",
+      "tableHint": "셀을 클릭하면 값이 복사됩니다"
     },
     "api": {
       "name": "API 테스터",
@@ -445,7 +495,12 @@
     "error": "오류",
     "success": "성공",
     "warning": "경고",
-    "info": "정보"
+    "info": "정보",
+    "sendToBase64": "Base64로 보내기",
+    "sendToJsonFormatter": "JSON 포맷터로 보내기",
+    "commandPalettePlaceholder": "도구 검색...",
+    "commandPaletteNoResults": "일치하는 도구가 없습니다",
+    "commandPaletteOpen": "커맨드 팔레트 열기"
   },
   "offline": {
     "message": "현재 오프라인 상태입니다",

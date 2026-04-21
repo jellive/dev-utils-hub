@@ -4,7 +4,7 @@
   "description": "A collection of developer utilities for daily tasks",
   "author": "Dev Utils Hub",
   "private": true,
-  "version": "1.0.2",
+  "version": "1.0.3",
   "type": "module",
   "scripts": {
     "tauri": "tauri",
