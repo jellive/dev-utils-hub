@@ -6,14 +6,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
-import { JsonFormatter } from '@/components/tools/JsonFormatter';
-import { Base64Converter } from '@/components/tools/Base64Converter';
-import { URLConverter } from '@/components/tools/URLConverter';
+import { JsonFormatter } from '@/renderer/components/tools/JsonFormatter';
+import { Base64Converter } from '@/renderer/components/tools/Base64Converter';
+import { URLConverter } from '@/renderer/components/tools/URLConverter';
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
-const renderWithRouter = (ui: React.ReactElement) =>
-  render(<MemoryRouter>{ui}</MemoryRouter>);
+const renderWithRouter = (ui: React.ReactElement) => render(<MemoryRouter>{ui}</MemoryRouter>);
 
 // ─── JsonFormatter ───────────────────────────────────────────────────────────
 

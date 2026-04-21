@@ -4,7 +4,7 @@ import * as Sentry from '@sentry/react';
 import './index.css';
 import App from './App.tsx';
 import { getSentryConfig } from './config/sentry';
-import { ErrorFallback } from './components/ErrorFallback';
+import { ErrorFallback } from './renderer/components/ErrorFallback';
 import { initializeSentryContext } from './utils/sentryContext';
 
 // Initialize Sentry for production error monitoring
@@ -21,10 +21,10 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register('/sw.js')
-      .then((registration) => {
+      .then(registration => {
         console.log('SW registered:', registration);
       })
-      .catch((error) => {
+      .catch(error => {
         console.log('SW registration failed:', error);
       });
   });
@@ -38,12 +38,12 @@ createRoot(document.getElementById('root')!).render(
       )}
       showDialog
       dialogOptions={{
-        title: 'It looks like we\'re having issues.',
+        title: "It looks like we're having issues.",
         subtitle: 'Our team has been notified.',
-        subtitle2: 'If you\'d like to help, tell us what happened below.',
+        subtitle2: "If you'd like to help, tell us what happened below.",
       }}
     >
       <App />
     </Sentry.ErrorBoundary>
-  </StrictMode>,
+  </StrictMode>
 );
