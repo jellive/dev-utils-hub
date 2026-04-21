@@ -1,6 +1,6 @@
 {
   "productName": "Dev Utils Hub",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "identifier": "kr.jell.dev-utils-hub",
   "build": {
     "frontendDist": "../dist",
