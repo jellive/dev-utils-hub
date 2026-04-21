@@ -87,7 +87,6 @@ export default defineConfig({
         'src/renderer/test/**',
         // App entry, router — integration-level, not unit-testable in isolation
         'src/main.tsx',
-        'src/renderer/main.tsx',
         'src/router.tsx',
         'src/renderer/router.tsx',
       ],
