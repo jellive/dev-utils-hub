@@ -1,5 +1,5 @@
-import { invoke } from '@tauri-apps/api/core';
-import { listen, type UnlistenFn } from '@tauri-apps/api/event';
+import { invoke as tauriInvoke } from '@tauri-apps/api/core';
+import { listen as tauriListen, type UnlistenFn } from '@tauri-apps/api/event';
 import {
   readText as clipboardRead,
   writeText as clipboardWrite,
@@ -7,6 +7,26 @@ import {
 } from '@tauri-apps/plugin-clipboard-manager';
 import { save, open } from '@tauri-apps/plugin-dialog';
 import { readTextFile, writeTextFile } from '@tauri-apps/plugin-fs';
+
+// The same renderer is also deployed as a plain web app (Vercel). When the
+// host isn't Tauri, `window.__TAURI_INTERNALS__` is missing and every
+// `invoke()` / `listen()` call throws `Cannot read properties of undefined`.
+// Detect once at module load and replace each Tauri call with a safe no-op so
+// the web build degrades silently instead of crashing components like
+// HistorySidebar at mount.
+const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+
+const invoke = isTauri
+  ? tauriInvoke
+  : <T = unknown>(_cmd: string, _args?: Record<string, unknown>): Promise<T> =>
+      Promise.resolve(undefined as unknown as T);
+
+const listen = isTauri
+  ? tauriListen
+  : <_T = unknown>(
+      _event: string,
+      _handler: (event: { payload: _T }) => void
+    ): Promise<UnlistenFn> => Promise.resolve(() => {});
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
