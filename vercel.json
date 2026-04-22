@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm run build && cp src/renderer/public/robots.txt src/renderer/public/sitemap.xml src/renderer/public/ads.txt src/renderer/public/googleb8b4afb92675bd22.html dist/",
+  "buildCommand": "npm run build:web && cp src/renderer/public/robots.txt src/renderer/public/sitemap.xml src/renderer/public/ads.txt src/renderer/public/googleb8b4afb92675bd22.html dist/",
   "outputDirectory": "dist",
   "framework": "vite"
 }
