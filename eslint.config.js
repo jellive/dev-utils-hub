@@ -25,9 +25,16 @@ export default defineConfig([
         {
           argsIgnorePattern: '^_',
           varsIgnorePattern: '^_',
-          caughtErrorsIgnorePattern: '^_',
+          // Catch-handlers without an underscore prefix are common in
+          // try/catch boundaries that just want to swallow the error and
+          // surface a fallback UI; flagging every one of them was noise.
+          caughtErrors: 'none',
         },
       ],
+      // shadcn/ui-style files intentionally export both the component and a
+      // sibling variants object; downgrade fast-refresh nag to warning so it
+      // still shows up in CI output without failing the build.
+      'react-refresh/only-export-components': 'warn',
     },
   },
   // Test files: relax rules that are intentionally violated in test infrastructure

@@ -356,7 +356,7 @@ describe('httpClient', () => {
 
       const mockFetch = vi.fn().mockImplementation(
         () =>
-          new Promise((resolve, reject) => {
+          new Promise((resolve, _reject) => {
             // Simulate a long-running request with AbortSignal
             setTimeout(() => resolve(new Response('ok')), 5000);
           })

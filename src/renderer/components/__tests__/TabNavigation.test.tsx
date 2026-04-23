@@ -24,7 +24,7 @@ describe('TabNavigation', () => {
   });
 
   it('calls setActiveTool when a tab is clicked', () => {
-    const setActiveTool = vi.spyOn(useAppStore.getState(), 'setActiveTool');
+    const _setActiveTool = vi.spyOn(useAppStore.getState(), 'setActiveTool');
     render(<TabNavigation />);
     fireEvent.click(screen.getByText('JWT Decoder'));
     // setActiveTool is called via the store action, check the store state
@@ -62,8 +62,14 @@ describe('TabNavigation', () => {
   it('favorite toggle aria-labels are present for all tools', () => {
     render(<TabNavigation />);
     // Each tool should have a toggle button with accessible label
-    expect(screen.getByRole('button', { name: /toggle favorite for json formatter/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /toggle favorite for jwt decoder/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /toggle favorite for hash generator/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /toggle favorite for json formatter/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /toggle favorite for jwt decoder/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /toggle favorite for hash generator/i })
+    ).toBeInTheDocument();
   });
 });

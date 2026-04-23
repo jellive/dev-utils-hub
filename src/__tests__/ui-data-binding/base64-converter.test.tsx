@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent, act as _act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Base64Converter } from '../../renderer/components/tools/Base64Converter';
@@ -63,7 +63,7 @@ describe('Base64Converter – UI data binding', () => {
     expect(textarea).not.toBeNull();
     fireEvent.change(textarea, { target: { value: 'aGVsbG8=' } });
     const decodeBtn = Array.from(container.querySelectorAll('button')).find(
-      (btn) => btn.textContent?.trim() === 'Decode' && btn.getAttribute('role') !== 'tab',
+      btn => btn.textContent?.trim() === 'Decode' && btn.getAttribute('role') !== 'tab'
     )!;
     fireEvent.click(decodeBtn);
 
@@ -99,7 +99,7 @@ describe('Base64Converter – UI data binding', () => {
     expect(textarea).not.toBeNull();
     fireEvent.change(textarea, { target: { value: '!!!not-base64!!!' } });
     const decodeBtn = Array.from(container.querySelectorAll('button')).find(
-      (btn) => btn.textContent?.trim() === 'Decode' && btn.getAttribute('role') !== 'tab',
+      btn => btn.textContent?.trim() === 'Decode' && btn.getAttribute('role') !== 'tab'
     )!;
     fireEvent.click(decodeBtn);
 

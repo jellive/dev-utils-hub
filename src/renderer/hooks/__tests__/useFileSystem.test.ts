@@ -17,14 +17,14 @@ afterEach(() => {
 // Helper to make a real anchor element and intercept click
 function mockAnchorClick() {
   const anchor = document.createElement('a');
-  const clickSpy = vi.spyOn(anchor, 'click').mockImplementation(() => {});
+  const _clickSpy = vi.spyOn(anchor, 'click').mockImplementation(() => {});
   const origCreate = document.createElement.bind(document);
   vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
     if (tag === 'a') return anchor;
     // Use the original (bound) function for other tags to avoid recursion
     return origCreate(tag as any);
   });
-  return { anchor, clickSpy };
+  return { anchor, clickSpy: _clickSpy };
 }
 
 // Helper to make a real input element and simulate file selection
@@ -61,7 +61,7 @@ describe('useFileSystem', () => {
     });
 
     it('returns success and triggers download for non-empty content', async () => {
-      const { anchor, clickSpy } = mockAnchorClick();
+      const { anchor, clickSpy: _clickSpy } = mockAnchorClick();
       const appendSpy = vi.spyOn(document.body, 'appendChild').mockImplementation(() => anchor);
       const removeSpy = vi.spyOn(document.body, 'removeChild').mockImplementation(() => anchor);
 
@@ -82,7 +82,7 @@ describe('useFileSystem', () => {
     });
 
     it('sets download filename from defaultFileName', async () => {
-      const { anchor, clickSpy } = mockAnchorClick();
+      const { anchor, clickSpy: _clickSpy } = mockAnchorClick();
       const appendSpy = vi.spyOn(document.body, 'appendChild').mockImplementation(() => anchor);
       const removeSpy = vi.spyOn(document.body, 'removeChild').mockImplementation(() => anchor);
 
@@ -120,7 +120,7 @@ describe('useFileSystem', () => {
 
       const { result } = renderHook(() => useFileSystem());
 
-      let importPromise: Promise<any>;
+      let _importPromise: Promise<any>;
       act(() => {
         importPromise = result.current.importFile();
       });
