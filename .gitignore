@@ -47,7 +47,8 @@ node_modules/
 lighthouseci/
 
 # Documentation and project management
-docs/
+docs/*
+!docs/screenshots/
 .taskmaster/
 .claude/
 
