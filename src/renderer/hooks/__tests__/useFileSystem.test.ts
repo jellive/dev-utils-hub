@@ -61,7 +61,7 @@ describe('useFileSystem', () => {
     });
 
     it('returns success and triggers download for non-empty content', async () => {
-      const { anchor, clickSpy: _clickSpy } = mockAnchorClick();
+      const { anchor, clickSpy } = mockAnchorClick();
       const appendSpy = vi.spyOn(document.body, 'appendChild').mockImplementation(() => anchor);
       const removeSpy = vi.spyOn(document.body, 'removeChild').mockImplementation(() => anchor);
 
@@ -120,9 +120,8 @@ describe('useFileSystem', () => {
 
       const { result } = renderHook(() => useFileSystem());
 
-      let _importPromise: Promise<any>;
       act(() => {
-        importPromise = result.current.importFile();
+        void result.current.importFile();
       });
 
       // Simulate user selecting a file via the onchange event
