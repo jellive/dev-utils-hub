@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { RegexTester } from '../RegexTester';
 
 describe('RegexTester', () => {
@@ -96,7 +97,10 @@ describe('RegexTester', () => {
       fireEvent.click(emailCard);
 
       const globalFlag = screen.getByLabelText(/global/i);
-      expect(globalFlag.getAttribute('aria-checked') === 'true' || globalFlag.getAttribute('data-state') === 'checked').toBe(true);
+      expect(
+        globalFlag.getAttribute('aria-checked') === 'true' ||
+          globalFlag.getAttribute('data-state') === 'checked'
+      ).toBe(true);
     });
   });
 
@@ -330,8 +334,12 @@ describe('RegexTester', () => {
       const testInput = screen.getByPlaceholderText(/enter test string/i);
       const testButton = screen.getByRole('button', { name: /test/i });
 
-      fireEvent.change(patternInput, { target: { value: '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}' } });
-      fireEvent.change(testInput, { target: { value: 'Contact us at test@example.com or info@test.org' } });
+      fireEvent.change(patternInput, {
+        target: { value: '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}' },
+      });
+      fireEvent.change(testInput, {
+        target: { value: 'Contact us at test@example.com or info@test.org' },
+      });
       fireEvent.click(testButton);
 
       await waitFor(() => {
@@ -383,12 +391,132 @@ describe('RegexTester', () => {
       fireEvent.change(testInput, { target: { value: largeText } });
       fireEvent.click(testButton);
 
-      await waitFor(() => {
-        expect(screen.getByText(/1 match/i)).toBeInTheDocument();
-      }, { timeout: 1000 });
+      await waitFor(
+        () => {
+          expect(screen.getByText(/1 match/i)).toBeInTheDocument();
+        },
+        { timeout: 1000 }
+      );
 
       const endTime = performance.now();
       expect(endTime - startTime).toBeLessThan(1000);
+    });
+  });
+
+  describe('Replace Mode', () => {
+    const switchToReplace = async () => {
+      const user = userEvent.setup();
+      const replaceTab = screen.getByRole('tab', { name: /replace/i });
+      await user.click(replaceTab);
+      // Wait for Radix Presence to mount the tab content
+      await waitFor(() => {
+        expect(screen.getByTestId('replacement-input')).toBeInTheDocument();
+      });
+    };
+
+    it('should render replacement input when Replace tab is clicked', async () => {
+      await switchToReplace();
+      expect(screen.getByTestId('replacement-input')).toBeInTheDocument();
+    });
+
+    it('should replace digits with global flag', async () => {
+      const patternInput = screen.getByPlaceholderText(/enter regex pattern/i);
+      const testInput = screen.getByPlaceholderText(/enter test string/i);
+      const globalFlag = screen.getByLabelText(/global/i);
+
+      fireEvent.change(patternInput, { target: { value: '\\d+' } });
+      fireEvent.change(testInput, { target: { value: 'abc123def456' } });
+      fireEvent.click(globalFlag);
+
+      await switchToReplace();
+
+      const replacementInput = screen.getByTestId('replacement-input');
+      fireEvent.change(replacementInput, { target: { value: 'X' } });
+
+      await waitFor(() => {
+        const result = screen.getByTestId('replace-result');
+        expect(result.textContent).toBe('abcXdefX');
+      });
+    });
+
+    it('should support numbered capture group replacement', async () => {
+      const patternInput = screen.getByPlaceholderText(/enter regex pattern/i);
+      const testInput = screen.getByPlaceholderText(/enter test string/i);
+      const globalFlag = screen.getByLabelText(/global/i);
+
+      fireEvent.change(patternInput, { target: { value: '(\\w+)@(\\w+)' } });
+      fireEvent.change(testInput, { target: { value: 'user@domain' } });
+      fireEvent.click(globalFlag);
+
+      await switchToReplace();
+
+      const replacementInput = screen.getByTestId('replacement-input');
+      fireEvent.change(replacementInput, { target: { value: '$2 from $1' } });
+
+      await waitFor(() => {
+        const result = screen.getByTestId('replace-result');
+        expect(result.textContent).toBe('domain from user');
+      });
+    });
+
+    it('should support named capture group replacement', async () => {
+      const patternInput = screen.getByPlaceholderText(/enter regex pattern/i);
+      const testInput = screen.getByPlaceholderText(/enter test string/i);
+      const globalFlag = screen.getByLabelText(/global/i);
+
+      fireEvent.change(patternInput, { target: { value: '(?<user>\\w+)@(?<domain>\\w+)' } });
+      fireEvent.change(testInput, { target: { value: 'alice@example' } });
+      fireEvent.click(globalFlag);
+
+      await switchToReplace();
+
+      const replacementInput = screen.getByTestId('replacement-input');
+      fireEvent.change(replacementInput, { target: { value: '$<domain>:$<user>' } });
+
+      await waitFor(() => {
+        const result = screen.getByTestId('replace-result');
+        expect(result.textContent).toBe('example:alice');
+      });
+    });
+
+    it('should show error for invalid pattern in replace mode without crashing', async () => {
+      const patternInput = screen.getByPlaceholderText(/enter regex pattern/i);
+      const testInput = screen.getByPlaceholderText(/enter test string/i);
+
+      fireEvent.change(patternInput, { target: { value: '[invalid' } });
+      fireEvent.change(testInput, { target: { value: 'some text' } });
+
+      await switchToReplace();
+
+      const replacementInput = screen.getByTestId('replacement-input');
+      fireEvent.change(replacementInput, { target: { value: 'X' } });
+
+      await waitFor(() => {
+        expect(screen.getByText(/invalid replacement/i)).toBeInTheDocument();
+      });
+
+      // Component should still be rendered (not crashed)
+      expect(screen.getByTestId('replacement-input')).toBeInTheDocument();
+    });
+
+    it('should preserve pattern, flags and testString when switching tabs', async () => {
+      const patternInput = screen.getByPlaceholderText(/enter regex pattern/i) as HTMLInputElement;
+      const testInput = screen.getByPlaceholderText(/enter test string/i) as HTMLTextAreaElement;
+      const globalFlag = screen.getByLabelText(/global/i);
+
+      fireEvent.change(patternInput, { target: { value: '\\d+' } });
+      fireEvent.change(testInput, { target: { value: 'test 42' } });
+      fireEvent.click(globalFlag);
+
+      await switchToReplace();
+
+      // Switch back to match tab
+      const matchTab = screen.getByRole('tab', { name: /match/i });
+      fireEvent.click(matchTab);
+
+      expect(patternInput.value).toBe('\\d+');
+      expect(testInput.value).toBe('test 42');
+      expect(globalFlag.getAttribute('data-state')).toBe('checked');
     });
   });
 });

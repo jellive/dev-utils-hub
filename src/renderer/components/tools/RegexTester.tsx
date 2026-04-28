@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { api } from '../../lib/tauri-api';
 import { useHistoryAutoSave } from '../../hooks/useHistoryAutoSave';
 import { useHistoryExportImport } from '../../hooks/useHistoryExportImport';
@@ -11,6 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog,
   DialogContent,
@@ -100,6 +101,7 @@ export function RegexTester() {
   const [error, setError] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
+  const [replacement, setReplacement] = useState('');
 
   // Use the new useHistoryExportImport hook with Regex parsing
   const {
@@ -167,6 +169,52 @@ export function RegexTester() {
       });
     }
   }, [matches, error, pattern, testString, flags, saveToHistory]);
+
+  // Compute replace result reactively
+  const { replacedText, replaceError, replaceCount } = useMemo(() => {
+    if (!pattern.trim()) return { replacedText: '', replaceError: '', replaceCount: 0 };
+    try {
+      const flagString = Object.entries(flags)
+        .filter(([_, enabled]) => enabled)
+        .map(([flag]) => flag)
+        .join('');
+      const regex = new RegExp(pattern, flagString);
+      const countFlags = flagString.includes('g') ? flagString : flagString + 'g';
+      const countRegex = new RegExp(pattern, countFlags);
+      const countMatches = testString.match(countRegex);
+      const count = countMatches ? countMatches.length : 0;
+      const result = flags.g
+        ? testString.replaceAll(regex, replacement)
+        : testString.replace(regex, replacement);
+      return { replacedText: result, replaceError: '', replaceCount: count };
+    } catch (err) {
+      return {
+        replacedText: '',
+        replaceError: String(err instanceof Error ? err.message : err),
+        replaceCount: 0,
+      };
+    }
+  }, [pattern, flags, testString, replacement]);
+
+  // Auto-save replacement to history
+  useEffect(() => {
+    if (replacement && !replaceError && pattern.trim() && replacedText !== testString) {
+      saveToHistory(
+        pattern,
+        JSON.stringify({ replaced: replaceCount, replacement, result: replacedText }, null, 2),
+        { flags, replacement }
+      );
+    }
+  }, [
+    replacedText,
+    replaceError,
+    replacement,
+    replaceCount,
+    pattern,
+    testString,
+    flags,
+    saveToHistory,
+  ]);
 
   const handleTest = () => {
     setError('');
@@ -483,143 +531,133 @@ export function RegexTester() {
         </Alert>
       )}
 
-      {/* Match Count Badge */}
-      {!error && testString && (
-        <div className="flex items-center gap-2">
-          <Badge
-            variant={matches.length > 0 ? 'default' : 'secondary'}
-            className="text-base px-4 py-2"
-          >
-            {t('tools.regex.matchesFound', { count: matches.length })}
-          </Badge>
-          {matches.length > 0 && (
-            <Badge variant="outline">
-              {matches[0].captures.length > 0
-                ? t('tools.regex.captureGroupsCount', { count: matches[0].captures.length })
-                : t('tools.regex.noCaptures')}
-            </Badge>
-          )}
-        </div>
-      )}
+      <Tabs defaultValue="match">
+        <TabsList>
+          <TabsTrigger value="match">Match</TabsTrigger>
+          <TabsTrigger value="replace">Replace</TabsTrigger>
+        </TabsList>
 
-      {/* Highlighted Matches */}
-      {matches.length > 0 && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-base">{t('tools.regex.highlightedMatches')}</CardTitle>
-                <CardDescription>{t('tools.regex.matchedHighlighted')}</CardDescription>
-              </div>
-              <Button
-                onClick={() => handleCopy(testString)}
-                variant="ghost"
-                size="sm"
-                className="gap-2"
+        {/* Match Tab */}
+        <TabsContent value="match" className="space-y-4">
+          {/* Match Count Badge */}
+          {!error && testString && (
+            <div className="flex items-center gap-2">
+              <Badge
+                variant={matches.length > 0 ? 'default' : 'secondary'}
+                className="text-base px-4 py-2"
               >
-                <Copy className="h-4 w-4" />
-                Copy
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div
-              data-testid="highlighted-text"
-              className="w-full min-h-[100px] p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 font-mono text-sm whitespace-pre-wrap break-words"
-            >
-              {Array.isArray(highlightedParts) ? (
-                highlightedParts.map((part, index) => (
-                  <span
-                    key={index}
-                    className={
-                      part.isMatch
-                        ? 'bg-yellow-300 dark:bg-yellow-600 text-gray-900 dark:text-white font-semibold'
-                        : 'text-gray-900 dark:text-white'
-                    }
-                  >
-                    {part.text}
-                  </span>
-                ))
-              ) : (
-                <span className="text-gray-900 dark:text-white">{highlightedParts}</span>
+                {t('tools.regex.matchesFound', { count: matches.length })}
+              </Badge>
+              {matches.length > 0 && (
+                <Badge variant="outline">
+                  {matches[0].captures.length > 0
+                    ? t('tools.regex.captureGroupsCount', { count: matches[0].captures.length })
+                    : t('tools.regex.noCaptures')}
+                </Badge>
               )}
             </div>
-          </CardContent>
-        </Card>
-      )}
+          )}
 
-      {/* Match Details */}
-      {matches.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">{t('tools.regex.matchDetails')}</CardTitle>
-            <CardDescription>{t('tools.regex.allMatchesPositions')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {matches.map((match, matchIndex) => (
-              <div
-                key={matchIndex}
-                className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg space-y-2"
-              >
+          {/* Highlighted Matches */}
+          {matches.length > 0 && (
+            <Card>
+              <CardHeader>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline">Match {matchIndex + 1}</Badge>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      at position {match.index}
-                    </span>
+                  <div>
+                    <CardTitle className="text-base">
+                      {t('tools.regex.highlightedMatches')}
+                    </CardTitle>
+                    <CardDescription>{t('tools.regex.matchedHighlighted')}</CardDescription>
                   </div>
-                  <Button onClick={() => handleCopy(match.text)} variant="ghost" size="sm">
-                    <Copy className="h-3 w-3" />
+                  <Button
+                    onClick={() => handleCopy(testString)}
+                    variant="ghost"
+                    size="sm"
+                    className="gap-2"
+                  >
+                    <Copy className="h-4 w-4" />
+                    Copy
                   </Button>
                 </div>
-                <p className="font-mono text-sm bg-gray-100 dark:bg-gray-800 p-2 rounded">
-                  "{match.text}"
-                </p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Capture Groups */}
-      {matches.length > 0 && matches[0].captures.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">{t('tools.regex.captureGroups')}</CardTitle>
-            <CardDescription>{t('tools.regex.explanation')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {/* Numbered Groups */}
-            {matches[0].captures.map((value, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg"
-              >
-                <div>
-                  <Badge variant="secondary" className="mb-1">
-                    Group {index + 1}
-                  </Badge>
-                  <p className="text-sm text-blue-800 dark:text-blue-400 font-mono mt-1">{value}</p>
+              </CardHeader>
+              <CardContent>
+                <div
+                  data-testid="highlighted-text"
+                  className="w-full min-h-[100px] p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 font-mono text-sm whitespace-pre-wrap break-words"
+                >
+                  {Array.isArray(highlightedParts) ? (
+                    highlightedParts.map((part, index) => (
+                      <span
+                        key={index}
+                        className={
+                          part.isMatch
+                            ? 'bg-yellow-300 dark:bg-yellow-600 text-gray-900 dark:text-white font-semibold'
+                            : 'text-gray-900 dark:text-white'
+                        }
+                      >
+                        {part.text}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-gray-900 dark:text-white">{highlightedParts}</span>
+                  )}
                 </div>
-                <Button onClick={() => handleCopy(value)} variant="ghost" size="sm">
-                  <Copy className="h-3 w-3" />
-                </Button>
-              </div>
-            ))}
+              </CardContent>
+            </Card>
+          )}
 
-            {/* Named Groups */}
-            {matches[0].groups && Object.keys(matches[0].groups).length > 0 && (
-              <>
-                {Object.entries(matches[0].groups).map(([name, value]) => (
+          {/* Match Details */}
+          {matches.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">{t('tools.regex.matchDetails')}</CardTitle>
+                <CardDescription>{t('tools.regex.allMatchesPositions')}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {matches.map((match, matchIndex) => (
                   <div
-                    key={name}
-                    className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg"
+                    key={matchIndex}
+                    className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline">Match {matchIndex + 1}</Badge>
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                          at position {match.index}
+                        </span>
+                      </div>
+                      <Button onClick={() => handleCopy(match.text)} variant="ghost" size="sm">
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <p className="font-mono text-sm bg-gray-100 dark:bg-gray-800 p-2 rounded">
+                      "{match.text}"
+                    </p>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Capture Groups */}
+          {matches.length > 0 && matches[0].captures.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">{t('tools.regex.captureGroups')}</CardTitle>
+                <CardDescription>{t('tools.regex.explanation')}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {/* Numbered Groups */}
+                {matches[0].captures.map((value, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg"
                   >
                     <div>
                       <Badge variant="secondary" className="mb-1">
-                        {name}
+                        Group {index + 1}
                       </Badge>
-                      <p className="text-sm text-purple-800 dark:text-purple-400 font-mono mt-1">
+                      <p className="text-sm text-blue-800 dark:text-blue-400 font-mono mt-1">
                         {value}
                       </p>
                     </div>
@@ -628,11 +666,137 @@ export function RegexTester() {
                     </Button>
                   </div>
                 ))}
-              </>
-            )}
-          </CardContent>
-        </Card>
-      )}
+
+                {/* Named Groups */}
+                {matches[0].groups && Object.keys(matches[0].groups).length > 0 && (
+                  <>
+                    {Object.entries(matches[0].groups).map(([name, value]) => (
+                      <div
+                        key={name}
+                        className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg"
+                      >
+                        <div>
+                          <Badge variant="secondary" className="mb-1">
+                            {name}
+                          </Badge>
+                          <p className="text-sm text-purple-800 dark:text-purple-400 font-mono mt-1">
+                            {value}
+                          </p>
+                        </div>
+                        <Button onClick={() => handleCopy(value)} variant="ghost" size="sm">
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        {/* Replace Tab */}
+        <TabsContent value="replace" className="space-y-4">
+          {/* Replacement String Input */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Replacement</CardTitle>
+              <CardDescription>
+                Supports <code className="font-mono">$1</code>,{' '}
+                <code className="font-mono">$&lt;name&gt;</code>,{' '}
+                <code className="font-mono">$&</code> and other JS replacement patterns
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Input
+                data-testid="replacement-input"
+                type="text"
+                value={replacement}
+                onChange={e => setReplacement(e.target.value)}
+                placeholder="replaced: $1"
+                className="font-mono"
+              />
+              {replaceError && (
+                <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+                  Invalid replacement: {replaceError}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Side-by-side preview */}
+          {testString && !replaceError && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Original with highlights */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Original</CardTitle>
+                  <CardDescription>Matches highlighted</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div
+                    data-testid="replace-original"
+                    className="w-full min-h-[100px] p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 font-mono text-sm whitespace-pre-wrap break-words"
+                  >
+                    {Array.isArray(highlightedParts) ? (
+                      highlightedParts.map((part, index) => (
+                        <span
+                          key={index}
+                          className={
+                            part.isMatch
+                              ? 'bg-yellow-300 dark:bg-yellow-600 text-gray-900 dark:text-white font-semibold'
+                              : 'text-gray-900 dark:text-white'
+                          }
+                        >
+                          {part.text}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-gray-900 dark:text-white">{testString}</span>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Replaced result */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-base">Result</CardTitle>
+                      <CardDescription>After replacement</CardDescription>
+                    </div>
+                    <Button
+                      onClick={() => handleCopy(replacedText)}
+                      variant="ghost"
+                      size="sm"
+                      className="gap-2"
+                    >
+                      <Copy className="h-4 w-4" />
+                      Copy
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div
+                    data-testid="replace-result"
+                    className="w-full min-h-[100px] p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 font-mono text-sm whitespace-pre-wrap break-words text-gray-900 dark:text-white"
+                  >
+                    {replacedText}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Status line */}
+          {testString && !replaceError && pattern.trim() && (
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {replaceCount} {replaceCount === 1 ? 'match' : 'matches'} replaced
+            </p>
+          )}
+        </TabsContent>
+      </Tabs>
 
       {/* Info Section */}
       <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
