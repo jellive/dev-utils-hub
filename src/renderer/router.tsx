@@ -48,6 +48,9 @@ const ColorPicker = lazy(() =>
 const CronParser = lazy(() =>
   import('./components/tools/CronParser').then(module => ({ default: module.CronParser }))
 );
+const CronBuilder = lazy(() =>
+  import('./components/tools/CronBuilder').then(module => ({ default: module.CronBuilder }))
+);
 const MarkdownPreview = lazy(() =>
   import('./components/tools/MarkdownPreview').then(module => ({ default: module.MarkdownPreview }))
 );
@@ -194,6 +197,14 @@ export const router = createHashRouter([
         element: (
           <SingleColumnTool>
             <CronParser />
+          </SingleColumnTool>
+        ),
+      },
+      {
+        path: 'cron-builder',
+        element: (
+          <SingleColumnTool>
+            <CronBuilder />
           </SingleColumnTool>
         ),
       },

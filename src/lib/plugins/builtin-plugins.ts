@@ -179,6 +179,22 @@ pluginRegistry.register({
 });
 
 pluginRegistry.register({
+  id: 'cron-builder',
+  name: 'Cron Builder',
+  description: 'Build cron expressions visually',
+  version: '1.0.0',
+  author: 'Dev Utils Hub',
+  icon: 'CalendarClock',
+  category: 'custom',
+  builtin: true,
+  component: lazy(() =>
+    import('../../renderer/components/tools/CronBuilder').then(m => ({
+      default: m.CronBuilder,
+    }))
+  ),
+});
+
+pluginRegistry.register({
   id: 'markdown-preview',
   name: 'Markdown Preview',
   description: 'Preview Markdown in real time',
