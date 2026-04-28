@@ -20,8 +20,8 @@ pluginRegistry.register({
 
 pluginRegistry.register({
   id: 'jwt',
-  name: 'JWT Decoder',
-  description: 'Decode and inspect JWT tokens',
+  name: 'JWT Debugger',
+  description: 'Decode, verify, and inspect JWT tokens',
   version: '1.0.0',
   author: 'Dev Utils Hub',
   icon: 'Key',
