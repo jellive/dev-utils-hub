@@ -51,6 +51,11 @@ const CronParser = lazy(() =>
 const CronBuilder = lazy(() =>
   import('./components/tools/CronBuilder').then(module => ({ default: module.CronBuilder }))
 );
+const KoreanDpiTester = lazy(() =>
+  import('./components/tools/KoreanDpiTester').then(module => ({
+    default: module.KoreanDpiTester,
+  }))
+);
 const MarkdownPreview = lazy(() =>
   import('./components/tools/MarkdownPreview').then(module => ({ default: module.MarkdownPreview }))
 );
@@ -205,6 +210,14 @@ export const router = createHashRouter([
         element: (
           <SingleColumnTool>
             <CronBuilder />
+          </SingleColumnTool>
+        ),
+      },
+      {
+        path: 'korean-dpi-tester',
+        element: (
+          <SingleColumnTool>
+            <KoreanDpiTester />
           </SingleColumnTool>
         ),
       },

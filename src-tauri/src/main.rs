@@ -102,6 +102,9 @@ fn main() {
             // app info
             commands::app::get_app_version,
             commands::app::get_platform_info,
+            // dpi probe
+            commands::dpi_probe::probe_native,
+            commands::dpi_probe::probe_curl,
         ])
         .run(tauri::generate_context!())
         .expect("Error while running Dev Utils Hub");

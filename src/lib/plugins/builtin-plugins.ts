@@ -305,3 +305,19 @@ pluginRegistry.register({
     }))
   ),
 });
+
+pluginRegistry.register({
+  id: 'korean-dpi-tester',
+  name: 'Korean DPI Tester',
+  description: 'Probe URL through multiple HTTP clients to detect ISP DPI/TLS-fingerprint blocks',
+  version: '1.0.0',
+  author: 'Dev Utils Hub',
+  icon: 'Network',
+  category: 'custom',
+  builtin: true,
+  component: lazy(() =>
+    import('../../renderer/components/tools/KoreanDpiTester').then(m => ({
+      default: m.KoreanDpiTester,
+    }))
+  ),
+});
