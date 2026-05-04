@@ -132,5 +132,8 @@
     "src/**/*.{json,css,html}": [
       "prettier --write"
     ]
+  },
+  "overrides": {
+    "serialize-javascript": ">=7.0.3"
   }
 }
