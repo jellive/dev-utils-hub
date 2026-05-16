@@ -25,8 +25,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build application
-        run: npm run build
+      - name: Build web bundle
+        run: npm run build:web
 
       - name: Run Lighthouse CI
         run: npm run lighthouse

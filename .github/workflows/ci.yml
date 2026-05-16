@@ -43,20 +43,5 @@ jobs:
           path: dist/
           retention-days: 7
 
-  deploy:
-    name: Deploy to Vercel
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'
+  # Vercel deploy handled automatically via git integration (.vercel/project.json linked).
+  # amondnet/vercel-action removed: redundant + expired secrets.
