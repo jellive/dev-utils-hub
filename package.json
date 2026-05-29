@@ -16,6 +16,7 @@
     "build:renderer": "tsc -p tsconfig.app.json --noEmit && vite build",
     "type-check": "tsc -p tsconfig.app.json --noEmit",
     "type-check:renderer": "tsc -p tsconfig.app.json --noEmit",
+    "type-check:strict": "tsc -p tsconfig.strict.json --noEmit",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",

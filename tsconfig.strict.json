@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.strict.tsbuildinfo",
+    "noUncheckedIndexedAccess": true,
+    "noEmit": true
+  },
+  "include": ["src/utils/hashUtils.ts", "src/renderer/utils/hashUtils.ts"],
+  "exclude": []
+}
