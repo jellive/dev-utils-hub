@@ -45,17 +45,23 @@ describe('hashUtils', () => {
   describe('sha512', () => {
     it('should generate correct SHA-512 hash for simple string', async () => {
       const result = await sha512('hello');
-      expect(result).toBe('9b71d224bd62f3785d96d46ad3ea3d73319bfbc2890caadae2dff72519673ca72323c3d99ba5c11d7c7acc6e14b8c5da0c4663475c2e5c3adef46f73bcdec043');
+      expect(result).toBe(
+        '9b71d224bd62f3785d96d46ad3ea3d73319bfbc2890caadae2dff72519673ca72323c3d99ba5c11d7c7acc6e14b8c5da0c4663475c2e5c3adef46f73bcdec043'
+      );
     });
 
     it('should generate correct SHA-512 hash for empty string', async () => {
       const result = await sha512('');
-      expect(result).toBe('cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e');
+      expect(result).toBe(
+        'cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e'
+      );
     });
 
     it('should generate correct SHA-512 hash for longer string', async () => {
       const result = await sha512('The quick brown fox jumps over the lazy dog');
-      expect(result).toBe('07e547d9586f6a73f73fbac0435ed76951218fb7d0c8d788a309d785436bbb642e93a252a954f23912547d1e8a3b5ed6e1bfd7097821233fa0538f3db854fee6');
+      expect(result).toBe(
+        '07e547d9586f6a73f73fbac0435ed76951218fb7d0c8d788a309d785436bbb642e93a252a954f23912547d1e8a3b5ed6e1bfd7097821233fa0538f3db854fee6'
+      );
     });
   });
 
@@ -72,7 +78,9 @@ describe('hashUtils', () => {
 
     it('should generate SHA-512 hash when algorithm is sha512', async () => {
       const result = await generateHash('hello', 'sha512');
-      expect(result).toBe('9b71d224bd62f3785d96d46ad3ea3d73319bfbc2890caadae2dff72519673ca72323c3d99ba5c11d7c7acc6e14b8c5da0c4663475c2e5c3adef46f73bcdec043');
+      expect(result).toBe(
+        '9b71d224bd62f3785d96d46ad3ea3d73319bfbc2890caadae2dff72519673ca72323c3d99ba5c11d7c7acc6e14b8c5da0c4663475c2e5c3adef46f73bcdec043'
+      );
     });
 
     it('should handle Unicode characters correctly', async () => {
@@ -104,35 +112,38 @@ describe('hashUtils', () => {
   });
 
   describe('generateHMAC', () => {
-    // Exact-value tests kill string-init and loop-bound mutants in generateHMAC
+    // Exact values verified against `openssl dgst -<algo> -hmac <key>` (RFC 2104).
+    // (Previous expectations encoded the OLD broken HMAC output and were wrong.)
     it('should generate exact HMAC-MD5 for hello/key', async () => {
       const result = await generateHMAC('hello', 'key', 'md5');
-      expect(result).toBe('5bb2ed191b1da123e16e2222dbe2b220');
+      expect(result).toBe('04130747afca4d79e32e87cf2104f087');
     });
 
     it('should generate exact HMAC-SHA256 for hello/key', async () => {
       const result = await generateHMAC('hello', 'key', 'sha256');
-      expect(result).toBe('6da8cd3e7e824394f27dd3ff9ec28c731eadda5cd671d3b9609176ad60ed1b75');
+      expect(result).toBe('9307b3b915efb5171ff14d8cb55fbcc798c6c0ef1456d66ded1a6aa723a58b7b');
     });
 
     it('should generate exact HMAC-MD5 for empty message', async () => {
       const result = await generateHMAC('', 'key', 'md5');
-      expect(result).toBe('f3450a19f4346b378bcdf4dcf3242a76');
+      expect(result).toBe('63530468a04e386459855da0063b6596');
     });
 
     it('should generate exact HMAC-MD5 for test/secret', async () => {
       const result = await generateHMAC('test', 'secret', 'md5');
-      expect(result).toBe('d22fa71cf626a291e4240060595c002b');
+      expect(result).toBe('63d6baf65df6bdee8f32b332e0930669');
     });
 
     it('should generate exact HMAC-SHA256 for test/secret', async () => {
       const result = await generateHMAC('test', 'secret', 'sha256');
-      expect(result).toBe('e8630e664871f66fcfe5042cb8eeb3fa7e8f23f0d745a8b065c761d77d29c36f');
+      expect(result).toBe('0329a06b62cd16b33eb6792be8c60b158d89a2ee3a876fce9a881ebb488c0914');
     });
 
     it('should generate exact HMAC-SHA512 for test/secret', async () => {
       const result = await generateHMAC('test', 'secret', 'sha512');
-      expect(result).toBe('a50ba45b705b17d73958e7c7ca643bd9f7ff1229cba043fa09b14e4029e385cc8fdf75c6dcf8d3343a6989c723ee5549b72d475a01592e4499ab6734bad2e0c6');
+      expect(result).toBe(
+        'f8a4f0a209167bc192a1bffaa01ecdb09e06c57f96530d92ec9ccea0090d290e55071306d6b654f26ae0c8721f7e48a2d7130b881151f2cec8d61d941a6be88a'
+      );
     });
 
     it('should produce consistent output for same inputs', async () => {

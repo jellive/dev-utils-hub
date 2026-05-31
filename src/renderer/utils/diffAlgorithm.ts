@@ -29,43 +29,53 @@ function computeLCS<T>(a: T[], b: T[]): number[][] {
 }
 
 /**
- * Backtracks through the LCS matrix to generate diff results
+ * Walks the LCS matrix to generate diff results.
+ *
+ * Iterative (was recursive — one frame per line, which overflowed the stack
+ * and blocked the main thread on large inputs). Collects in reverse, then
+ * reverses to keep the original forward output order.
  */
 function backtrack(
   lcs: number[][],
   oldLines: string[],
   newLines: string[],
   i: number,
-  j: number,
-  result: DiffResult[] = []
+  j: number
 ): DiffResult[] {
-  if (i > 0 && j > 0 && oldLines[i - 1] === newLines[j - 1]) {
-    backtrack(lcs, oldLines, newLines, i - 1, j - 1, result);
-    result.push({
-      type: 'equal',
-      value: oldLines[i - 1],
-      oldIndex: i - 1,
-      newIndex: j - 1,
-    });
-  } else if (j > 0 && (i === 0 || lcs[i][j - 1] >= lcs[i - 1][j])) {
-    backtrack(lcs, oldLines, newLines, i, j - 1, result);
-    result.push({
-      type: 'insert',
-      value: newLines[j - 1],
-      oldIndex: undefined,
-      newIndex: j - 1,
-    });
-  } else if (i > 0 && (j === 0 || lcs[i][j - 1] < lcs[i - 1][j])) {
-    backtrack(lcs, oldLines, newLines, i - 1, j, result);
-    result.push({
-      type: 'delete',
-      value: oldLines[i - 1],
-      oldIndex: i - 1,
-      newIndex: undefined,
-    });
+  const result: DiffResult[] = [];
+
+  while (i > 0 || j > 0) {
+    if (i > 0 && j > 0 && oldLines[i - 1] === newLines[j - 1]) {
+      result.push({
+        type: 'equal',
+        value: oldLines[i - 1],
+        oldIndex: i - 1,
+        newIndex: j - 1,
+      });
+      i--;
+      j--;
+    } else if (j > 0 && (i === 0 || lcs[i][j - 1] >= lcs[i - 1][j])) {
+      result.push({
+        type: 'insert',
+        value: newLines[j - 1],
+        oldIndex: undefined,
+        newIndex: j - 1,
+      });
+      j--;
+    } else if (i > 0 && (j === 0 || lcs[i][j - 1] < lcs[i - 1][j])) {
+      result.push({
+        type: 'delete',
+        value: oldLines[i - 1],
+        oldIndex: i - 1,
+        newIndex: undefined,
+      });
+      i--;
+    } else {
+      break;
+    }
   }
 
-  return result;
+  return result.reverse();
 }
 
 /**

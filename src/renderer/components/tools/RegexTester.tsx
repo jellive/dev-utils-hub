@@ -244,6 +244,9 @@ export function RegexTester() {
             groups: match.groups || {},
             captures: Array.from(match).slice(1),
           });
+          // Zero-width matches (e.g. /a*/, /(?:)/, /^/) don't advance
+          // lastIndex — bump it manually to avoid an infinite loop / UI freeze.
+          if (match[0] === '') regex.lastIndex++;
         }
       } else {
         // No global flag: find first match only

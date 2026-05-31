@@ -240,68 +240,80 @@ export async function sha512(text: string): Promise<string> {
   return hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
 }
 
+const toHex = (bytes: Uint8Array): string =>
+  Array.from(bytes)
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+
 /**
- * Generate HMAC using specified algorithm
+ * MD5 digest of raw bytes → raw bytes.
+ * The custom md5() masks each char to a byte (charCodeAt & 0xff), so a
+ * Latin-1 binary string round-trip is lossless (unlike UTF-8 TextEncoder).
+ */
+async function md5Digest(bytes: Uint8Array): Promise<Uint8Array<ArrayBuffer>> {
+  let bin = '';
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]!);
+  const hex = await md5(bin);
+  const out = new Uint8Array(16);
+  for (let i = 0; i < 16; i++) out[i] = parseInt(hex.substr(i * 2, 2), 16);
+  return out;
+}
+
+/**
+ * Generate a standards-correct HMAC (RFC 2104).
+ *
+ * SHA-256/512 use Web Crypto's native HMAC (correct block sizes + raw-byte
+ * handling guaranteed). MD5 (unsupported by Web Crypto) uses a manual HMAC
+ * over RAW digest bytes with the correct 64-byte block.
+ *
+ * Replaces a broken implementation that UTF-8-corrupted bytes >= 0x80,
+ * hashed the inner digest's hex string instead of its bytes, and used a
+ * 128-byte block for SHA-256 (should be 64).
  */
 export async function generateHMAC(
   text: string,
   key: string,
   algorithm: 'md5' | 'sha256' | 'sha512'
 ): Promise<string> {
-  // HMAC implementation: H(K XOR opad, H(K XOR ipad, text))
-  const blockSize = algorithm === 'md5' ? 64 : 128; // MD5: 64 bytes, SHA-256/512: 128 bytes
-  const ipad = 0x36;
-  const opad = 0x5c;
+  const enc = new TextEncoder();
 
-  // Prepare key
-  let keyBytes = new TextEncoder().encode(key);
-
-  // If key is longer than block size, hash it first
-  if (keyBytes.length > blockSize) {
-    const hashedKey = await generateHash(key, algorithm);
-    keyBytes = new TextEncoder().encode(hashedKey);
+  if (algorithm === 'sha256' || algorithm === 'sha512') {
+    const hash = algorithm === 'sha256' ? 'SHA-256' : 'SHA-512';
+    const cryptoKey = await crypto.subtle.importKey(
+      'raw',
+      enc.encode(key),
+      { name: 'HMAC', hash },
+      false,
+      ['sign']
+    );
+    const sig = await crypto.subtle.sign('HMAC', cryptoKey, enc.encode(text));
+    return toHex(new Uint8Array(sig));
   }
 
-  // Pad key to block size
+  // HMAC-MD5 — manual RFC 2104 over raw digest bytes. MD5 block size = 64.
+  const blockSize = 64;
+  let keyBytes = enc.encode(key);
+  if (keyBytes.length > blockSize) keyBytes = await md5Digest(keyBytes);
+
   const paddedKey = new Uint8Array(blockSize);
   paddedKey.set(keyBytes);
-
-  // Create inner and outer padded keys
   const innerKey = new Uint8Array(blockSize);
   const outerKey = new Uint8Array(blockSize);
-
   for (let i = 0; i < blockSize; i++) {
-    innerKey[i] = paddedKey[i]! ^ ipad;
-    outerKey[i] = paddedKey[i]! ^ opad;
+    innerKey[i] = paddedKey[i]! ^ 0x36;
+    outerKey[i] = paddedKey[i]! ^ 0x5c;
   }
 
-  // Inner hash: H(K XOR ipad, text)
-  const textBytes = new TextEncoder().encode(text);
-  const innerText = new Uint8Array(innerKey.length + textBytes.length);
-  innerText.set(innerKey, 0);
-  innerText.set(textBytes, innerKey.length);
+  const textBytes = enc.encode(text);
+  const innerMsg = new Uint8Array(blockSize + textBytes.length);
+  innerMsg.set(innerKey, 0);
+  innerMsg.set(textBytes, blockSize);
+  const innerDigest = await md5Digest(innerMsg);
 
-  // Convert to string for hashing - handle binary data properly
-  let innerString = '';
-  for (let i = 0; i < innerText.length; i++) {
-    innerString += String.fromCharCode(innerText[i]!);
-  }
-  const innerHash = await generateHash(innerString, algorithm);
-
-  // Outer hash: H(K XOR opad, innerHash)
-  const innerHashBytes = new TextEncoder().encode(innerHash);
-  const outerText = new Uint8Array(outerKey.length + innerHashBytes.length);
-  outerText.set(outerKey, 0);
-  outerText.set(innerHashBytes, outerKey.length);
-
-  // Convert to string for hashing
-  let outerString = '';
-  for (let i = 0; i < outerText.length; i++) {
-    outerString += String.fromCharCode(outerText[i]!);
-  }
-  const finalHash = await generateHash(outerString, algorithm);
-
-  return finalHash;
+  const outerMsg = new Uint8Array(blockSize + innerDigest.length);
+  outerMsg.set(outerKey, 0);
+  outerMsg.set(innerDigest, blockSize);
+  return toHex(await md5Digest(outerMsg));
 }
 
 /**

@@ -75,3 +75,6 @@ dist-release/
 # Tauri build artifacts
 src-tauri/target/
 src-tauri/gen/
+
+# Local Netlify folder
+.netlify
