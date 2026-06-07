@@ -18,6 +18,26 @@ pub struct Database(pub Mutex<rusqlite::Connection>);
 // ── Entry point ───────────────────────────────────────────────────────────────
 
 fn main() {
+    // ── Sentry error reporting ────────────────────────────────────────────────
+    // Read DSN from runtime env first; fall back to compile-time VITE_SENTRY_DSN
+    // so the Rust backend reuses the same dev-utils Sentry project as the frontend.
+    let _sentry_guard = std::env::var("SENTRY_DSN")
+        .ok()
+        .or_else(|| option_env!("VITE_SENTRY_DSN").map(str::to_owned))
+        .filter(|s| !s.is_empty())
+        .map(|dsn| {
+            sentry::init((
+                dsn,
+                sentry::ClientOptions {
+                    release: sentry::release_name!(),
+                    environment: Some(
+                        if cfg!(debug_assertions) { "debug" } else { "production" }.into(),
+                    ),
+                    ..Default::default()
+                },
+            ))
+        });
+
     tauri::Builder::default()
         // ── Plugins ──────────────────────────────────────────────────────────
         .plugin(tauri_plugin_store::Builder::default().build())
