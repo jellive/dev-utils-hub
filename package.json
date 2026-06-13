@@ -72,7 +72,7 @@
     "react-day-picker": "^9.11.1",
     "react-dom": "^19.1.7",
     "react-i18next": "^16.1.5",
-    "react-router-dom": "^7.9.4",
+    "react-router-dom": "^7.15.0",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.1",
     "vite-plugin-pwa": "^1.1.0",
@@ -140,8 +140,11 @@
     "fast-uri": ">=3.1.2",
     "@babel/plugin-transform-modules-systemjs": ">=7.29.4",
     "ip-address": ">=10.1.1",
-    "tmp": ">=0.2.4",
+    "tmp": ">=0.2.6",
     "minimatch": "^10.2.4",
-    "brace-expansion": "^5.0.6"
+    "brace-expansion": "^5.0.6",
+    "react-router": "^7.15.0",
+    "qs": ">=6.15.2",
+    "esbuild": "^0.28.1"
   }
 }
