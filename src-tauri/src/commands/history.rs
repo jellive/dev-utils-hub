@@ -300,6 +300,52 @@ pub fn history_auto_cleanup(
     Ok(affected as i64)
 }
 
+/// Atomically replace all entries for a tool with the provided import data.
+///
+/// Wraps the DELETE + bulk INSERT in a single SQLite transaction so that a
+/// partial failure leaves the original data intact (no data loss).
+///
+/// `entries` is an array of `{ input, output }` objects.
+/// Returns the number of rows inserted.
+#[tauri::command]
+pub fn history_import_atomic(
+    db: State<'_, Database>,
+    tool: String,
+    entries: Vec<serde_json::Value>,
+) -> Result<i64, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+
+    // BEGIN an immediate transaction — rolls back automatically on drop if we
+    // return Err before calling tx.commit().
+    let tx = conn
+        .unchecked_transaction()
+        .map_err(|e| e.to_string())?;
+
+    tx.execute("DELETE FROM history WHERE tool = ?1", params![tool])
+        .map_err(|e| e.to_string())?;
+
+    let mut saved: i64 = 0;
+    for entry in &entries {
+        let input = entry
+            .get("input")
+            .and_then(|v| v.as_str())
+            .unwrap_or("")
+            .to_string();
+        let output = entry.get("output").and_then(|v| v.as_str()).map(str::to_string);
+        let metadata = entry.get("metadata").and_then(|v| v.as_str()).map(str::to_string);
+
+        tx.execute(
+            "INSERT INTO history (tool, input, output, metadata) VALUES (?1, ?2, ?3, ?4)",
+            params![tool, input, output, metadata],
+        )
+        .map_err(|e| e.to_string())?;
+        saved += 1;
+    }
+
+    tx.commit().map_err(|e| e.to_string())?;
+    Ok(saved)
+}
+
 /// Return aggregate stats for the history table.
 #[tauri::command]
 pub fn history_stats(db: State<'_, Database>) -> Result<serde_json::Value, String> {

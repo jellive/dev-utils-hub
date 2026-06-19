@@ -34,6 +34,7 @@ export class GoogleProvider implements AIProvider {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
+      signal: AbortSignal.timeout(30_000),
     });
 
     if (!response.ok) {
@@ -74,6 +75,7 @@ export class GoogleProvider implements AIProvider {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
+      signal: AbortSignal.timeout(30_000),
     });
 
     if (!response.ok) {

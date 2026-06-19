@@ -93,6 +93,7 @@ fn main() {
             commands::history::history_clear_all,
             commands::history::history_auto_cleanup,
             commands::history::history_stats,
+            commands::history::history_import_atomic,
             // maintenance
             commands::maintenance::maintenance_cleanup,
             commands::maintenance::maintenance_backup,

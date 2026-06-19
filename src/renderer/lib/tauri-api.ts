@@ -214,6 +214,10 @@ export const api = {
         keepFavorites: keepFavorites ?? null,
       }),
     stats: (): Promise<HistoryStats> => invoke('history_stats'),
+    importAtomic: (
+      tool: string,
+      entries: Array<{ input: string; output?: string; metadata?: string }>
+    ): Promise<number> => invoke('history_import_atomic', { tool, entries }),
     // Event listeners (from menu/tray actions)
     onToggle: (callback: () => void): (() => void) => {
       let unlisten: UnlistenFn | null = null;

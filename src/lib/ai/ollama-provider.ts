@@ -21,6 +21,7 @@ export class OllamaProvider implements AIProvider {
           num_predict: options.maxTokens ?? 2048,
         },
       }),
+      signal: AbortSignal.timeout(30_000),
     });
 
     if (!response.ok) {
@@ -45,6 +46,7 @@ export class OllamaProvider implements AIProvider {
           num_predict: options.maxTokens ?? 2048,
         },
       }),
+      signal: AbortSignal.timeout(30_000),
     });
 
     if (!response.ok) {

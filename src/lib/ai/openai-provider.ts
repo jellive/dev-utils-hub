@@ -18,6 +18,7 @@ export class OpenAIProvider implements AIProvider {
         temperature: options.temperature ?? 0.2,
         max_tokens: options.maxTokens ?? 2048,
       }),
+      signal: AbortSignal.timeout(30_000),
     });
 
     if (!response.ok) {
@@ -43,6 +44,7 @@ export class OpenAIProvider implements AIProvider {
         max_tokens: options.maxTokens ?? 2048,
         stream: true,
       }),
+      signal: AbortSignal.timeout(30_000),
     });
 
     if (!response.ok) {

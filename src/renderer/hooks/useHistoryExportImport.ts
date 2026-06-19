@@ -233,30 +233,41 @@ export function useHistoryExportImport(
           return;
         }
 
-        // Replace existing data if requested
-        if (replaceExisting) {
-          await api.history.clear(tool);
-        }
-
-        // Get existing entries for duplicate check
+        // Get existing entries for duplicate check (before any writes)
         let existingInputs = new Set<string>();
         if (skipDuplicates) {
           const existing = await api.history.get(tool);
           existingInputs = new Set(existing.map(e => e.input));
         }
 
-        // Save data
-        let savedCount = 0;
+        // Filter out duplicates when requested
         let skippedCount = 0;
-
-        for (const item of parsedData) {
+        const toImport = parsedData.filter(item => {
           if (skipDuplicates && existingInputs.has(item.input)) {
             skippedCount++;
-            continue;
+            return false;
           }
+          return true;
+        });
 
-          await api.history.save(tool, item.input, item.output);
-          savedCount++;
+        // Replace existing data atomically (DELETE + bulk INSERT in one transaction)
+        // so a mid-import failure leaves the original data intact.
+        // When not replacing, insert only the filtered entries atomically.
+        const entriesToWrite = toImport.map(item => ({
+          input: item.input,
+          output: item.output,
+        }));
+
+        let savedCount: number;
+        if (replaceExisting) {
+          savedCount = await api.history.importAtomic(tool, entriesToWrite);
+        } else {
+          // Non-replace path: save each entry individually (existing rows kept)
+          savedCount = 0;
+          for (const item of entriesToWrite) {
+            await api.history.save(tool, item.input, item.output);
+            savedCount++;
+          }
         }
 
         // Show success message

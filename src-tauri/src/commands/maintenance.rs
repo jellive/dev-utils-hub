@@ -137,11 +137,17 @@ pub fn maintenance_restore(
 
     let dest = db_path(&app)?;
 
-    // Drop the lock while copying so SQLite isn't confused
+    // Flush the WAL and close the connection before overwriting the DB file.
+    // Without this, unflushed WAL pages can make the restored DB inconsistent.
     {
-        let _conn = db.0.lock().map_err(|e| e.to_string())?;
-        std::fs::copy(&canonical_src, &dest).map_err(|e| e.to_string())?;
+        let conn = db.0.lock().map_err(|e| e.to_string())?;
+        conn.execute_batch("PRAGMA wal_checkpoint(TRUNCATE);")
+            .map_err(|e| e.to_string())?;
+        // `conn` (the MutexGuard) is dropped here, releasing the lock before
+        // the file copy so SQLite has no open handles on the destination.
     }
+
+    std::fs::copy(&canonical_src, &dest).map_err(|e| e.to_string())?;
 
     Ok(())
 }
