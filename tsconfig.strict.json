@@ -5,6 +5,11 @@
     "noUncheckedIndexedAccess": true,
     "noEmit": true
   },
-  "include": ["src/utils/hashUtils.ts", "src/renderer/utils/hashUtils.ts"],
+  "include": [
+    "src/utils/hashUtils.ts",
+    "src/renderer/utils/hashUtils.ts",
+    "src/utils/diffAlgorithm.ts",
+    "src/renderer/utils/diffAlgorithm.ts"
+  ],
   "exclude": []
 }

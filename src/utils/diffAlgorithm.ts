@@ -16,11 +16,17 @@ function computeLCS<T>(a: T[], b: T[]): number[][] {
     .map(() => Array(n + 1).fill(0));
 
   for (let i = 1; i <= m; i++) {
+    const row = lcs[i];
+    const prevRow = lcs[i - 1];
+    if (row === undefined || prevRow === undefined) continue;
     for (let j = 1; j <= n; j++) {
-      if (a[i - 1] === b[j - 1]) {
-        lcs[i][j] = lcs[i - 1][j - 1] + 1;
+      const ai = a[i - 1];
+      const bj = b[j - 1];
+      if (ai === undefined || bj === undefined) continue;
+      if (ai === bj) {
+        row[j] = (prevRow[j - 1] ?? 0) + 1;
       } else {
-        lcs[i][j] = Math.max(lcs[i - 1][j], lcs[i][j - 1]);
+        row[j] = Math.max(prevRow[j] ?? 0, row[j - 1] ?? 0);
       }
     }
   }
@@ -48,24 +54,24 @@ function backtrack(
     if (i > 0 && j > 0 && oldLines[i - 1] === newLines[j - 1]) {
       result.push({
         type: 'equal',
-        value: oldLines[i - 1],
+        value: oldLines[i - 1] ?? '',
         oldIndex: i - 1,
         newIndex: j - 1,
       });
       i--;
       j--;
-    } else if (j > 0 && (i === 0 || lcs[i][j - 1] >= lcs[i - 1][j])) {
+    } else if (j > 0 && (i === 0 || (lcs[i]?.[j - 1] ?? 0) >= (lcs[i - 1]?.[j] ?? 0))) {
       result.push({
         type: 'insert',
-        value: newLines[j - 1],
+        value: newLines[j - 1] ?? '',
         oldIndex: undefined,
         newIndex: j - 1,
       });
       j--;
-    } else if (i > 0 && (j === 0 || lcs[i][j - 1] < lcs[i - 1][j])) {
+    } else if (i > 0 && (j === 0 || (lcs[i]?.[j - 1] ?? 0) < (lcs[i - 1]?.[j] ?? 0))) {
       result.push({
         type: 'delete',
-        value: oldLines[i - 1],
+        value: oldLines[i - 1] ?? '',
         oldIndex: i - 1,
         newIndex: undefined,
       });
