@@ -28,11 +28,14 @@ function computeLineDiff(left: string, right: string): LineDiff[] {
   const lcs: number[][] = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
 
   for (let i = 1; i <= m; i++) {
+    const row = lcs[i];
+    const prevRow = lcs[i - 1];
+    if (row === undefined || prevRow === undefined) continue;
     for (let j = 1; j <= n; j++) {
       if (leftLines[i - 1] === rightLines[j - 1]) {
-        lcs[i][j] = lcs[i - 1][j - 1] + 1;
+        row[j] = (prevRow[j - 1] ?? 0) + 1;
       } else {
-        lcs[i][j] = Math.max(lcs[i - 1][j], lcs[i][j - 1]);
+        row[j] = Math.max(prevRow[j] ?? 0, row[j - 1] ?? 0);
       }
     }
   }
@@ -42,13 +45,13 @@ function computeLineDiff(left: string, right: string): LineDiff[] {
   function backtrack(i: number, j: number): void {
     if (i > 0 && j > 0 && leftLines[i - 1] === rightLines[j - 1]) {
       backtrack(i - 1, j - 1);
-      result.push({ type: 'equal', value: leftLines[i - 1] });
-    } else if (j > 0 && (i === 0 || lcs[i][j - 1] >= lcs[i - 1][j])) {
+      result.push({ type: 'equal', value: leftLines[i - 1] ?? '' });
+    } else if (j > 0 && (i === 0 || (lcs[i]?.[j - 1] ?? 0) >= (lcs[i - 1]?.[j] ?? 0))) {
       backtrack(i, j - 1);
-      result.push({ type: 'insert', value: rightLines[j - 1], charDiffs: [] });
+      result.push({ type: 'insert', value: rightLines[j - 1] ?? '', charDiffs: [] });
     } else if (i > 0) {
       backtrack(i - 1, j);
-      result.push({ type: 'delete', value: leftLines[i - 1], charDiffs: [] });
+      result.push({ type: 'delete', value: leftLines[i - 1] ?? '', charDiffs: [] });
     }
   }
 
@@ -71,9 +74,15 @@ function computeCharDiff(a: string, b: string): { aChunks: CharDiff[]; bChunks: 
 
   const lcs: number[][] = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
   for (let i = 1; i <= m; i++) {
+    const row = lcs[i];
+    const prevRow = lcs[i - 1];
+    if (row === undefined || prevRow === undefined) continue;
     for (let j = 1; j <= n; j++) {
-      lcs[i][j] =
-        a[i - 1] === b[j - 1] ? lcs[i - 1][j - 1] + 1 : Math.max(lcs[i - 1][j], lcs[i][j - 1]);
+      if (a[i - 1] === b[j - 1]) {
+        row[j] = (prevRow[j - 1] ?? 0) + 1;
+      } else {
+        row[j] = Math.max(prevRow[j] ?? 0, row[j - 1] ?? 0);
+      }
     }
   }
 
@@ -83,14 +92,14 @@ function computeCharDiff(a: string, b: string): { aChunks: CharDiff[]; bChunks: 
   function bt(i: number, j: number): void {
     if (i > 0 && j > 0 && a[i - 1] === b[j - 1]) {
       bt(i - 1, j - 1);
-      aResult.push({ type: 'equal', value: a[i - 1] });
-      bResult.push({ type: 'equal', value: b[j - 1] });
-    } else if (j > 0 && (i === 0 || lcs[i][j - 1] >= lcs[i - 1][j])) {
+      aResult.push({ type: 'equal', value: a[i - 1] ?? '' });
+      bResult.push({ type: 'equal', value: b[j - 1] ?? '' });
+    } else if (j > 0 && (i === 0 || (lcs[i]?.[j - 1] ?? 0) >= (lcs[i - 1]?.[j] ?? 0))) {
       bt(i, j - 1);
-      bResult.push({ type: 'change', value: b[j - 1] });
+      bResult.push({ type: 'change', value: b[j - 1] ?? '' });
     } else if (i > 0) {
       bt(i - 1, j);
-      aResult.push({ type: 'change', value: a[i - 1] });
+      aResult.push({ type: 'change', value: a[i - 1] ?? '' });
     }
   }
 
@@ -135,8 +144,12 @@ export function DiffViewer() {
     let i = 0;
     while (i < diffs.length) {
       const cur = diffs[i];
-      if (cur.type === 'delete' && i + 1 < diffs.length && diffs[i + 1].type === 'insert') {
-        const next = diffs[i + 1];
+      const next = diffs[i + 1];
+      if (cur === undefined) {
+        i++;
+        continue;
+      }
+      if (cur.type === 'delete' && next !== undefined && next.type === 'insert') {
         const { aChunks, bChunks } = computeCharDiff(cur.value, next.value);
         result.push({ ...cur, aChunks });
         result.push({ ...next, bChunks });

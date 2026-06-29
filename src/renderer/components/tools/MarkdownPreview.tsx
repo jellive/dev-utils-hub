@@ -107,14 +107,20 @@ function parseMarkdown(md: string): string {
 
   while (i < lines.length) {
     const line = lines[i];
+    if (line === undefined) {
+      i++;
+      continue;
+    }
 
     // Fenced code block
     if (line.startsWith('```')) {
       const lang = escapeHtml(line.slice(3).trim());
       const codeLines: string[] = [];
       i++;
-      while (i < lines.length && !lines[i].startsWith('```')) {
-        codeLines.push(escapeHtml(lines[i]));
+      while (i < lines.length) {
+        const innerLine = lines[i];
+        if (innerLine === undefined || innerLine.startsWith('```')) break;
+        codeLines.push(escapeHtml(innerLine));
         i++;
       }
       result.push(
@@ -128,8 +134,8 @@ function parseMarkdown(md: string): string {
     // Headings
     const headingMatch = line.match(/^(#{1,6})\s+(.*)/);
     if (headingMatch) {
-      const level = headingMatch[1].length;
-      const text = inlineFormat(headingMatch[2]);
+      const level = headingMatch[1]?.length ?? 1;
+      const text = inlineFormat(headingMatch[2] ?? '');
       const sizes: Record<number, string> = {
         1: 'text-3xl font-bold mt-4 mb-2',
         2: 'text-2xl font-bold mt-4 mb-2',
@@ -153,8 +159,10 @@ function parseMarkdown(md: string): string {
     // Blockquote
     if (line.startsWith('> ')) {
       const quoteLines: string[] = [];
-      while (i < lines.length && lines[i].startsWith('> ')) {
-        quoteLines.push(inlineFormat(lines[i].slice(2)));
+      while (i < lines.length) {
+        const innerLine = lines[i];
+        if (innerLine === undefined || !innerLine.startsWith('> ')) break;
+        quoteLines.push(inlineFormat(innerLine.slice(2)));
         i++;
       }
       result.push(
@@ -166,15 +174,18 @@ function parseMarkdown(md: string): string {
     }
 
     // Table
-    if (line.includes('|') && i + 1 < lines.length && /^\|[\s|:-]+\|/.test(lines[i + 1])) {
+    const nextLine = lines[i + 1];
+    if (line.includes('|') && nextLine !== undefined && /^\|[\s|:-]+\|/.test(nextLine)) {
       const headers = line
         .split('|')
         .filter((_, idx, arr) => idx > 0 && idx < arr.length - 1)
         .map(h => h.trim());
       i += 2;
       const rows: string[][] = [];
-      while (i < lines.length && lines[i].includes('|')) {
-        const cells = lines[i]
+      while (i < lines.length) {
+        const innerLine = lines[i];
+        if (innerLine === undefined || !innerLine.includes('|')) break;
+        const cells = innerLine
           .split('|')
           .filter((_, idx, arr) => idx > 0 && idx < arr.length - 1)
           .map(c => c.trim());
@@ -203,9 +214,11 @@ function parseMarkdown(md: string): string {
     // Unordered list
     if (/^(\s*)-\s/.test(line)) {
       const items: string[] = [];
-      while (i < lines.length && /^(\s*)-\s/.test(lines[i])) {
-        const indent = lines[i].match(/^(\s*)/)?.[1].length ?? 0;
-        const text = inlineFormat(lines[i].replace(/^\s*-\s/, ''));
+      while (i < lines.length) {
+        const innerLine = lines[i];
+        if (innerLine === undefined || !/^(\s*)-\s/.test(innerLine)) break;
+        const indent = (innerLine.match(/^(\s*)/)?.[1] ?? '').length;
+        const text = inlineFormat(innerLine.replace(/^\s*-\s/, ''));
         items.push(`<li style="margin-left:${indent * 8}px" class="my-0.5">${text}</li>`);
         i++;
       }
@@ -216,8 +229,10 @@ function parseMarkdown(md: string): string {
     // Ordered list
     if (/^\d+\.\s/.test(line)) {
       const items: string[] = [];
-      while (i < lines.length && /^\d+\.\s/.test(lines[i])) {
-        const text = inlineFormat(lines[i].replace(/^\d+\.\s/, ''));
+      while (i < lines.length) {
+        const innerLine = lines[i];
+        if (innerLine === undefined || !/^\d+\.\s/.test(innerLine)) break;
+        const text = inlineFormat(innerLine.replace(/^\d+\.\s/, ''));
         items.push(`<li class="my-0.5">${text}</li>`);
         i++;
       }

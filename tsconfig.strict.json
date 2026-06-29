@@ -9,7 +9,9 @@
     "src/utils/hashUtils.ts",
     "src/renderer/utils/hashUtils.ts",
     "src/utils/diffAlgorithm.ts",
-    "src/renderer/utils/diffAlgorithm.ts"
+    "src/renderer/utils/diffAlgorithm.ts",
+    "src/renderer/components/tools/DiffViewer/DiffViewer.tsx",
+    "src/renderer/components/tools/MarkdownPreview.tsx"
   ],
   "exclude": []
 }
