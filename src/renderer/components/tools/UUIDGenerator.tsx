@@ -182,8 +182,8 @@ export function UUIDGenerator() {
   const getUUIDMetadata = (uuid: string) => {
     if (!uuid) return null;
 
-    const version = parseInt(uuid[14], 16);
-    const variant = parseInt(uuid[19], 16);
+    const version = parseInt(uuid[14] ?? '0', 16);
+    const variant = parseInt(uuid[19] ?? '0', 16);
 
     let variantStr = 'Unknown';
     if ((variant & 0x8) === 0) {

@@ -351,7 +351,7 @@ function getBrowserVersion(): string {
   const match =
     ua.match(/(?:Firefox|Edg|Chrome|Safari|Opera|OPR)\/(\d+\.\d+)/) ||
     ua.match(/Version\/(\d+\.\d+)/);
-  return match ? match[1] : 'Unknown';
+  return match ? (match[1] ?? 'Unknown') : 'Unknown';
 }
 
 /**

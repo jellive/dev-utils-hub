@@ -18,9 +18,7 @@ export function useQueryParamsSync(externalUrl: string) {
 
     try {
       // Handle URLs without protocol
-      const urlToParse = urlString.startsWith('http')
-        ? urlString
-        : `https://${urlString}`;
+      const urlToParse = urlString.startsWith('http') ? urlString : `https://${urlString}`;
 
       const urlObj = new URL(urlToParse);
       const searchParams = new URLSearchParams(urlObj.search);
@@ -54,9 +52,7 @@ export function useQueryParamsSync(externalUrl: string) {
 
     try {
       // Handle URLs without protocol
-      const urlToParse = baseUrl.startsWith('http')
-        ? baseUrl
-        : `https://${baseUrl}`;
+      const urlToParse = baseUrl.startsWith('http') ? baseUrl : `https://${baseUrl}`;
 
       const urlObj = new URL(urlToParse);
 
@@ -77,7 +73,7 @@ export function useQueryParamsSync(externalUrl: string) {
       return urlObj.toString();
     } catch (error) {
       // If URL parsing fails, build manually
-      const baseWithoutQuery = baseUrl.split('?')[0];
+      const baseWithoutQuery = baseUrl.split('?')[0] ?? baseUrl;
 
       const validParams = queryParams.filter(p => p.key.trim() !== '');
       if (validParams.length === 0) return baseWithoutQuery;
@@ -108,6 +104,6 @@ export function useQueryParamsSync(externalUrl: string) {
     url,
     setUrl,
     params,
-    setParams: updateParams
+    setParams: updateParams,
   };
 }

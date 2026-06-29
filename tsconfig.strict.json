@@ -13,7 +13,20 @@
     "src/renderer/components/tools/DiffViewer/DiffViewer.tsx",
     "src/renderer/components/tools/MarkdownPreview.tsx",
     "src/renderer/components/tools/cron/cron-utils.ts",
-    "src/renderer/components/tools/CronBuilder.tsx"
+    "src/renderer/components/tools/CronBuilder.tsx",
+    "src/renderer/components/tools/RegexTester.tsx",
+    "src/renderer/components/tools/WasmBenchmark/WasmBenchmark.tsx",
+    "src/renderer/components/tools/JwtDecoder.tsx",
+    "src/renderer/components/tools/APITester/components/HeadersEditor.tsx",
+    "src/renderer/components/tools/APITester/components/QueryParamsEditor.tsx",
+    "src/renderer/components/tools/UUIDGenerator.tsx",
+    "src/renderer/utils/sentryContext.ts",
+    "src/utils/sentryContext.ts",
+    "src/renderer/components/tools/Base64Converter.tsx",
+    "src/renderer/components/tools/APITester/hooks/useQueryParamsSync.ts",
+    "src/renderer/components/Layout.tsx",
+    "src/renderer/types/index.ts",
+    "src/types/index.ts"
   ],
   "exclude": []
 }

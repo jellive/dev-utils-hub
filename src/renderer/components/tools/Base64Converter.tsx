@@ -293,6 +293,7 @@ export function Base64Converter() {
     const files = e.dataTransfer.files;
     if (files && files.length > 0) {
       const file = files[0];
+      if (file === undefined) return;
       const reader = new FileReader();
       reader.onload = event => {
         const content = event.target?.result as string;

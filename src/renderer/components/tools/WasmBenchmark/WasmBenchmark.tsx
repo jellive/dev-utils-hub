@@ -25,7 +25,7 @@ function purJsBase64Encode(str: string): string {
   const bytes = new TextEncoder().encode(str);
   let result = '';
   for (let i = 0; i < bytes.length; i += 3) {
-    const b0 = bytes[i];
+    const b0 = bytes[i] ?? 0;
     const b1 = bytes[i + 1] ?? 0;
     const b2 = bytes[i + 2] ?? 0;
     result += chars[b0 >> 2];
@@ -42,7 +42,7 @@ async function purJsSHA256(input: string): Promise<string> {
   // to a tiny hash — we just measure JS overhead vs WebCrypto dispatch
   const bytes = new TextEncoder().encode(input);
   let acc = 0;
-  for (let i = 0; i < bytes.length; i++) acc = (acc * 31 + bytes[i]) >>> 0;
+  for (let i = 0; i < bytes.length; i++) acc = (acc * 31 + (bytes[i] ?? 0)) >>> 0;
   return acc.toString(16).padStart(8, '0').repeat(8); // 64 hex chars (fake)
 }
 
@@ -118,7 +118,9 @@ export function WasmBenchmark() {
     for (let i = 0; i < runners.length; i++) {
       setRows(prev => prev.map((r, idx) => (idx === i ? { ...r, status: 'running' } : r)));
       try {
-        const result = await runners[i]();
+        const runner = runners[i];
+        if (runner === undefined) continue;
+        const result = await runner();
         updateRow(i, { ...result, status: 'done' });
       } catch (err) {
         updateRow(i, { status: 'error', error: String(err) });

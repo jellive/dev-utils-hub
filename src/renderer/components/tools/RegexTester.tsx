@@ -553,8 +553,10 @@ export function RegexTester() {
               </Badge>
               {matches.length > 0 && (
                 <Badge variant="outline">
-                  {matches[0].captures.length > 0
-                    ? t('tools.regex.captureGroupsCount', { count: matches[0].captures.length })
+                  {(matches[0]?.captures.length ?? 0) > 0
+                    ? t('tools.regex.captureGroupsCount', {
+                        count: matches[0]?.captures.length ?? 0,
+                      })
                     : t('tools.regex.noCaptures')}
                 </Badge>
               )}
@@ -643,7 +645,7 @@ export function RegexTester() {
           )}
 
           {/* Capture Groups */}
-          {matches.length > 0 && matches[0].captures.length > 0 && (
+          {matches.length > 0 && (matches[0]?.captures.length ?? 0) > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">{t('tools.regex.captureGroups')}</CardTitle>
@@ -651,7 +653,7 @@ export function RegexTester() {
               </CardHeader>
               <CardContent className="space-y-2">
                 {/* Numbered Groups */}
-                {matches[0].captures.map((value, index) => (
+                {(matches[0]?.captures ?? []).map((value, index) => (
                   <div
                     key={index}
                     className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg"
@@ -671,9 +673,9 @@ export function RegexTester() {
                 ))}
 
                 {/* Named Groups */}
-                {matches[0].groups && Object.keys(matches[0].groups).length > 0 && (
+                {matches[0]?.groups && Object.keys(matches[0]?.groups ?? {}).length > 0 && (
                   <>
-                    {Object.entries(matches[0].groups).map(([name, value]) => (
+                    {Object.entries(matches[0]?.groups ?? {}).map(([name, value]) => (
                       <div
                         key={name}
                         className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg"

@@ -233,10 +233,10 @@ export function JwtDecoder() {
     }
 
     try {
-      const decodedHeader = atob(tokenParts[0].replace(/-/g, '+').replace(/_/g, '/'));
+      const decodedHeader = atob((tokenParts[0] ?? '').replace(/-/g, '+').replace(/_/g, '/'));
       const headerObj = JSON.parse(decodedHeader);
 
-      const decodedPayload = atob(tokenParts[1].replace(/-/g, '+').replace(/_/g, '/'));
+      const decodedPayload = atob((tokenParts[1] ?? '').replace(/-/g, '+').replace(/_/g, '/'));
       const payloadObj = JSON.parse(decodedPayload);
 
       const formattedHeader = JSON.stringify(headerObj, null, 2);
@@ -245,7 +245,7 @@ export function JwtDecoder() {
       setDecoded({
         header: formattedHeader,
         payload: formattedPayload,
-        signature: tokenParts[2],
+        signature: tokenParts[2] ?? '',
         headerObj,
         payloadObj,
       });
@@ -341,7 +341,7 @@ export function JwtDecoder() {
         encInput.byteOffset,
         encInput.byteOffset + encInput.byteLength
       ) as ArrayBuffer;
-      const signatureBytes = base64urlToBytes(parts[2]);
+      const signatureBytes = base64urlToBytes(parts[2] ?? '');
 
       const valid = await crypto.subtle.verify('HMAC', cryptoKey, signatureBytes, signingInput);
 

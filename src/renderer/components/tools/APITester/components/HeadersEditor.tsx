@@ -26,21 +26,27 @@ export function HeadersEditor({ headers, onChange }: HeadersEditorProps) {
 
   const handleUpdateKey = (index: number, key: string) => {
     const updatedHeaders = [...headers];
-    updatedHeaders[index] = { ...updatedHeaders[index], key };
+    const current = updatedHeaders[index];
+    if (current === undefined) return;
+    updatedHeaders[index] = { ...current, key };
     onChange(updatedHeaders);
   };
 
   const handleUpdateValue = (index: number, value: string) => {
     const updatedHeaders = [...headers];
-    updatedHeaders[index] = { ...updatedHeaders[index], value };
+    const current = updatedHeaders[index];
+    if (current === undefined) return;
+    updatedHeaders[index] = { ...current, value };
     onChange(updatedHeaders);
   };
 
   const handleToggleEnabled = (index: number) => {
     const updatedHeaders = [...headers];
+    const current = updatedHeaders[index];
+    if (current === undefined) return;
     updatedHeaders[index] = {
-      ...updatedHeaders[index],
-      enabled: !updatedHeaders[index].enabled,
+      ...current,
+      enabled: !current.enabled,
     };
     onChange(updatedHeaders);
   };
@@ -88,7 +94,7 @@ export function HeadersEditor({ headers, onChange }: HeadersEditorProps) {
               <TableCell>
                 <Input
                   value={header.key}
-                  onChange={(e) => handleUpdateKey(index, e.target.value)}
+                  onChange={e => handleUpdateKey(index, e.target.value)}
                   placeholder={t('tools.api.headers.key')}
                   className="h-8"
                 />
@@ -96,7 +102,7 @@ export function HeadersEditor({ headers, onChange }: HeadersEditorProps) {
               <TableCell>
                 <Input
                   value={header.value}
-                  onChange={(e) => handleUpdateValue(index, e.target.value)}
+                  onChange={e => handleUpdateValue(index, e.target.value)}
                   placeholder={t('tools.api.headers.value')}
                   className="h-8"
                 />

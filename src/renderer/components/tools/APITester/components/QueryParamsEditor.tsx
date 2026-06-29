@@ -27,13 +27,17 @@ export function QueryParamsEditor({ params, onChange }: QueryParamsEditorProps) 
 
   const handleKeyChange = (index: number, key: string) => {
     const newParams = [...params];
-    newParams[index] = { ...newParams[index], key };
+    const current = newParams[index];
+    if (current === undefined) return;
+    newParams[index] = { ...current, key };
     onChange(newParams);
   };
 
   const handleValueChange = (index: number, value: string) => {
     const newParams = [...params];
-    newParams[index] = { ...newParams[index], value };
+    const current = newParams[index];
+    if (current === undefined) return;
+    newParams[index] = { ...current, value };
     onChange(newParams);
   };
 
@@ -85,7 +89,7 @@ export function QueryParamsEditor({ params, onChange }: QueryParamsEditorProps) 
                 <td className="p-2">
                   <Input
                     value={param.key}
-                    onChange={(e) => handleKeyChange(index, e.target.value)}
+                    onChange={e => handleKeyChange(index, e.target.value)}
                     placeholder="Key"
                     className="border-0 focus-visible:ring-0"
                   />
@@ -93,7 +97,7 @@ export function QueryParamsEditor({ params, onChange }: QueryParamsEditorProps) 
                 <td className="p-2">
                   <Input
                     value={param.value}
-                    onChange={(e) => handleValueChange(index, e.target.value)}
+                    onChange={e => handleValueChange(index, e.target.value)}
                     placeholder="Value"
                     className="border-0 focus-visible:ring-0"
                   />

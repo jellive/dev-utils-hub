@@ -81,7 +81,7 @@ export function Layout() {
       if (toolIndex !== -1) {
         const isMac = navigator.platform.toLowerCase().includes('mac');
         const modifier = isMac ? '⌘' : 'Ctrl';
-        showFeedback(`${modifier}${toolIndex + 1}`, toolNames[toolIndex]);
+        showFeedback(`${modifier}${toolIndex + 1}`, toolNames[toolIndex] ?? '');
       }
     });
 
