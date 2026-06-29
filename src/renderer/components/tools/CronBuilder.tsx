@@ -68,7 +68,11 @@ export function CronBuilder() {
   });
 
   const expression = useMemo(
-    () => FIELDS.map(spec => fieldToCron(fields[spec.key])).join(' '),
+    () =>
+      FIELDS.map(spec => {
+        const field = fields[spec.key];
+        return field !== undefined ? fieldToCron(field) : '*';
+      }).join(' '),
     [fields]
   );
 
@@ -82,7 +86,11 @@ export function CronBuilder() {
   }, [expression]);
 
   const updateField = (key: string, partial: Partial<FieldState>) => {
-    setFields(prev => ({ ...prev, [key]: { ...prev[key], ...partial } }));
+    setFields(prev => {
+      const current = prev[key];
+      if (current === undefined) return prev;
+      return { ...prev, [key]: { ...current, ...partial } };
+    });
   };
 
   const copyExpression = async () => {
@@ -124,6 +132,7 @@ export function CronBuilder() {
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         {FIELDS.map(spec => {
           const f = fields[spec.key];
+          if (f === undefined) return null;
           return (
             <Card key={spec.key} data-testid={`field-${spec.key}`}>
               <CardHeader className="pb-3">

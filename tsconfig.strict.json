@@ -11,7 +11,9 @@
     "src/utils/diffAlgorithm.ts",
     "src/renderer/utils/diffAlgorithm.ts",
     "src/renderer/components/tools/DiffViewer/DiffViewer.tsx",
-    "src/renderer/components/tools/MarkdownPreview.tsx"
+    "src/renderer/components/tools/MarkdownPreview.tsx",
+    "src/renderer/components/tools/cron/cron-utils.ts",
+    "src/renderer/components/tools/CronBuilder.tsx"
   ],
   "exclude": []
 }

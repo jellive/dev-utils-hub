@@ -67,6 +67,14 @@ export function describeCron(expression: string): { en: string; ko: string } | n
   if (parts.length < 5 || parts.length > 6) return null;
 
   const [minute, hour, day, month, weekday] = parts;
+  if (
+    minute === undefined ||
+    hour === undefined ||
+    day === undefined ||
+    month === undefined ||
+    weekday === undefined
+  )
+    return null;
 
   const minuteDesc = describeCronField(minute, 'minute');
   const hourDesc = describeCronField(hour, 'hour');
@@ -127,6 +135,14 @@ export function getNextExecutions(expression: string, count: number): Date[] {
   if (parts.length < 5) return [];
 
   const [minuteExpr, hourExpr, dayExpr, monthExpr, weekdayExpr] = parts;
+  if (
+    minuteExpr === undefined ||
+    hourExpr === undefined ||
+    dayExpr === undefined ||
+    monthExpr === undefined ||
+    weekdayExpr === undefined
+  )
+    return [];
 
   function matches(value: number, expr: string, _min: number, _max: number): boolean {
     if (expr === '*') return true;
@@ -137,6 +153,7 @@ export function getNextExecutions(expression: string, count: number): Date[] {
     if (expr.includes(',')) return expr.split(',').some(p => Number(p) === value);
     if (expr.includes('-')) {
       const [lo, hi] = expr.split('-').map(Number);
+      if (lo === undefined || hi === undefined) return false;
       return value >= lo && value <= hi;
     }
     return Number(expr) === value;
