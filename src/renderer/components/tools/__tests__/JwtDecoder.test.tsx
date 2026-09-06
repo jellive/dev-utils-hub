@@ -1,7 +1,7 @@
 import { webcrypto } from 'node:crypto';
 Object.defineProperty(globalThis, 'crypto', { value: webcrypto, configurable: true });
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { JwtDecoder, formatCountdown } from '../JwtDecoder';
@@ -27,6 +27,26 @@ function decodeToken(jwt: string) {
 }
 
 describe('formatCountdown', () => {
+  // Freeze the clock. These cases read Date.now(), hand `now + delta` to
+  // formatCountdown, and the function reads Date.now() a second time --- so the
+  // real diff is `delta - epsilon`, where epsilon is however long the two calls
+  // were apart. `formatCountdown` divides by 1000 without flooring, so any
+  // epsilon at all rolls the largest unit down one: 2d 1h becomes 2d 0h. It
+  // passed locally only because both calls landed in the same millisecond; CI
+  // was slower and it failed there (run 34030900256).
+  //
+  // The production path is not affected --- a JWT's `exp` is a fixed instant, so
+  // there is no second clock read to race against. Only this self-referential
+  // test shape has the problem, so the fix belongs here.
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-06-15T12:00:00.500Z'));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('formats > 1 day remaining', () => {
     const now = Date.now() / 1000;
     const result = formatCountdown(now + 2 * 86400 + 3600);
